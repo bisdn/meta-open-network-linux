@@ -26,7 +26,7 @@ SRC_URI = "git://github.com/opencomputeproject/OpenNetworkLinux.git;name=onl \
            file://56.patch;patchdir=${SUBMODULE_INFRA} \
 "
 
-DEPENDS = "i2c-tools "
+DEPENDS = "i2c-tools"
 
 S = "${WORKDIR}/git"
 PV = "1.0+git${SRCPV}"
@@ -48,6 +48,10 @@ ARCH = "${TARGET_ARCH}"
 TOOLCHAIN = "gcc-local"
 ONL_DEBIAN_SUITE = "yocto"
 NO_USE_GCC_VERSION_TOOL="1"
+
+# for folders
+ONL_PLATFORM="${@'${ONIE_ARCH}-${ONIE_MACHINE}'.replace('_', '-')}"
+ONL_ARCH="${@'${ONIE_ARCH}'.replace('_', '-')}"
 
 ###
 # TODO CFLAGS?
@@ -73,20 +77,23 @@ do_configure() {
   echo ${MODULEMANIFEST_}
 }
 
-# FIXME
 do_compile() {
-  oe_runmake -C packages/base/any/onlp/builds/ show_targets show_libs show_bins show_shared show_scripts
-  oe_runmake -C packages/base/any/onlp/builds/ alltargets
-  oe_runmake -C packages/platforms/delta/x86-64/x86-64-delta-ag7648/onlp/builds/ alltargets
-  false
+  #oe_runmake -C packages/base/any/onlp/builds/ show_targets show_libs show_bins show_shared show_scripts
+  #oe_runmake -C packages/base/any/onlp/builds/ alltargets
+
+  oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/ alltargets
 }
 
 do_install() {
-  install -d ${D}${libdir}
-  install -d ${D}${includedir}/AIM
+  # so file
+  #install -d ${D}${libdir}
+  #packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/
 
-  install -m 0644 ${S}/targets/utests/AIM/build/gcc-local/lib/AIM.a ${D}${libdir}
-  install -m 0644 ${S}/targets/utests/AIM/build/gcc-local/lib/AIM_posix.a ${D}${libdir}
+  # onlpdump
+  install -d ${D}${bindir}
+  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/onlpdump/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlpdump ${D}${bindir}
 
-  install -m 0644 ${S}/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
+  # platform file
+  install -d ${D}${sysconfdir}/onl
+  echo "${ONL_PLATFORM}-r${ONIE_MACHINE_REV}" > ${D}${sysconfdir}/onl/platform
 }
