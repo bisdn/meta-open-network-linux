@@ -24,7 +24,13 @@ SRC_URI = "git://github.com/opencomputeproject/OpenNetworkLinux.git;name=onl \
            git://github.com/floodlight/bigcode.git;name=bigcode;destsuffix=git/${SUBMODULE_BIGCODE} \
            file://ar.patch;patchdir=${SUBMODULE_INFRA} \
            file://56.patch;patchdir=${SUBMODULE_INFRA} \
+           file://onlpdump.service \
 "
+
+inherit systemd
+
+SYSTEMD_SERVICE_${PN} = "onlpdump.service"
+SYSTEMD_AUTO_ENABLE = "enable"
 
 DEPENDS = "i2c-tools"
 
@@ -96,4 +102,10 @@ do_install() {
   # platform file
   install -d ${D}${sysconfdir}/onl
   echo "${ONL_PLATFORM}-r${ONIE_MACHINE_REV}" > ${D}${sysconfdir}/onl/platform
+
+  # service file
+  install -d ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/onlpdump.service ${D}${systemd_unitdir}/system
+  sed -i -e 's,@BINDIR@,${bindir},g' \
+         ${D}${systemd_unitdir}/system/*.service
 }
