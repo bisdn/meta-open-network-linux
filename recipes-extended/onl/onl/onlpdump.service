@@ -5,7 +5,7 @@ After=network.target
 [Service]
 ExecStart=@BINDIR@/onlpdump -M /run/onlpdump.pid
 PIDFile=/run/onlpdump.pid
-Type=forking
+Type=simple
 
 [Install]
 WantedBy=multi-user.target
