@@ -14,14 +14,16 @@ SRCREV_onl = "95917ac48a1f85dd41a35792f5b1aadf171a94d7"
 SRCREV_infra = "16ce9cd77f6639aac4813d698f9dd11f3ee47e7a"
 SRCREV_bigcode = "081f26bb5be40d51a8551d35395f06be137349cb"
 
-# SRCREV = "${AUTOREV}"
-# SRCREV = "${SRCREV_ONL}"
+URI_ONL = "git://github.com/opencomputeproject/OpenNetworkLinux.git"
+URI_INFRA = "git://github.com/floodlight/infra.git"
+URI_BIGCODE = "git://github.com/floodlight/bigcode.git"
+
 SRCREV_FORMAT = "onl_infra_bigcode"
 
 # submodules are checked out individually to support license file checking
-SRC_URI = "git://github.com/opencomputeproject/OpenNetworkLinux.git;name=onl \
-           git://github.com/floodlight/infra.git;name=infra;destsuffix=git/${SUBMODULE_INFRA} \
-           git://github.com/floodlight/bigcode.git;name=bigcode;destsuffix=git/${SUBMODULE_BIGCODE} \
+SRC_URI = "${URI_ONL};name=onl \
+           ${URI_INFRA};name=infra;destsuffix=git/${SUBMODULE_INFRA} \
+           ${URI_BIGCODE};name=bigcode;destsuffix=git/${SUBMODULE_BIGCODE} \
            file://ar.patch;patchdir=${SUBMODULE_INFRA} \
            file://56.patch;patchdir=${SUBMODULE_INFRA} \
            file://onlpdump.service \
