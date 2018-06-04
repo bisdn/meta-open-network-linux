@@ -27,6 +27,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://ar.patch;patchdir=${SUBMODULE_INFRA} \
            file://56.patch;patchdir=${SUBMODULE_INFRA} \
            file://onlpdump.service \
+           file://i2c-include.patch \
 "
 
 inherit systemd
@@ -89,7 +90,7 @@ do_compile() {
   #oe_runmake -C packages/base/any/onlp/builds/ show_targets show_libs show_bins show_shared show_scripts
   #oe_runmake -C packages/base/any/onlp/builds/ alltargets
 
-  oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/ alltargets
+  V=1 oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/ alltargets
 }
 
 do_install() {
