@@ -29,6 +29,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://onlpdump.service \
            file://i2c-include.patch \
            file://0001-x86-64-delta-ag9032v1-fix-Werror-format-overflow.patch \
+           file://x86-64-delta-ag7648-fix-los-register-bits.patch \
 "
 
 inherit systemd
