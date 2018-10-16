@@ -44,6 +44,8 @@ DEPENDS = "i2c-tools"
 S = "${WORKDIR}/git"
 PV = "1.0+git${SRCPV}"
 
+PACKAGE_ARCH = "${MACHINE_ARCH}"
+
 #### TODO onl.bbclass?
 ONL = "${S}"
 
