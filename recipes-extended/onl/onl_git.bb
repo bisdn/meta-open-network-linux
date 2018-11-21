@@ -10,9 +10,9 @@ LIC_FILES_CHKSUM = "\
   file://${SUBMODULE_BIGCODE}/LICENSE;md5=dc6bd4d967e085fe783aa2abe7655c60 \
 "
 
-SRCREV_onl ?= "6697ea1a525d71ec81105bc4229539ead78e73b4"
-SRCREV_infra ?= "16ce9cd77f6639aac4813d698f9dd11f3ee47e7a"
-SRCREV_bigcode ?= "05eb4b37f288e4b4a6119bea666bb77582eafbb9"
+SRCREV_onl ?= "a5ec39317e26e41c5631674baa420f91b037d88c"
+SRCREV_infra ?= "f78cc91121bf520b48b4888f08e055ed92b9fbf2"
+SRCREV_bigcode ?= "59b58a4c8b7fb59060e4d76a2872458bb806ed5f"
 
 URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git"
 URI_INFRA ?= "git://github.com/floodlight/infra.git"
@@ -27,11 +27,12 @@ SRC_URI = "${URI_ONL};name=onl \
            file://ar.patch;patchdir=${SUBMODULE_INFRA} \
            file://56.patch;patchdir=${SUBMODULE_INFRA} \
            file://onlpdump.service \
-           file://i2c-include.patch \
-           file://0001-x86-64-delta-ag9032v1-fix-Werror-format-overflow.patch \
-           file://x86-64-delta-ag7648-fix-los-register-bits.patch \
-           file://x86-64-accton-as5712_54x-fix-Werror-format-overflow.patch \
-           file://0001-x86-64-delta-ag5648-add-null-termination-to-buffers.patch \
+           file://0001-i2c-patch.patch \
+           file://0002-x86-64-delta-ag9032v1-fix-Werror-format-overflow.patch \
+           file://0003-x86-64-delta-ag7648-fix-los-register-bits.patch \
+           file://0004-x86-64-accton-as5712_54x-fix-Werror-format-overflow.patch \
+           file://0005-x86-64-delta-ag5648-add-null-termination-to-buffers.patch \
+           file://0006-dni_ag5648_sfp-read-correct-presence-register.patch \
 "
 
 inherit systemd
