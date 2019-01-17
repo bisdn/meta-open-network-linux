@@ -27,7 +27,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://ar.patch;patchdir=${SUBMODULE_INFRA} \
            file://56.patch;patchdir=${SUBMODULE_INFRA} \
            file://onlpdump.service \
-           file://0001-i2c-patch.patch \
+           file://0001-i2c-use-libi2c-for-onlpdump-and-update-headers.patch \
 "
 
 inherit systemd
@@ -38,7 +38,7 @@ SYSTEMD_AUTO_ENABLE = "enable"
 DEPENDS = "i2c-tools"
 
 S = "${WORKDIR}/git"
-PV = "1.0+git${SRCPV}"
+PV = "1.1+git${SRCPV}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 PROVIDES += "libonlp libonlp-platform libonlp-platform-defaults"
