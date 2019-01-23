@@ -27,7 +27,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://ar.patch;patchdir=${SUBMODULE_INFRA} \
            file://56.patch;patchdir=${SUBMODULE_INFRA} \
            file://onlpdump.service \
-           file://0001-i2c-patch.patch \
+           file://0001-i2c-use-libi2c-for-onlpdump-and-update-headers.patch \
 "
 
 inherit systemd
@@ -38,9 +38,11 @@ SYSTEMD_AUTO_ENABLE = "enable"
 DEPENDS = "i2c-tools"
 
 S = "${WORKDIR}/git"
-PV = "1.0+git${SRCPV}"
+PV = "1.1+git${SRCPV}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
+PROVIDES += "libonlp libonlp-platform libonlp-platform-defaults"
+INSANE_SKIP_${PN} = "file-rdeps"
 
 #### TODO onl.bbclass?
 ONL = "${S}"
@@ -57,12 +59,7 @@ MODULEMANIFEST = "${BUILDER_MODULE_MANIFEST}"
 #export SUBMODULE_INFRA BUILDER BUILDER_MODULE_DATABASE BUILDER_MODULE_DATABASE_ROOT BUILDER_MODULE_MANIFEST MODULEMANIFEST ONL
 ARCH = "${TARGET_ARCH}"
 TOOLCHAIN = "gcc-local"
-ONL_DEBIAN_SUITE = "yocto"
 NO_USE_GCC_VERSION_TOOL="1"
-
-# for folders
-ONL_PLATFORM="${@'${ONIE_ARCH}-${ONIE_MACHINE}'.replace('_', '-')}"
-ONL_ARCH="${@'${ONIE_ARCH}'.replace('_', '-')}"
 
 ###
 # TODO CFLAGS?
@@ -89,20 +86,54 @@ do_configure() {
 }
 
 do_compile() {
+  # examples
   #oe_runmake -C packages/base/any/onlp/builds/ show_targets show_libs show_bins show_shared show_scripts
   #oe_runmake -C packages/base/any/onlp/builds/ alltargets
 
-  V=1 oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/ alltargets
+  V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds alltargets
+  V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds/onlpd alltargets
+
+  V=1 VERBOSE=1 oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/ alltargets
 }
 
 do_install() {
-  # so file
-  #install -d ${D}${libdir}
-  #packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/
+  # folders in dest
+  install -d \
+    ${D}${bindir} \
+    ${D}${includedir}/AIM \
+    ${D}${includedir}/BigList \
+    ${D}${includedir}/IOF \
+    ${D}${includedir}/cjson \
+    ${D}${includedir}/onlp \
+    ${D}${includedir}/onlplib \
+    ${D}${libdir}
 
-  # onlpdump
-  install -d ${D}${bindir}
+  # install onlpdump
   install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/onlpdump/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlpdump ${D}${bindir}
+
+  # install headers
+  install -m 0644 packages/base/any/onlp/src/onlp/module/inc/onlp/*.h ${D}${includedir}/onlp/
+  install -m 0644 packages/base/any/onlp/src/onlplib/module/inc/onlplib/*.h ${D}${includedir}/onlplib/
+  install -m 0644 sm/bigcode/modules/BigData/BigList/module/inc/BigList/*.h ${D}${includedir}/BigList/
+  install -m 0644 sm/bigcode/modules/IOF/module/inc/IOF/*.h ${D}${includedir}/IOF/
+  install -m 0644 sm/bigcode/modules/cjson/module/inc/cjson/*.h ${D}${includedir}/cjson/
+  install -m 0644 sm/infra/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
+
+  # install libonlp-platform shared library (includes AIM.a  AIM_posix.a  BigList.a  cjson.a  cjson_util.a  IOF.a  onlplib.a  x86_64_delta_ag7648.a)
+  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${ONL_ARCH}-${ONIE_VENDOR}-${ONIE_MACHINE_TYPE}.so ${D}${libdir}
+  mv ${D}${libdir}/libonlp-${ONL_ARCH}-${ONIE_VENDOR}-${ONIE_MACHINE_TYPE}.so ${D}${libdir}/libonlp-${ONL_ARCH}-${ONIE_VENDOR}-${ONIE_MACHINE_TYPE}.so.1
+  ln -r -s ${D}${libdir}/libonlp-${ONL_ARCH}-${ONIE_VENDOR}-${ONIE_MACHINE_TYPE}.so.1 ${D}${libdir}/libonlp-${ONL_ARCH}-${ONIE_VENDOR}-${ONIE_MACHINE_TYPE}.so
+  ln -r -s ${D}${libdir}/libonlp-${ONL_ARCH}-${ONIE_VENDOR}-${ONIE_MACHINE_TYPE}.so.1 ${D}${libdir}/libonlp-platform.so.1
+
+  # install libonlp shared library (includes TODO)
+  install -m 0755 packages/base/any/onlp/builds/onlp/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp.so ${D}${libdir}
+  mv ${D}${libdir}/libonlp.so ${D}${libdir}/libonlp.so.1
+  ln -r -s ${D}${libdir}/libonlp.so.1 ${D}${libdir}/libonlp.so
+
+  # install libonlp shared library (includes TODO)
+  install -m 0755 packages/base/any/onlp/builds/onlp-platform-defaults/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-platform-defaults.so ${D}${libdir}
+  mv ${D}${libdir}/libonlp-platform-defaults.so ${D}${libdir}/libonlp-platform-defaults.so.1
+  ln -r -s ${D}${libdir}/libonlp-platform-defaults.so.1 ${D}${libdir}/libonlp-platform-defaults.so
 
   # platform file
   install -d ${D}${sysconfdir}/onl
