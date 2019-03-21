@@ -10,9 +10,9 @@ LIC_FILES_CHKSUM = "\
   file://${SUBMODULE_BIGCODE}/LICENSE;md5=dc6bd4d967e085fe783aa2abe7655c60 \
 "
 
-SRCREV_onl ?= "ff19ef83e0cc241c32a78dea259a4ebd9f9da139"
-SRCREV_infra ?= "f78cc91121bf520b48b4888f08e055ed92b9fbf2"
-SRCREV_bigcode ?= "59b58a4c8b7fb59060e4d76a2872458bb806ed5f"
+SRCREV_onl ?= "01c689605d626372ad8a1b0fbab8687e9705efbe"
+SRCREV_infra ?= "168b695e51241be2823111f105b129236a1d79f8"
+SRCREV_bigcode ?= "7294ff56e750c188d1f3b074ffbadd2024d50089"
 
 URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git"
 URI_INFRA ?= "git://github.com/floodlight/infra.git"
