@@ -28,6 +28,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://56.patch;patchdir=${SUBMODULE_INFRA} \
            file://onlpdump.service \
            file://0001-i2c-use-libi2c-for-onlpdump-and-update-headers.patch \
+           file://0001-don-t-call-a-binary-minor-cleanup.patch \
 "
 
 inherit systemd
