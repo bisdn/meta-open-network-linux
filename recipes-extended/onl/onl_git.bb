@@ -29,6 +29,17 @@ SRC_URI = "${URI_ONL};name=onl \
            file://onlpdump.service \
            file://0001-i2c-use-libi2c-for-onlpdump-and-update-headers.patch \
            file://0001-don-t-call-a-binary-minor-cleanup.patch \
+           file://0002-fix-Werror-unused-result.patch \
+           file://0003-fix-moar-compiler-warnings.patch \
+           file://0004-ag9032v2-fix-format-overflow.patch \
+           file://0005-Typos-Unble-Unable.patch \
+           file://0006-ag7648-typos-and-PATH_MAX-fixup.patch \
+           file://0007-as5712-54x-fix-Werror-sizeof-pointer-memaccess.patch \
+           file://0008-ag8032-fix-Werror-unused-result.patch \
+           file://0009-ag9032-several-Werror-format-overflow-and-one-Werror.patch \
+           file://0010-as5712-54x-more-fixup.patch \
+           file://0011-delta-ag8032-more-fixup.patch \
+           file://0012-ag9032v1-more-fixup.patch \
 "
 
 inherit systemd
@@ -68,7 +79,12 @@ EXTRA_OEMAKE = "\
   'AR=${AR}' \
   'ARCH=${ARCH}' \
   'BUILDER=${BUILDER}' \
+  'BUILDER_MODULE_DATABASE=${BUILDER_MODULE_DATABASE}' \
+  'BUILDER_MODULE_DATABASE_ROOT=${BUILDER_MODULE_DATABASE_ROOT}' \
+  'BUILDER_MODULE_MANIFEST=${BUILDER_MODULE_MANIFEST}' \
+  'MODULEMANIFEST=${MODULEMANIFEST}' \
   'GCC=${CC}' \
+  'GCC_FLAGS=${CFLAGS}' \
   'MODULEMANIFEST=${MODULEMANIFEST}' \
   'NO_USE_GCC_VERSION_TOOL=${NO_USE_GCC_VERSION_TOOL}' \
   'ONL=${ONL}' \
