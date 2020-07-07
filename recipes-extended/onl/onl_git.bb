@@ -12,7 +12,7 @@ LIC_FILES_CHKSUM = "\
 
 SRCREV_onl ?= "01c689605d626372ad8a1b0fbab8687e9705efbe"
 SRCREV_infra ?= "168b695e51241be2823111f105b129236a1d79f8"
-SRCREV_bigcode ?= "7294ff56e750c188d1f3b074ffbadd2024d50089"
+SRCREV_bigcode ?= "981aee67ebf433d42f444d4faf1a46a596b39555"
 
 URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git"
 URI_INFRA ?= "git://github.com/floodlight/infra.git"
