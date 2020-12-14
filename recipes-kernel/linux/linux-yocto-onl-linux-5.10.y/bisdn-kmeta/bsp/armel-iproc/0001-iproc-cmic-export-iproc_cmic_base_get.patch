@@ -1,0 +1,57 @@
+From f7bd3483571ac7f21d4bd7d3d57ec159026c731b Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 9 Oct 2019 12:33:40 +0000
+Subject: [PATCH 1/2] iproc-cmic: export iproc_cmic_base_get
+
+To allow the OF-DPA switch driver to use it, export the function so it
+becomes available to drivers built as module.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ drivers/soc/bcm/xgs_iproc/iproc-cmic.c | 4 +++-
+ include/linux/soc/bcm/iproc-cmic.h     | 2 +-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/soc/bcm/xgs_iproc/iproc-cmic.c b/drivers/soc/bcm/xgs_iproc/iproc-cmic.c
+index d4132ba9a5ec..155dd6c87cc4 100644
+--- a/drivers/soc/bcm/xgs_iproc/iproc-cmic.c
++++ b/drivers/soc/bcm/xgs_iproc/iproc-cmic.c
+@@ -11,6 +11,7 @@
+  * GNU General Public License for more details.
+  */
+ 
++#include <linux/export.h>
+ #include <linux/module.h>
+ #include <asm/io.h>
+ #include <linux/of.h>
+@@ -84,13 +85,14 @@ int iproc_cmic_schan_ucmem_read(u32 blk_type, u32 *mem)
+ 	return -EINVAL;
+ }
+ 
+-void inline __iomem *iproc_cmic_base_get(void)
++void __iomem *iproc_cmic_base_get(void)
+ {
+ 	if (cmic && cmic->base) {
+ 		return cmic->base;
+ 	}
+ 	return NULL;
+ }
++EXPORT_SYMBOL(iproc_cmic_base_get);
+ 
+ /****************************************************************************
+  ***************************************************************************/
+diff --git a/include/linux/soc/bcm/iproc-cmic.h b/include/linux/soc/bcm/iproc-cmic.h
+index 59a4f7277238..66eb2fb1ab29 100644
+--- a/include/linux/soc/bcm/iproc-cmic.h
++++ b/include/linux/soc/bcm/iproc-cmic.h
+@@ -29,6 +29,6 @@ extern int iproc_cmic_schan_reg64_write(u32 blk_type, u32 addr, u64 val);
+ extern u64 iproc_cmic_schan_reg64_read(u32 blk_type, u32 addr);
+ extern int iproc_cmic_schan_ucmem_write(u32 blk_type, u32 *mem);
+ extern int iproc_cmic_schan_ucmem_read(u32 blk_type, u32 *mem);
+-extern void inline __iomem *iproc_cmic_base_get(void);
++extern void __iomem *iproc_cmic_base_get(void);
+ 
+ #endif /* _IPROC_CMIC_H */
+-- 
+2.17.1
+
