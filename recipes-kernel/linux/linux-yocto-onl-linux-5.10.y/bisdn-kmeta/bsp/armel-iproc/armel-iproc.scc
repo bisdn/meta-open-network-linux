@@ -2,7 +2,7 @@ define KMACHINE armel-iproc
 define KTYPE standard
 define KARCH arm
 
-patch brcm-iproc-5.4.patch
+patch brcm-iproc-5.10.patch
 patch drivers-usb-phy-phy-xgs-iproc-usb-phy-mode.patch
 patch drivers-i2c-busses-xgs_iproc_smbus-clk-freq.patch
 patch 0001-iproc-cmic-export-iproc_cmic_base_get.patch
