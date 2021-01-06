@@ -1,0 +1,63 @@
+From 3e217d4a63824a9568fd26d1638153d45845d6c1 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 9 Oct 2019 12:38:47 +0000
+Subject: [PATCH] iproc-cmic: get and export irq
+
+To allow the OF-DPA driver to use the irq, get and export it.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ drivers/soc/bcm/xgs_iproc/iproc-cmic.c | 11 +++++++++++
+ include/linux/soc/bcm/iproc-cmic.h     |  2 ++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/drivers/soc/bcm/xgs_iproc/iproc-cmic.c b/drivers/soc/bcm/xgs_iproc/iproc-cmic.c
+index 155dd6c87cc4..33f60fe3e8d0 100644
+--- a/drivers/soc/bcm/xgs_iproc/iproc-cmic.c
++++ b/drivers/soc/bcm/xgs_iproc/iproc-cmic.c
+@@ -94,6 +94,14 @@ void __iomem *iproc_cmic_base_get(void)
+ }
+ EXPORT_SYMBOL(iproc_cmic_base_get);
+ 
++int iproc_cmic_irq_get(void)
++{
++	if (cmic)
++		return cmic->irq;
++	return -ENXIO;
++}
++EXPORT_SYMBOL(iproc_cmic_irq_get);
++
+ /****************************************************************************
+  ***************************************************************************/
+ static int cmic_probe(struct platform_device *pdev)
+@@ -114,6 +123,8 @@ static int cmic_probe(struct platform_device *pdev)
+ 		return PTR_ERR(cmic->base);
+ 	}
+ 
++	cmic->irq = platform_get_irq(pdev, 0);
++
+ 	if (of_device_is_compatible(np, "brcm,iproc-cmicx")) {
+ 		cmic->sbus_ops = &cmicx_sbus_ops;
+ 	} else if (of_device_is_compatible(np, "brcm,iproc-cmicd")) {
+diff --git a/include/linux/soc/bcm/iproc-cmic.h b/include/linux/soc/bcm/iproc-cmic.h
+index 66eb2fb1ab29..63f9a9683f7a 100644
+--- a/include/linux/soc/bcm/iproc-cmic.h
++++ b/include/linux/soc/bcm/iproc-cmic.h
+@@ -3,6 +3,7 @@
+ 
+ struct iproc_cmic {
+ 	void __iomem *base;
++	int irq;
+ 	struct device *dev;
+ 
+ 	const struct sbus_ops *sbus_ops;
+@@ -30,5 +31,6 @@ extern u64 iproc_cmic_schan_reg64_read(u32 blk_type, u32 addr);
+ extern int iproc_cmic_schan_ucmem_write(u32 blk_type, u32 *mem);
+ extern int iproc_cmic_schan_ucmem_read(u32 blk_type, u32 *mem);
+ extern void __iomem *iproc_cmic_base_get(void);
++extern int iproc_cmic_irq_get(void);
+ 
+ #endif /* _IPROC_CMIC_H */
+-- 
+2.17.1
+
