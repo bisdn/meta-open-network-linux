@@ -7618,7 +7618,7 @@ index 000000000000..3f9279d0cafe
 +CONFIG_CRYPTO_AES_ARM64_CE_BLK=y
 +CONFIG_CRYPTO_AES_ARM64_NEON_BLK=y
 diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
-index 5952210526aa..9bcb1ac91dbb 100644
+index e92c4d9469d8..8bc99f3e01e2 100644
 --- a/drivers/char/hw_random/Kconfig
 +++ b/drivers/char/hw_random/Kconfig
 @@ -111,6 +111,18 @@ config HW_RANDOM_IPROC_RNG200
@@ -8098,10 +8098,10 @@ index 000000000000..7aa37cfce6a8
 +	xgs_iproc_armpll_init);
 \ No newline at end of file
 diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index f20ac3d69424..c2b360dde6b4 100644
+index 5d4de5cd6759..6aa862c06d9b 100644
 --- a/drivers/gpio/Kconfig
 +++ b/drivers/gpio/Kconfig
-@@ -676,6 +676,15 @@ config GPIO_XGENE_SB
+@@ -675,6 +675,15 @@ config GPIO_XGENE_SB
  	  This driver supports the GPIO block within the APM X-Gene
  	  Standby Domain. Say yes here to enable the GPIO functionality.
  
@@ -8875,7 +8875,7 @@ index 000000000000..2ae876fa1184
 +MODULE_DESCRIPTION("XGS IPROC GPIO driver");
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index 7e693dcbdd19..d52eefd1392d 100644
+index a49e0ed4a599..36a2b55d4b74 100644
 --- a/drivers/i2c/busses/Kconfig
 +++ b/drivers/i2c/busses/Kconfig
 @@ -465,6 +465,26 @@ config I2C_BCM_IPROC
@@ -22089,7 +22089,7 @@ index 000000000000..fdce5f3aca16
 +arch_initcall(xgs_iproc_init);
 +
 diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index aadaea052f51..232ac4a8eb6b 100644
+index 5cff60de8e83..c78f31f43e8d 100644
 --- a/drivers/spi/Kconfig
 +++ b/drivers/spi/Kconfig
 @@ -164,8 +164,8 @@ config SPI_BCM63XX_HSSPI
@@ -22522,11 +22522,15 @@ index f5a7ce28aecd..02d644b73d75 100644
  obj-$(CONFIG_USB_ASPEED_VHUB)	+= aspeed-vhub/
  obj-$(CONFIG_USB_BDC_UDC)	+= bdc/
 diff --git a/drivers/usb/gadget/udc/bdc/Kconfig b/drivers/usb/gadget/udc/bdc/Kconfig
-index fb01ff47b64c..1183e215bca8 100644
+index 3e88c7670b2e..09c96208d621 100644
 --- a/drivers/usb/gadget/udc/bdc/Kconfig
 +++ b/drivers/usb/gadget/udc/bdc/Kconfig
-@@ -21,4 +21,18 @@ config	USB_BDC_PCI
- 	default USB_BDC_UDC
+@@ -18,7 +18,21 @@ comment "Platform Support"
+ config	USB_BDC_PCI
+ 	tristate "BDC support for PCIe based platforms"
+ 	depends on USB_PCI
+-	default USB_BDC_UDC
++	default n 
  	help
  		Enable support for platforms which have BDC connected through PCIe, such as Lego3 FPGA platform.
 +
@@ -27268,5 +27272,5 @@ index 000000000000..16ed0c924056
 +#endif /* __LINUX_USB_IPROC_USB_H */
 +
 -- 
-2.30.0
+2.29.2
 
