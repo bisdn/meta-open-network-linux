@@ -111,7 +111,7 @@ do_compile() {
   V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds alltargets
   V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds/onlpd alltargets
 
-  V=1 VERBOSE=1 oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/ alltargets
+  V=1 VERBOSE=1 oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM_SUBDIR}/${ONL_PLATFORM}/onlp/builds/ alltargets
 }
 
 do_install() {
@@ -127,7 +127,7 @@ do_install() {
     ${D}${libdir}
 
   # install onlpdump
-  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/onlpdump/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlpdump ${D}${bindir}
+  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM_SUBDIR}/${ONL_PLATFORM}/onlp/builds/onlpdump/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlpdump ${D}${bindir}
 
   # install headers
   install -m 0644 packages/base/any/onlp/src/onlp/module/inc/onlp/*.h ${D}${includedir}/onlp/
@@ -138,7 +138,7 @@ do_install() {
   install -m 0644 sm/infra/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
 
   # install libonlp-platform shared library (includes AIM.a  AIM_posix.a  BigList.a  cjson.a  cjson_util.a  IOF.a  onlplib.a  x86_64_delta_ag7648.a)
-  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${ONL_PLATFORM}.so ${D}${libdir}
+  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM_SUBDIR}/${ONL_PLATFORM}/onlp/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${ONL_PLATFORM}.so ${D}${libdir}
   mv ${D}${libdir}/libonlp-${ONL_PLATFORM}.so ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1
   ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-${ONL_PLATFORM}.so
   ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-platform.so.1
