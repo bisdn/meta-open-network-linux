@@ -1,0 +1,61 @@
+From 78b2ea7f843d45c75b2358724810872ea9c8d1cd Mon Sep 17 00:00:00 2001
+From: Tobias Jungel <tobias.jungel@bisdn.de>
+Date: Fri, 19 Mar 2021 10:30:32 +0100
+Subject: [PATCH 3/5] agema-ag7648: fix buffer overflow while reading thermal
+ state
+
+Appending "2-004d/hwmon/hwmon1/temp1_input" to "/sys/bus/i2c/devices/"
+results in a 52 characters long string, but fullpath is only 50
+characters sized, resulting in a buffer overflow.
+
+Fix this by increasing the buffer to PATH_MAX from limits.
+
+Fixes the following crash:
+
+agema-ag7648:~$ sudo onlps
+   System Information: = {
+       Product Name: AG7648
+       Part Number: AG7648-R
+       Serial Number: A766F0DL1819123456
+       MAC: 00:30:ab:cd:ef:12
+       MAC Range: 73
+       Manufacturer: DNI
+       Manufacture Date: 01/14/2018 14:09:25
+       Vendor: Delta
+       Country Code: CN
+       Diag Version: 2017.09.29-V1.02
+       ONIE Version: 2017.08.01-V1.12
+   }
+   thermal @ 1 = {
+*** buffer overflow detected ***: onlpdump terminated
+Aborted (core dumped)
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../onlp/builds/x86_64_delta_ag7648/module/src/thermali.c      | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/thermali.c b/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/thermali.c
+index fd3b9602..fddaa1ba 100755
+--- a/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/thermali.c
++++ b/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/thermali.c
+@@ -23,6 +23,7 @@
+  * Thermal Sensor Platform Implementation.
+  *
+  ***********************************************************/
++#include <limits.h>
+ #include <unistd.h>
+ #include <onlplib/mmap.h>
+ #include <onlplib/file.h>
+@@ -130,7 +131,7 @@ _onlp_thermali_info_get(int id, onlp_thermal_info_t* info)
+ {
+     int   len, nbytes = 10, temp_base=1, local_id;
+     uint8_t r_data[10]={0};
+-    char  fullpath[50] = {0};
++    char  fullpath[PATH_MAX] = {0};
+ 
+     local_id = id;
+     
+-- 
+2.31.0
+

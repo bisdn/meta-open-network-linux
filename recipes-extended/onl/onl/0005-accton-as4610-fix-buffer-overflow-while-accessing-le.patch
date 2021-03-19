@@ -1,0 +1,130 @@
+From 574f06f486386c30733e1c3d3b3403aac448f254 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 23 Feb 2021 20:24:26 +0100
+Subject: [PATCH 5/5] accton-as4610: fix buffer overflow while accessing led
+ states
+
+The led bridgeness path is constructed of a prefix
+("/sys/class/leds/as4610::"), the led name, and "/brightness". Prefix
+and suffix together are 35 characters long, while the longest led name
+("7seg_digits_point") is 17 characters long. Together they are 52
+characters long, which is more than the fullpath buffer can hold.
+
+Fix this by increasing the buffer to PATH_MAX from limits.
+
+Fixes the following crash:
+
+accton-as4610:~$ sudo onlpdump
+   System Information: = {
+       Product Name: 4610-54T-O-AC-F
+       Part Number: F0PEC4654016Z
+       Serial Number: EC2003002480
+       MAC: 68:21:5f:a8:c2:40
+       MAC Range: 55
+       Manufacturer: Accton
+       Manufacture Date: 02/01/2020 10:27:21
+       Vendor: Edgecore
+       Platform Name: arm-accton_as4610_54-r0
+       Label Revision: R01A
+       Country Code: TW
+       Diag Version: 001.9
+       ONIE Version: 2016.05.00.04
+   }
+   thermal @ 1 = {
+       Description: Chassis Thermal Sensor 1
+       Status: 0x00000001 [ PRESENT ]
+       Caps:   0x0000000f [ GET_TEMPERATURE,GET_WARNING_THRESHOLD,GET_ERROR_THRESHOLD,GET_SHUTDOWN_THRESHOLD ]
+       Temperature: 44000
+       thresholds = {
+           Warning: 45000
+           Error: 55000
+           Shutdown: 60000
+       }
+   }
+   led @ 1 = {
+       Description: 7-segment digit 1
+       Status: 0x00000001 [ PRESENT ]
+       Caps:   0x00000002 [ CHAR ]
+       Mode: ON
+       Char: 0
+   }
+   led @ 2 = {
+*** buffer overflow detected ***: onlpdump terminated
+Aborted (core dumped)
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../arm_accton_as4610/module/src/ledi.c           | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
+index d165e960..52d1580f 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
+@@ -25,6 +25,7 @@
+  ***********************************************************/
+ #include <onlp/platformi/ledi.h>
+ #include <sys/mman.h>
++#include <limits.h>
+ #include <stdio.h>
+ #include <string.h>
+ #include <fcntl.h>
+@@ -250,7 +251,7 @@ int onlp_ledi_char_set(onlp_oid_t id, char c)
+ {
+     int  fd, len, nbytes=1;
+     char data[2]      = {0};
+-    char fullpath[50] = {0};		
++    char fullpath[PATH_MAX] = {0};		
+     int lid = ONLP_OID_ID_GET(id);
+ 
+     VALIDATE(id);
+@@ -284,7 +285,7 @@ int onlp_ledi_char_get(onlp_oid_t id, char* c)
+ {
+     int  fd, len; 
+     char data = 0;
+-    char fullpath[50] = {0};
++    char fullpath[PATH_MAX] = {0};
+     int lid = ONLP_OID_ID_GET(id);
+ 
+     VALIDATE(id);
+@@ -343,7 +344,7 @@ onlp_ledi_info_get(onlp_oid_t id, onlp_led_info_t* info)
+ {
+     int  fd, len, nbytes=1;
+     char data[2]      = {0};
+-    char fullpath[50] = {0};
++    char fullpath[53] = {0};
+     int lid = onlp_ledi_oid_to_internal_id(id);
+ 
+     VALIDATE(id);
+@@ -355,7 +356,7 @@ onlp_ledi_info_get(onlp_oid_t id, onlp_led_info_t* info)
+         return onlp_ledi_char_get(id, &info->character);
+     }
+     else {
+-        sprintf(fullpath, "%s%s/%s", led_prefix_path, onlp_led_node_subname[lid], led_filename);
++        snprintf(fullpath, sizeof(fullpath), "%s%s/%s", led_prefix_path, onlp_led_node_subname[lid], led_filename);
+ 
+         /* Set current mode */
+         if ((fd = open(fullpath, O_RDONLY)) == -1) {
+@@ -414,8 +415,8 @@ int
+ onlp_ledi_mode_set(onlp_oid_t id, onlp_led_mode_t mode)
+ {
+     int  fd, len, driver_mode, nbytes=1;
+-    char data[2]      = {0};	
+-    char fullpath[50] = {0};		
++    char data[2]            = {0};	
++    char fullpath[PATH_MAX] = {0};		
+     int lid = onlp_ledi_oid_to_internal_id(id);
+     
+     VALIDATE(id);
+@@ -427,7 +428,7 @@ onlp_ledi_mode_set(onlp_oid_t id, onlp_led_mode_t mode)
+     sprintf(fullpath, "%s%s/%s", led_prefix_path, onlp_led_node_subname[lid], led_filename);		
+ 
+     driver_mode = conver_onlp_led_light_mode_to_driver(lid, mode);
+-    sprintf(data, "%d", driver_mode);
++    snprintf(data, sizeof(data), "%d", driver_mode);
+ 	
+     /* Create output file descriptor */
+     fd = open(fullpath, O_WRONLY | O_CREAT, 0644);
+-- 
+2.31.0
+

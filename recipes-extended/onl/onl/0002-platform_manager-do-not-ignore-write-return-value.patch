@@ -1,0 +1,39 @@
+From 52cb47c5981d7d226361329668b23abb05391fe0 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 19 Mar 2021 12:07:35 +0100
+Subject: [PATCH 2/5] platform_manager: do not ignore write return value
+
+If the write fails, the other thread will not be notified, so we should
+not try to wait for it.
+
+Also silences the following:
+
+|     Compiling[ release ]: OS::os_log.c
+| ../../src/onlp/module/src/platform_manager.c: In function 'onlp_sys_platform_manage_stop':
+| ../../src/onlp/module/src/platform_manager.c:267:9: error: ignoring return value of 'write', declared with attribute warn_unused_result [-Werror=unused-result]
+|          write(control__.eventfd, &zero, sizeof(zero));
+|          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| cc1: all warnings being treated as errors
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ packages/base/any/onlp/src/onlp/module/src/platform_manager.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/packages/base/any/onlp/src/onlp/module/src/platform_manager.c b/packages/base/any/onlp/src/onlp/module/src/platform_manager.c
+index 0e7b8c00..d3d08c08 100644
+--- a/packages/base/any/onlp/src/onlp/module/src/platform_manager.c
++++ b/packages/base/any/onlp/src/onlp/module/src/platform_manager.c
+@@ -264,7 +264,8 @@ onlp_sys_platform_manage_stop(int block)
+     if(control__.eventfd > 0) {
+         uint64_t zero = 1;
+         /* Tell the thread to exit */
+-        write(control__.eventfd, &zero, sizeof(zero));
++        if (write(control__.eventfd, &zero, sizeof(zero)) < 0)
++            return 1;
+ 
+         if(block) {
+             onlp_sys_platform_manage_join();
+-- 
+2.31.0
+
