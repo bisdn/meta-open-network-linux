@@ -5,13 +5,15 @@ inherit module
 
 SRC_URI = " \
 	  file://Makefile \
-    file://ym2651y.c \
+    file://accton_as4610_leds.c \
 	  file://COPYING \
           "
 
 S = "${WORKDIR}"
 
-KERNEL_MODULE_AUTOLOAD += " ym2651y"
+KERNEL_MODULE_AUTOLOAD += "accton_as4610_leds"
+
+EXTRA_OEMAKE += " KBUILD_MODPOST_WARN=1"
 
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.

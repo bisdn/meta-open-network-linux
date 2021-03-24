@@ -13,3 +13,7 @@ SRC_URI += "\
     git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-5.10;destsuffix=kernel-meta \
     file://bisdn-kmeta;type=kmeta;name=bisdn-kmeta;destsuffix=bisdn-kmeta \
 "
+
+SRC_URI_append_arm = "\
+    file://arch/arm/boot/dts;subdir=git \
+"

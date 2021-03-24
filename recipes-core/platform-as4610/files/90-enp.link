@@ -1,0 +1,4 @@
+[Match]
+Path=*platform-18022000.ethernet*
+[Link]
+Name=enp0

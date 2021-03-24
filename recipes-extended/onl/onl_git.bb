@@ -40,6 +40,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0010-as5712-54x-more-fixup.patch \
            file://0011-delta-ag8032-more-fixup.patch \
            file://0012-ag9032v1-more-fixup.patch \
+           file://arm-accton-as4610-overflow.patch \
 "
 
 inherit systemd

@@ -5,13 +5,23 @@ inherit module
 
 SRC_URI = " \
 	  file://Makefile \
-    file://ym2651y.c \
+	  file://accton_as4610_poe_mcu.c \
 	  file://COPYING \
+	  file://poectl \
           "
 
 S = "${WORKDIR}"
 
-KERNEL_MODULE_AUTOLOAD += " ym2651y"
+KERNEL_MODULE_AUTOLOAD += "accton_as4610_poe_mcu"
+
+EXTRA_OEMAKE += " KBUILD_MODPOST_WARN=1"
+
+FILES_${PN} += "${sbindir}/poectl"
+
+do_install_append() {
+    install -d ${D}${sbindir}
+    install -m 0755 ${WORKDIR}/poectl ${D}${sbindir}
+}
 
 # The inherit of module.bbclass will automatically name module packages with
 # "kernel-module-" prefix as required by the oe-core build environment.

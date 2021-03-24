@@ -1,0 +1,230 @@
+#!/bin/bash
+#
+# poectl for enable, disable, status and measurements of PoE ports
+# 
+# Usage:  poectl [OPTIONS] PORT | all
+# 
+# OPTIONS:
+#  -h   help
+#  -v   version
+#  -e   enable PoE
+#  -d   disable PoE
+#  -s   PoE status
+#  -mV  PoE voltage
+#  -mC  PoE current
+#  -mT  PoE temperature
+#  -mP  PoE power
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" >&2
+   exit 1
+fi
+
+systempath=/sys/kernel/debug/serial0-0
+readonly systempath
+
+if ! [ -d "$systempath" ]; then
+    echo "This platform does not support PoE" >&2
+    exit 1
+fi
+
+portmax=$((16#$(cat $systempath/status | cut -c4,5)))
+readonly portmax
+port=$2
+result=0
+version="1.0"
+
+#  Mapping basebox naming to system
+
+function mapping()
+{
+	case "$port" in
+		port1) sysport="port0";;
+		port2) sysport="port1";;
+		port3) sysport="port2";;
+		port4) sysport="port3";;
+		port5) sysport="port4";;
+		port6) sysport="port5";;
+		port7) sysport="port6";;
+		port8) sysport="port7";;
+		port9) sysport="port8";;
+		port10) sysport="port9";;
+		port11) sysport="port10";;
+		port12) sysport="port11";;
+		port13) sysport="port12";;
+		port14) sysport="port13";;
+		port15) sysport="port14";;
+		port16) sysport="port15";;
+		port17) sysport="port16";;
+		port18) sysport="port17";;
+		port19) sysport="port18";;
+		port20) sysport="port19";;
+		port21) sysport="port20";;
+		port22) sysport="port21";;
+		port23) sysport="port22";;
+		port24) sysport="port23";;
+		port25) sysport="port24";;
+		port26) sysport="port25";;
+		port27) sysport="port26";;
+		port28) sysport="port27";;
+		port29) sysport="port28";;
+		port30) sysport="port29";;
+		port31) sysport="port30";;
+		port32) sysport="port31";;
+		port33) sysport="port32";;
+		port34) sysport="port33";;
+		port35) sysport="port34";;
+		port36) sysport="port35";;
+		port37) sysport="port36";;
+		port38) sysport="port37";;
+		port39) sysport="port38";;
+		port40) sysport="port39";;
+		port41) sysport="port40";;
+		port42) sysport="port41";;
+		port43) sysport="port42";;
+		port44) sysport="port43";;
+		port45) sysport="port44";;
+		port46) sysport="port45";;
+		port47) sysport="port46";;
+		port48) sysport="port47";;
+		   all) sysport="all";;
+		     *) echo "Wrong port number!" >&2
+		        exit 1;; 
+	esac
+} 
+
+function enable()
+{
+	echo 1 > $systempath/$sysport"/enable"
+}
+
+function disable()
+{
+	echo 0 > $systempath/$sysport"/enable"
+}
+
+function status()
+{
+	echo -n "PoE status "$port": "
+	result=$(cat $systempath/$sysport/enable)
+	case "$result" in
+		0) echo "disabled";;
+		1) echo "enabled";;
+	esac  
+}
+
+function measureV()
+{
+        echo -n "PoE voltage status "$port": "
+        echo $(cat $systempath/$sysport/measurement|grep V)
+}
+function measureC()
+{
+        echo -n "PoE current status "$port": "
+        echo $(cat $systempath/$sysport/measurement|grep A)
+}
+
+function measureT()
+{
+        echo -n "PoE temperature status "$port": "
+        echo $(cat $systempath/$sysport/measurement|grep C)
+}
+
+function measureP()
+{
+        echo -n "PoE power status "$port": "
+        echo $(cat $systempath/$sysport/measurement|grep W)
+}
+
+function usage()
+{
+	    echo  "poectl for enabling, disabling, status and measurement reports of PoE ports"
+            echo  " "                                                                          
+            echo  "Usage:  poectl [OPTIONS] PORT | all"                                        
+            echo  " "                                                                          
+            echo  "OPTIONS:"                                                                   
+            echo  " -h   help"                                                                 
+            echo  " -v   version"                                                              
+            echo  " -e   enable PoE"                                                           
+            echo  " -d   disable PoE"                                                          
+            echo  " -s   PoE status"                                                           
+            echo  " -mV  PoE voltage"                                                          
+            echo  " -mC  PoE current"                                                          
+            echo  " -mT  PoE temperature"                                                      
+            echo  " -mP  PoE power" 
+} 
+
+# Main block
+
+if (("$#"==1)); then port=all 
+fi
+
+if (("$#"<1)); then usage;
+
+else
+
+	mapping
+
+	case "$1" in
+		-h) usage;; 
+		-v) echo "Version: "$version;;
+		-e) case "$port" in
+			all)	for ((i=1;i<($portmax+1);i++)); do
+					port="port"$i
+					mapping
+					enable
+				done;;
+			  *) 	enable;;
+		    esac;;
+		-d) case "$port" in
+       	         all)    for ((i=1;i<($portmax+1);i++)); do
+	                                port="port"$i
+	                                mapping
+	                                disable
+	                        done;;
+	                  *)    disable;;
+		    esac;;
+	        -s) case "$port" in
+	                all)    for ((i=1;i<($portmax+1);i++)); do
+	                                port="port"$i
+	                                mapping
+	                                status
+	                        done;;
+	                  *)    status;;
+	            esac;;
+	        -mV) case "$port" in
+	                all)    for ((i=1;i<($portmax+1);i++)); do
+	                                port="port"$i
+	                                mapping
+	                              	measureV  
+	                        done;;
+	                  *)    measureV;;
+	            esac;;
+	        -mC) case "$port" in
+	                all)    for ((i=1;i<($portmax+1);i++)); do
+	                                port="port"$i
+	                                mapping
+	                                measureC
+	                        done;;
+	                  *)    measureC;;
+	            esac;;
+	        -mT) case "$port" in
+	                all)    for ((i=1;i<($portmax+1);i++)); do
+	                                port="port"$i
+	                                mapping
+	                                measureT
+	                        done;;
+	                  *)    measureT;;
+	            esac;;
+	        -mP) case "$port" in
+	                all)    for ((i=1;i<($portmax+1);i++)); do
+	                                port="port"$i
+	                                mapping
+	                                measureP
+	                        done;;
+	                  *)    measureP;;
+	            esac;;
+		 *) echo "Wrong option syntax" >&2
+		    exit 1;;
+	esac
+fi
