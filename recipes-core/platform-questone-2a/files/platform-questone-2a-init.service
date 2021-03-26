@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup platform questone-2a
+After=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/platform-questone-2a-init.sh
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=sysinit.target
