@@ -32,6 +32,9 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0005-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
            file://0006-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
            file://0007-accton-as4610-check-led-mode-before-trying-to-snprin.patch \
+           file://0008-add_48x25_8x100_PlatformPortConfig.patch \
+           file://questone-2a;subdir=git/packages/platforms/celestica/x86-64 \
+           file://0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
 "
 
 inherit systemd

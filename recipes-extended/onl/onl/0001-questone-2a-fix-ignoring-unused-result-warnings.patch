@@ -1,0 +1,116 @@
+From 17ebf5adb47fbc325f461012fcf6ee407c7c9351 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 23 Mar 2021 11:20:55 +0100
+Subject: [PATCH] questone-2a: fix ignoring unused result warnings
+
+|     Compiling[ release ]: x86_64_cel_questone_2a::platform.c
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c: In function 'is_cache_exist':
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:92:9: error: ignoring return value of 'fscanf', declared with attribute warn_unused_result [-Werror=unused-result]
+|          fscanf(fp,"%d", &interval_time);
+|          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c: In function 'create_cache':
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:131:11: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|      (void)system("ipmitool fru > /tmp/onlp-fru-cache.tmp; sync; rm -f /tmp/onlp-fru-cache.txt; mv /tmp/onlp-fru-cache.tmp /tmp/onlp-fru-cache.txt");
+|            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:132:11: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|      (void)system("ipmitool sensor list > /tmp/onlp-sensor-list-cache.tmp; sync; rm -f /tmp/onlp-sensor-list-cache.txt; mv /tmp/onlp-sensor-list-cache.tmp /tmp/onlp-sensor-list-cache.txt");
+|            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c: In function 'read_register':
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:170:5: error: ignoring return value of 'fscanf', declared with attribute warn_unused_result [-Werror=unused-result]
+|      fscanf(fp, "%x", &status);
+|      ^~~~~~~~~~~~~~~~~~~~~~~~~
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c: In function 'read_tmp_cache':
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:238:13: error: ignoring return value of 'fread', declared with attribute warn_unused_result [-Werror=unused-result]
+|              fread(str, size+1, 1, pFd);
+|              ^~~~~~~~~~~~~~~~~~~~~~~~~~
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c: In function 'fill_shared_memory':
+| ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:946:5: error: ignoring return value of 'ftruncate', declared with attribute warn_unused_result [-Werror=unused-result]
+|      ftruncate(shm_fd, seg_size);
+|      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../module/src/platform.c                     | 21 ++++++++++++-------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c b/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c
+index fada4005..e5b51f98 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c
+@@ -80,6 +80,7 @@ int is_cache_exist(){
+         return -1;
+     }else{
+         FILE *fp;
++        int ret;
+         
+         fp = fopen(time_setting_path, "r"); // read setting
+         
+@@ -89,9 +90,13 @@ int is_cache_exist(){
+             exit(EXIT_FAILURE);
+         }
+ 
+-        fscanf(fp,"%d", &interval_time);
++        ret = fscanf(fp,"%d", &interval_time);
+ 
+         fclose(fp);
++
++        if (ret != 1) {
++            return -1;
++        }
+     }
+ 
+     if ((access(sdr_cache_path, F_OK) == -1) && (access(fru_cache_path, F_OK) == -1)){ //Cache not exist
+@@ -128,8 +133,8 @@ int is_shm_mem_ready(){
+ }
+ 
+ int create_cache(){
+-    (void)system("ipmitool fru > /tmp/onlp-fru-cache.tmp; sync; rm -f /tmp/onlp-fru-cache.txt; mv /tmp/onlp-fru-cache.tmp /tmp/onlp-fru-cache.txt");
+-    (void)system("ipmitool sensor list > /tmp/onlp-sensor-list-cache.tmp; sync; rm -f /tmp/onlp-sensor-list-cache.txt; mv /tmp/onlp-sensor-list-cache.tmp /tmp/onlp-sensor-list-cache.txt");
++    (void)!system("ipmitool fru > /tmp/onlp-fru-cache.tmp; sync; rm -f /tmp/onlp-fru-cache.txt; mv /tmp/onlp-fru-cache.tmp /tmp/onlp-fru-cache.txt");
++    (void)!system("ipmitool sensor list > /tmp/onlp-sensor-list-cache.tmp; sync; rm -f /tmp/onlp-sensor-list-cache.txt; mv /tmp/onlp-sensor-list-cache.tmp /tmp/onlp-sensor-list-cache.txt");
+     if(USE_SHM_METHOD){
+         update_shm_mem();
+     }
+@@ -152,7 +157,7 @@ void array_trim(char *strIn, char *strOut)
+ 
+ uint8_t read_register(uint16_t dev_reg)
+ {
+-    int status;
++    int status, ret;
+     sprintf(command, "echo 0x%x >  %sgetreg", dev_reg, SYS_CPLD_PATH);
+     fp = popen(command, "r");
+     if (!fp)
+@@ -167,10 +172,10 @@ uint8_t read_register(uint16_t dev_reg)
+         printf("Failed : Can't open sysfs\n");
+         return -1;
+     }
+-    fscanf(fp, "%x", &status);
++    ret = fscanf(fp, "%x", &status);
+     pclose(fp);
+ 
+-    return status;
++    return ret == 1 ? status : -1;
+ }
+ 
+ int exec_ipmitool_cmd(char *cmd, char *retd)
+@@ -235,7 +240,7 @@ char *read_tmp_cache(char *cmd, char *cache_file_path)
+             
+             memset (str, 0, size+1);
+ 
+-            fread(str, size+1, 1, pFd);
++            (void)!fread(str, size+1, 1, pFd);
+ 
+             fclose(pFd);
+             break;
+@@ -943,7 +948,7 @@ int fill_shared_memory(const char *shm_path, const char *sem_path, const char *c
+         return -1;
+     }   
+  
+-    ftruncate(shm_fd, seg_size);
++    (void)!ftruncate(shm_fd, seg_size);
+ 
+     shm_map_ptr = (struct shm_map_data *)mmap(NULL, seg_size, PROT_READ|PROT_WRITE, MAP_SHARED, shm_fd, 0); 
+     if(shm_map_ptr == MAP_FAILED){
+-- 
+2.30.1
+
