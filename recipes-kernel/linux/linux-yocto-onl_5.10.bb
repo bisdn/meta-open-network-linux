@@ -17,3 +17,5 @@ SRC_URI += "\
 SRC_URI_append_arm = "\
     file://arch/arm/boot/dts;subdir=git \
 "
+
+require ${@bb.utils.contains('DISTRO_FEATURES', 'virtualization', 'recipes-kernel/linux/linux-yocto_virtualization.inc', '', d)}
