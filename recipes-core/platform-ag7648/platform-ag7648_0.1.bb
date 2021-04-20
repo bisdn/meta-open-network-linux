@@ -1,5 +1,5 @@
 SUMMARY = ""
-LICENSE = "CLOSED"
+LICENSE = "MPL-2.0"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
