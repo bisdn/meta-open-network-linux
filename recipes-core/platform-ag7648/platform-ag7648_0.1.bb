@@ -1,5 +1,6 @@
 SUMMARY = ""
 LICENSE = "MPL-2.0"
+LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/MPL-2.0;md5=815ca599c9df247a0c7f619bab123dad"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
