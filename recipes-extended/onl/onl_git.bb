@@ -27,9 +27,11 @@ SRC_URI = "${URI_ONL};name=onl \
            file://onlpdump.service \
            file://0001-file_uds-silence-unused-result-warnings.patch \
            file://0002-platform_manager-do-not-ignore-write-return-value.patch \
-           file://0003-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
-           file://0004-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
-           file://0005-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
+           file://0003-file-check-unix-socket-path-is-short-enough.patch \
+           file://0004-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
+           file://0005-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
+           file://0006-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
+           file://0007-accton-as4610-check-led-mode-before-trying-to-snprin.patch \
 "
 
 inherit systemd
