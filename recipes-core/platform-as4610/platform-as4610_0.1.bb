@@ -4,6 +4,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/MPL-2.0;md5=81
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
+RPROVIDES_${PN} += " u-boot-default-env"
+
 inherit systemd
 
 SRC_URI += " \
