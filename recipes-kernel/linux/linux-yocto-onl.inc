@@ -8,6 +8,8 @@ SRC_URI = "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
 LINUX_VERSION_EXTENSION_append = "-onl"
 PV = "${LINUX_VERSION}+git${SRCPV}"
 
+EXTRA_OEMAKE += " HOSTCXX="${BUILD_CXX} ${BUILD_CXXFLAGS} ${BUILD_LDFLAGS}""
+
 #COMPATIBLE_MACHINE = "(^$)"
 
 do_compile_kernelmodules() {
