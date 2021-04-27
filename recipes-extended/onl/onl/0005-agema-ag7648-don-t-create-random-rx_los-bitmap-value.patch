@@ -1,0 +1,37 @@
+From 337456700fac535f87eec98b455f6b82beff1a5e Mon Sep 17 00:00:00 2001
+From: Tobias Jungel <tobias.jungel@bisdn.de>
+Date: Fri, 19 Mar 2021 12:12:18 +0100
+Subject: [PATCH 5/7] agema-ag7648: don't create random rx_los bitmap values
+
+rx_los_all is never initialized, so it will always contain random stack
+values. Fix this by initializiing it to 0.
+
+Fixes the following build error:
+
+| ../x86_64_delta_ag7648/module/src/sfpi.c: In function 'onlp_sfpi_rx_los_bitmap_get':
+| ../x86_64_delta_ag7648/module/src/sfpi.c:288:20: error: 'rx_los_all' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+|          rx_los_all |= status << (((i - 1)/ 8) * 8);
+|          ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| cc1: all warnings being treated as errors
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c b/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
+index 135be9e7..cef32f7d 100755
+--- a/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
++++ b/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
+@@ -262,7 +262,7 @@ onlp_sfpi_rx_los_bitmap_get(onlp_sfp_bitmap_t* dst)
+ {
+     int status;
+     int   port,i = 0;
+-	uint64_t rx_los_all;
++	uint64_t rx_los_all = 0;
+ 
+ 
+ 	if(platform_id == PLATFORM_ID_DELTA_AG7648_R0)
+-- 
+2.31.0
+

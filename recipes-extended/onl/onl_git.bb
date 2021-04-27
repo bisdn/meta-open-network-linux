@@ -10,8 +10,8 @@ LIC_FILES_CHKSUM = "\
   file://${SUBMODULE_BIGCODE}/LICENSE;md5=dc6bd4d967e085fe783aa2abe7655c60 \
 "
 
-SRCREV_onl ?= "01c689605d626372ad8a1b0fbab8687e9705efbe"
-SRCREV_infra ?= "168b695e51241be2823111f105b129236a1d79f8"
+SRCREV_onl ?= "dc450d30dafde183f8192e3ffc88c0c68856fcb0"
+SRCREV_infra ?= "8621a0bab76affaaad6dee0939fda0737c32c881"
 SRCREV_bigcode ?= "981aee67ebf433d42f444d4faf1a46a596b39555"
 
 URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git"
@@ -24,23 +24,14 @@ SRCREV_FORMAT = "onl_infra_bigcode"
 SRC_URI = "${URI_ONL};name=onl \
            ${URI_INFRA};name=infra;destsuffix=git/${SUBMODULE_INFRA} \
            ${URI_BIGCODE};name=bigcode;destsuffix=git/${SUBMODULE_BIGCODE} \
-           file://ar.patch;patchdir=${SUBMODULE_INFRA} \
-           file://56.patch;patchdir=${SUBMODULE_INFRA} \
            file://onlpdump.service \
-           file://0001-i2c-use-libi2c-for-onlpdump-and-update-headers.patch \
-           file://0001-don-t-call-a-binary-minor-cleanup.patch \
-           file://0002-fix-Werror-unused-result.patch \
-           file://0003-fix-moar-compiler-warnings.patch \
-           file://0004-ag9032v2-fix-format-overflow.patch \
-           file://0005-Typos-Unble-Unable.patch \
-           file://0006-ag7648-typos-and-PATH_MAX-fixup.patch \
-           file://0007-as5712-54x-fix-Werror-sizeof-pointer-memaccess.patch \
-           file://0008-ag8032-fix-Werror-unused-result.patch \
-           file://0009-ag9032-several-Werror-format-overflow-and-one-Werror.patch \
-           file://0010-as5712-54x-more-fixup.patch \
-           file://0011-delta-ag8032-more-fixup.patch \
-           file://0012-ag9032v1-more-fixup.patch \
-           file://arm-accton-as4610-overflow.patch \
+           file://0001-file_uds-silence-unused-result-warnings.patch \
+           file://0002-platform_manager-do-not-ignore-write-return-value.patch \
+           file://0003-file-check-unix-socket-path-is-short-enough.patch \
+           file://0004-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
+           file://0005-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
+           file://0006-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
+           file://0007-accton-as4610-check-led-mode-before-trying-to-snprin.patch \
 "
 
 inherit systemd
@@ -48,7 +39,7 @@ inherit systemd
 SYSTEMD_SERVICE_${PN} = "onlpdump.service"
 SYSTEMD_AUTO_ENABLE = "enable"
 
-DEPENDS = "i2c-tools"
+DEPENDS = "i2c-tools libedit"
 
 S = "${WORKDIR}/git"
 PV = "1.1+git${SRCPV}"
@@ -78,14 +69,14 @@ NO_USE_GCC_VERSION_TOOL="1"
 # TODO CFLAGS?
 EXTRA_OEMAKE = "\
   'AR=${AR}' \
-  'ARCH=${ARCH}' \
+  'ARCH=${ONL_BUILD_ARCH}' \
   'BUILDER=${BUILDER}' \
   'BUILDER_MODULE_DATABASE=${BUILDER_MODULE_DATABASE}' \
   'BUILDER_MODULE_DATABASE_ROOT=${BUILDER_MODULE_DATABASE_ROOT}' \
   'BUILDER_MODULE_MANIFEST=${BUILDER_MODULE_MANIFEST}' \
   'MODULEMANIFEST=${MODULEMANIFEST}' \
   'GCC=${CC}' \
-  'GCC_FLAGS=${CFLAGS}' \
+  'GCC_FLAGS=${CFLAGS} -DONLPLIB_CONFIG_I2C_USE_CUSTOM_HEADER=0' \
   'MODULEMANIFEST=${MODULEMANIFEST}' \
   'NO_USE_GCC_VERSION_TOOL=${NO_USE_GCC_VERSION_TOOL}' \
   'ONL=${ONL}' \
@@ -111,7 +102,8 @@ do_compile() {
   V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds alltargets
   V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds/onlpd alltargets
 
-  V=1 VERBOSE=1 oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/ alltargets
+  V=1 VERBOSE=1 oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM_SUBDIR}/${ONIE_MACHINE_TYPE}/onlp/builds/lib alltargets
+  V=1 VERBOSE=1 oe_runmake -C packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM_SUBDIR}/${ONIE_MACHINE_TYPE}/onlp/builds/onlpdump alltargets
 }
 
 do_install() {
@@ -127,7 +119,7 @@ do_install() {
     ${D}${libdir}
 
   # install onlpdump
-  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/onlpdump/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlpdump ${D}${bindir}
+  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM_SUBDIR}/${ONIE_MACHINE_TYPE}/onlp/builds/onlpdump/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlps ${D}${bindir}/onlpdump
 
   # install headers
   install -m 0644 packages/base/any/onlp/src/onlp/module/inc/onlp/*.h ${D}${includedir}/onlp/
@@ -138,7 +130,7 @@ do_install() {
   install -m 0644 sm/infra/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
 
   # install libonlp-platform shared library (includes AIM.a  AIM_posix.a  BigList.a  cjson.a  cjson_util.a  IOF.a  onlplib.a  x86_64_delta_ag7648.a)
-  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM}/onlp/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${ONL_PLATFORM}.so ${D}${libdir}
+  install -m 0755 packages/platforms/${ONIE_VENDOR}/${ONL_ARCH}/${ONL_PLATFORM_SUBDIR}/${ONIE_MACHINE_TYPE}/onlp/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${ONL_PLATFORM}.so ${D}${libdir}
   mv ${D}${libdir}/libonlp-${ONL_PLATFORM}.so ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1
   ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-${ONL_PLATFORM}.so
   ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-platform.so.1

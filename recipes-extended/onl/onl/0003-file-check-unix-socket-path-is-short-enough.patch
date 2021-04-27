@@ -1,0 +1,64 @@
+From f60b8fb4397ba68c0cfafd8ea73e17c8d599ba52 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Mon, 19 Apr 2021 16:23:26 +0200
+Subject: [PATCH 3/7] file: check unix socket path is short enough
+
+Add a length check for path before attempting to copy it. And because
+gcc is not smart enough, move strncpy to the check, else it will fail to
+detect that we already checked the length.
+
+Fixes the following issue with GCC 9.3:
+
+|     Compiling[ release ]: onlplib::file.c
+| In file included from recipe-sysroot/usr/include/string.h:495,
+|                  from git/sm/infra/modules/AIM/module/inc/AIM/aim_porting.h:42,
+|                  from git/sm/infra/modules/AIM/module/inc/AIM/aim_config.h:310,
+|                  from git/sm/infra/modules/AIM/module/inc/AIM/aim.h:34,
+|                  from git/packages/base/any/onlp/src/onlplib/module/inc/onlplib/onlplib_config.h:47,
+|                  from git/packages/base/any/onlp/src/onlplib/module/src/file.c:25:
+| In function 'strncpy',
+|     inlined from 'ds_connect__' at git/packages/base/any/onlp/src/onlplib/module/src/file.c:60:5,
+|     inlined from 'vopen__' at git/packages/base/any/onlp/src/onlplib/module/src/file.c:121:14:
+| recipe-sysroot/usr/include/bits/string_fortified.h:106:10: error: '__builtin_strncpy' output may be truncated copying 107 bytes from a string of length 4095 [-Werror=stringop-truncation]
+|   106 |   return __builtin___strncpy_chk (__dest, __src, __len, __bos (__dest));
+|       |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../base/any/onlp/src/onlplib/module/src/file.c     | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/packages/base/any/onlp/src/onlplib/module/src/file.c b/packages/base/any/onlp/src/onlplib/module/src/file.c
+index 622295a3..51ed5eda 100644
+--- a/packages/base/any/onlp/src/onlplib/module/src/file.c
++++ b/packages/base/any/onlp/src/onlplib/module/src/file.c
+@@ -45,6 +45,14 @@ ds_connect__(const char* path)
+     int fd;
+     struct sockaddr_un addr;
+ 
++    if (strlen(path) >= sizeof(addr.sun_path)) {
++        return -1;
++    }
++
++    memset(&addr, 0, sizeof(addr));
++    addr.sun_family = AF_UNIX;
++    strncpy(addr.sun_path, path, sizeof(addr.sun_path)-1);
++
+     if( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+         AIM_LOG_ERROR("socket: %{errno}", errno);
+         return -1;
+@@ -54,11 +62,6 @@ ds_connect__(const char* path)
+      * UDS connects must be non-blocking.
+      */
+     fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
+-
+-    memset(&addr, 0, sizeof(addr));
+-    addr.sun_family = AF_UNIX;
+-    strncpy(addr.sun_path, path, sizeof(addr.sun_path)-1);
+-
+     if(connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == 0) {
+ 
+         /*
+-- 
+2.31.0
+
