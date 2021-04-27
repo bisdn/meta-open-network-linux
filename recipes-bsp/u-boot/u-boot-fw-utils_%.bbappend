@@ -1,12 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-
-SRC_URI_append_accton-as4610 += " \
-	file://fw_env.config \
-"
-
-UBOOT_CONFIG = "sandbox"
-UBOOT_CONFIG[sandbox] = "sandbox_defconfig"
-
+# platform-as4610 provides the config, so do not ship one
 do_install_append_accton-as4610() {
-	install -m 0644 ${WORKDIR}/fw_env.config ${D}${sysconfdir}/
+	rm ${D}${sysconfdir}/fw_env.config
 }
