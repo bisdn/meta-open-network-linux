@@ -34,6 +34,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0007-accton-as4610-fix-value-truncation-when-accessing-le.patch \
            file://0008-add_48x25_8x100_PlatformPortConfig.patch \
            file://0009-as7726-32x-silence-ignored-return-value-warnings.patch \
+           file://0010-Support-ACBEL-FSF019-PSU.patch \
            file://questone-2a;subdir=git/packages/platforms/celestica/x86-64 \
            file://0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
 "
