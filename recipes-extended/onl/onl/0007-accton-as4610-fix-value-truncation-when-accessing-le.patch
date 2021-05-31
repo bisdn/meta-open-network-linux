@@ -1,0 +1,115 @@
+From 33fc087611498552845f5d27b149798609296257 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Mon, 19 Apr 2021 16:52:16 +0200
+Subject: [PATCH 7/7] accton-as4610: fix value truncation when accessing leds
+
+Some leds, namely PSU1/2 and FAN support the mode
+LED_MODE_AUTO_BLINKING. This mode has the numeric value of 10, which
+requires 2 bytes to represent as a string.
+
+Currently the code assumes that the maximum length is 1, and this
+results in truncation when trying to set this mode, or reading out this
+mode.
+
+Fix this by increasing the buffers to 3 bytes, and adapting the
+setter and getter to handle these values.
+
+$ cat /sys/devices/platform/as4610_led/leds/as4610\:\:fan/brightness
+10
+
+Before:
+
+   led @ 11 = {
+       Description: fan
+       Status: 0x00000001 [ PRESENT ]
+       Caps:   0x00c00000 [ AUTO,AUTO_BLINKING ]
+       Mode: OFF
+       Char:
+   }
+
+After:
+
+   led @ 11 = {
+       Description: fan
+       Status: 0x00000005 [ PRESENT,ON ]
+       Caps:   0x00c00000 [ AUTO,AUTO_BLINKING ]
+       Mode: AUTO_BLINKING
+       Char:
+   }
+
+Found by GCC 9.3:
+
+|     Compiling[ release ]: arm_accton_as4610::ledi.c
+| git/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c: In function 'onlp_ledi_mode_set':
+| git/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c:431:37: error: '__builtin___snprintf_chk' output may be truncated before the last format character [-Werror=format-truncation=]
+|   431 |     snprintf(data, sizeof(data), "%d", driver_mode);
+|       |
+| In file included from recipe-sysroot/usr/include/stdio.h:867,
+|                  from git/sm/infra/modules/AIM/module/inc/AIM/aim_porting.h:40,
+|                  from git/sm/infra/modules/AIM/module/inc/AIM/aim_config.h:310,
+|                  from git/sm/infra/modules/AIM/module/inc/AIM/aim.h:34,
+|                  from git/packages/base/any/onlp/src/onlp/module/inc/onlp/onlp_config.h:46,
+|                  from git/packages/base/any/onlp/src/onlp/module/inc/onlp/onlp.h:28,
+|                  from git/packages/base/any/onlp/src/onlp/module/inc/onlp/led.h:28,
+|                  from git/packages/base/any/onlp/src/onlp/module/inc/onlp/platformi/ledi.h:28,
+|                  from git/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c:26:
+| recipe-sysroot/usr/include/bits/stdio2.h:67:10: note: '__builtin___snprintf_chk' output between 2 and 3 bytes into a destination of size 2
+|    67 |   return __builtin___snprintf_chk (__s, __n, __USE_FORTIFY_LEVEL - 1,
+|       |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|    68 |        __bos (__s), __fmt, __va_arg_pack ());
+|       |        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| cc1: all warnings being treated as errors
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../arm_accton_as4610/module/src/ledi.c             | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
+index 52d1580f..0b5ff5af 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
+@@ -342,8 +342,8 @@ onlp_ledi_oid_to_internal_id(onlp_oid_t id)
+ int
+ onlp_ledi_info_get(onlp_oid_t id, onlp_led_info_t* info)
+ {
+-    int  fd, len, nbytes=1;
+-    char data[2]      = {0};
++    int  fd, len, nbytes=2;
++    char data[3]      = {0};
+     char fullpath[53] = {0};
+     int lid = onlp_ledi_oid_to_internal_id(id);
+ 
+@@ -373,6 +373,9 @@ onlp_ledi_info_get(onlp_oid_t id, onlp_led_info_t* info)
+             return ONLP_STATUS_E_INTERNAL;
+         }
+ 
++        /* data will be a single digit and a newline, or two digits. atoi ignores
++         * the newline and will return the correct value either way
++         */
+         info->mode = conver_led_light_mode_to_onl(lid, atoi(data));
+ 
+         /* Set the on/off status */
+@@ -414,8 +417,8 @@ onlp_ledi_set(onlp_oid_t id, int on_or_off)
+ int
+ onlp_ledi_mode_set(onlp_oid_t id, onlp_led_mode_t mode)
+ {
+-    int  fd, len, driver_mode, nbytes=1;
+-    char data[2]            = {0};	
++    int  fd, len, driver_mode, nbytes;
++    char data[3]            = {0};	
+     char fullpath[PATH_MAX] = {0};		
+     int lid = onlp_ledi_oid_to_internal_id(id);
+     
+@@ -428,7 +431,7 @@ onlp_ledi_mode_set(onlp_oid_t id, onlp_led_mode_t mode)
+     sprintf(fullpath, "%s%s/%s", led_prefix_path, onlp_led_node_subname[lid], led_filename);		
+ 
+     driver_mode = conver_onlp_led_light_mode_to_driver(lid, mode);
+-    snprintf(data, sizeof(data), "%d", driver_mode);
++    nbytes = snprintf(data, sizeof(data), "%d", driver_mode);
+ 	
+     /* Create output file descriptor */
+     fd = open(fullpath, O_WRONLY | O_CREAT, 0644);
+-- 
+2.31.1
+
