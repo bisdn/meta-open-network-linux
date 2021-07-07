@@ -22,7 +22,7 @@ create_i2c_dev() {
 		echo port29 > /sys/bus/i2c/devices/6-0050/port_name
 		echo port30 > /sys/bus/i2c/devices/7-0050/port_name
 		;;
-	"2"|"3")
+	"2"|"3"|"5")
 		echo port49 > /sys/bus/i2c/devices/2-0050/port_name
 		echo port50 > /sys/bus/i2c/devices/3-0050/port_name
 		echo port51 > /sys/bus/i2c/devices/4-0050/port_name
@@ -52,7 +52,7 @@ case "$product_id" in
 	0|1)
 		platform="arm-accton-as4610/arm-accton-as4610-30-r0"
 		;;
-	2|3)
+	2|3|5)
 		platform="arm-accton-as4610/arm-accton-as4610-54-r0"
 		;;
 	*)
