@@ -6,3 +6,4 @@ include features/bpf/bpf.scc
 include features/cgroups/cgroups.scc
 include cfg/net/bridge.scc
 include cgl/cfg/net/ip_vs.scc
+include docker-extra.scc
