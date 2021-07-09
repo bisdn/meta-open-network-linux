@@ -3,3 +3,4 @@
 patch 0001-net-rtnetlink-send-BONDING_INFO-events-down-to-users.patch
 
 include features/bpf/bpf.scc
+include features/cgroups/cgroups.scc
