@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 
 patch 0001-net-rtnetlink-send-BONDING_INFO-events-down-to-users.patch
+patch 0001-net-ipv6-apply-IFLA_INET6_ADDR_GEN_MODE-immediately.patch
 
 include features/bpf/bpf.scc
 include features/cgroups/cgroups.scc
