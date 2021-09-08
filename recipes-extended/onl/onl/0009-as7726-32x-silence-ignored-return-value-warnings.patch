@@ -1,0 +1,93 @@
+From e1bbc0fe2b6c536140fee5d0d1f0eec0a81760ac Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 2 Sep 2021 12:03:50 +0200
+Subject: [PATCH] as7726-32x: silence ignored return value warnings
+
+We don't seem to care if these fail, so silence them in a way that works
+with GCC.
+
+Silences the following errors:
+
+|     Compiling[ release ]: x86_64_accton_as7726_32x::sysi.c
+| ../x86_64_accton_as7726_32x/module/src/sysi.c: In function 'onlp_sysi_platform_manage_fans':
+| ../x86_64_accton_as7726_32x/module/src/sysi.c:308:22: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|   308 |                      system("sync;sync;sync");
+|       |                      ^~~~~~~~~~~~~~~~~~~~~~~~
+| ../x86_64_accton_as7726_32x/module/src/sysi.c:309:22: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|   309 |                      system("reboot");
+|       |                      ^~~~~~~~~~~~~~~~
+| ../x86_64_accton_as7726_32x/module/src/sysi.c:324:22: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|   324 |                      system("sync;sync;sync");
+|       |                      ^~~~~~~~~~~~~~~~~~~~~~~~
+| ../x86_64_accton_as7726_32x/module/src/sysi.c:325:22: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|   325 |                      system("reboot");
+|       |                      ^~~~~~~~~~~~~~~~
+| ../x86_64_accton_as7726_32x/module/src/sysi.c:340:22: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|   340 |                      system("sync;sync;sync");
+|       |                      ^~~~~~~~~~~~~~~~~~~~~~~~
+| ../x86_64_accton_as7726_32x/module/src/sysi.c:341:22: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|   341 |                      system("reboot");
+|       |                      ^~~~~~~~~~~~~~~~
+| ../x86_64_accton_as7726_32x/module/src/sysi.c:348:22: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|   348 |                      system("sync;sync;sync");
+|       |                      ^~~~~~~~~~~~~~~~~~~~~~~~
+| ../x86_64_accton_as7726_32x/module/src/sysi.c:349:22: error: ignoring return value of 'system', declared with attribute warn_unused_result [-Werror=unused-result]
+|   349 |                      system("reboot");
+|       |                      ^~~~~~~~~~~~~~~~
+| cc1: all warnings being treated as errors
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86_64_accton_as7726_32x/module/src/sysi.c   | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/sysi.c b/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/sysi.c
+index a8b8ee00..8375333c 100755
+--- a/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/sysi.c
++++ b/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/sysi.c
+@@ -305,8 +305,8 @@ int onlp_sysi_platform_manage_fans(void)
+                  if(current_state==LEVEL_TEMP_CRITICAL)
+                  {
+                      AIM_SYSLOG_CRIT("Temperature critical", "Temperature critical", "Alarm for temperature critical is detected, reboot DUT");
+-                     system("sync;sync;sync");
+-                     system("reboot");
++                     (void)!system("sync;sync;sync");
++                     (void)!system("reboot");
+                  }
+                  break;
+              case LEVEL_FAN_MID:
+@@ -321,8 +321,8 @@ int onlp_sysi_platform_manage_fans(void)
+                  if(current_state==LEVEL_TEMP_CRITICAL)
+                  {
+                      AIM_SYSLOG_CRIT("Temperature critical", "Temperature critical", "Alarm for temperature critical is detected, reboot DUT");
+-                     system("sync;sync;sync");
+-                     system("reboot");
++                     (void)!system("sync;sync;sync");
++                     (void)!system("reboot");
+                  }
+                  break;
+              case LEVEL_FAN_MAX:
+@@ -337,16 +337,16 @@ int onlp_sysi_platform_manage_fans(void)
+                  if(current_state==LEVEL_TEMP_CRITICAL)
+                  {
+                      AIM_SYSLOG_CRIT("Temperature critical", "Temperature critical ", "Alarm for temperature critical is detected, reboot DUT");
+-                     system("sync;sync;sync");
+-                     system("reboot");
++                     (void)!system("sync;sync;sync");
++                     (void)!system("reboot");
+                  }
+                  break;
+              case LEVEL_TEMP_HIGH:
+                  if(current_state==LEVEL_TEMP_CRITICAL)
+                  {
+                      AIM_SYSLOG_CRIT("Temperature critical", "Temperature critical ", "Alarm for temperature critical is detected, reboot DUT");
+-                     system("sync;sync;sync");
+-                     system("reboot");
++                     (void)!system("sync;sync;sync");
++                     (void)!system("reboot");
+                  }
+                  break;
+              case LEVEL_TEMP_CRITICAL:
+-- 
+2.33.0
+
