@@ -8,7 +8,7 @@ patch drivers-i2c-busses-xgs_iproc_smbus-clk-freq.patch
 patch 0001-iproc-cmic-export-iproc_cmic_base_get.patch
 patch 0002-iproc-cmic-get-and-export-irq.patch
 
-patch 0001-ARM-proc-v7-Force-misalignment-of-early-stmia.patch
+patch 0001-ARM-proc-v7-Retry-uncached-stmia-if-necessary.patch
 
 include cfg/bisdn-linux.scc
 
