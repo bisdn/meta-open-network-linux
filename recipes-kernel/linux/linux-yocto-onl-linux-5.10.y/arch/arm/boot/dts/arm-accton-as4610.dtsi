@@ -30,10 +30,6 @@
     memory {
         reg = <0x61000000 0x7f000000>;
     };
-    memory@6000000 {
-	reg = <0x60000000 0x1000000>;
-	device_type = "memory";
-    };
 };
 
 &uart1 {
