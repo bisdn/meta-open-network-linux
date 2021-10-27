@@ -1,0 +1,158 @@
+From 1d4c25e14fce6abffceac2c173fef2927c34f4d0 Mon Sep 17 00:00:00 2001
+From: Ard Biesheuvel <ardb@kernel.org>
+Date: Thu, 11 Feb 2021 09:25:34 +0100
+Subject: [PATCH 3/3] ARM: 9059/1: cache-v7: get rid of mini-stack
+
+Now that we have reduced the number of registers that we need to
+preserve when calling v7_invalidate_l1 from the boot code, we can use
+scratch registers to preserve the remaining ones, and get rid of the
+mini stack entirely. This works around any issues regarding cache
+behavior in relation to the uncached accesses to this memory, which is
+hard to get right in the general case (i.e., both bare metal and under
+virtualization)
+
+While at it, switch v7_invalidate_l1 to using ip as a scratch register
+instead of r4. This makes the function AAPCS compliant, and removes the
+need to stash r4 in ip across the call.
+
+Acked-by: Nicolas Pitre <nico@fluxnic.net>
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+---
+ arch/arm/include/asm/memory.h | 15 --------------
+ arch/arm/mm/cache-v7.S        | 10 ++++-----
+ arch/arm/mm/proc-v7.S         | 39 ++++++++++++++++-------------------
+ 3 files changed, 23 insertions(+), 41 deletions(-)
+
+diff --git a/arch/arm/include/asm/memory.h b/arch/arm/include/asm/memory.h
+index 2f841cb65c30..a711322d9f40 100644
+--- a/arch/arm/include/asm/memory.h
++++ b/arch/arm/include/asm/memory.h
+@@ -150,21 +150,6 @@ extern unsigned long vectors_base;
+  */
+ #define PLAT_PHYS_OFFSET	UL(CONFIG_PHYS_OFFSET)
+ 
+-#ifdef CONFIG_XIP_KERNEL
+-/*
+- * When referencing data in RAM from the XIP region in a relative manner
+- * with the MMU off, we need the relative offset between the two physical
+- * addresses.  The macro below achieves this, which is:
+- *    __pa(v_data) - __xip_pa(v_text)
+- */
+-#define PHYS_RELATIVE(v_data, v_text) \
+-	(((v_data) - PAGE_OFFSET + PLAT_PHYS_OFFSET) - \
+-	 ((v_text) - XIP_VIRT_ADDR(CONFIG_XIP_PHYS_ADDR) + \
+-          CONFIG_XIP_PHYS_ADDR))
+-#else
+-#define PHYS_RELATIVE(v_data, v_text) ((v_data) - (v_text))
+-#endif
+-
+ #ifndef __ASSEMBLY__
+ 
+ /*
+diff --git a/arch/arm/mm/cache-v7.S b/arch/arm/mm/cache-v7.S
+index 76201ee9ee59..830bbfb26ca5 100644
+--- a/arch/arm/mm/cache-v7.S
++++ b/arch/arm/mm/cache-v7.S
+@@ -53,12 +53,12 @@ ENTRY(v7_invalidate_l1)
+ 	and	r2, r0, #0x7
+ 	add	r2, r2, #4		@ SetShift
+ 
+-1:	movw	r4, #0x7fff
+-	and	r0, r4, r0, lsr #13	@ 'NumSets' in CCSIDR[27:13]
++1:	movw	ip, #0x7fff
++	and	r0, ip, r0, lsr #13	@ 'NumSets' in CCSIDR[27:13]
+ 
+-2:	mov	r4, r0, lsl r2		@ NumSet << SetShift
+-	orr	r4, r4, r3		@ Reg = (Temp<<WayShift)|(NumSets<<SetShift)
+-	mcr	p15, 0, r4, c7, c6, 2
++2:	mov	ip, r0, lsl r2		@ NumSet << SetShift
++	orr	ip, ip, r3		@ Reg = (Temp<<WayShift)|(NumSets<<SetShift)
++	mcr	p15, 0, ip, c7, c6, 2
+ 	subs	r0, r0, #1		@ Set--
+ 	bpl	2b
+ 	subs	r3, r3, r1		@ Way--
+diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
+index 28c9d32fa99a..26d726a08a34 100644
+--- a/arch/arm/mm/proc-v7.S
++++ b/arch/arm/mm/proc-v7.S
+@@ -256,6 +256,20 @@ ENDPROC(cpu_pj4b_do_resume)
+ 
+ #endif
+ 
++	@
++	@ Invoke the v7_invalidate_l1() function, which adheres to the AAPCS
++	@ rules, and so it may corrupt registers that we need to preserve.
++	@
++	.macro	do_invalidate_l1
++	mov	r6, r1
++	mov	r7, r2
++	mov	r10, lr
++	bl	v7_invalidate_l1		@ corrupts {r0-r3, ip, lr}
++	mov	r1, r6
++	mov	r2, r7
++	mov	lr, r10
++	.endm
++
+ /*
+  *	__v7_setup
+  *
+@@ -277,6 +291,7 @@ __v7_ca5mp_setup:
+ __v7_ca9mp_setup:
+ __v7_cr7mp_setup:
+ __v7_cr8mp_setup:
++	do_invalidate_l1
+ 	mov	r10, #(1 << 0)			@ Cache/TLB ops broadcasting
+ 	b	1f
+ __v7_ca7mp_setup:
+@@ -284,13 +299,9 @@ __v7_ca12mp_setup:
+ __v7_ca15mp_setup:
+ __v7_b15mp_setup:
+ __v7_ca17mp_setup:
++	do_invalidate_l1
+ 	mov	r10, #0
+-1:	adr	r0, __v7_setup_stack_ptr
+-	ldr	r12, [r0]
+-	add	r12, r12, r0			@ the local stack
+-	stmia	r12, {r1-r6, lr}		@ v7_invalidate_l1 touches r0-r6
+-	bl      v7_invalidate_l1
+-	ldmia	r12, {r1-r6, lr}
++1:
+ #ifdef CONFIG_SMP
+ 	orr	r10, r10, #(1 << 6)		@ Enable SMP/nAMP mode
+ 	ALT_SMP(mrc	p15, 0, r0, c1, c0, 1)
+@@ -471,12 +482,7 @@ __v7_pj4b_setup:
+ #endif /* CONFIG_CPU_PJ4B */
+ 
+ __v7_setup:
+-	adr	r0, __v7_setup_stack_ptr
+-	ldr	r12, [r0]
+-	add	r12, r12, r0			@ the local stack
+-	stmia	r12, {r1-r6, lr}		@ v7_invalidate_l1 touches r0-r6
+-	bl      v7_invalidate_l1
+-	ldmia	r12, {r1-r6, lr}
++	do_invalidate_l1
+ 
+ __v7_setup_cont:
+ 	and	r0, r9, #0xff000000		@ ARM?
+@@ -548,17 +554,8 @@ __errata_finish:
+ 	orr	r0, r0, r6			@ set them
+  THUMB(	orr	r0, r0, #1 << 30	)	@ Thumb exceptions
+ 	ret	lr				@ return to head.S:__ret
+-
+-	.align	2
+-__v7_setup_stack_ptr:
+-	.word	PHYS_RELATIVE(__v7_setup_stack, .)
+ ENDPROC(__v7_setup)
+ 
+-	.bss
+-	.align	2
+-__v7_setup_stack:
+-	.space	4 * 7				@ 7 registers
+-
+ 	__INITDATA
+ 
+ 	.weak cpu_v7_bugs_init
+-- 
+2.33.0
+
