@@ -14,9 +14,9 @@ SRCREV_onl ?= "dc450d30dafde183f8192e3ffc88c0c68856fcb0"
 SRCREV_infra ?= "8621a0bab76affaaad6dee0939fda0737c32c881"
 SRCREV_bigcode ?= "981aee67ebf433d42f444d4faf1a46a596b39555"
 
-URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git"
-URI_INFRA ?= "git://github.com/floodlight/infra.git"
-URI_BIGCODE ?= "git://github.com/floodlight/bigcode.git"
+URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git;protocol=https"
+URI_INFRA ?= "git://github.com/floodlight/infra.git;protocol=https"
+URI_BIGCODE ?= "git://github.com/floodlight/bigcode.git;protocol=https"
 
 SRCREV_FORMAT = "onl_infra_bigcode"
 
