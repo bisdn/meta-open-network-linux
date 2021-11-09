@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup platform as4630-54pe
+After=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/platform-as4630-54pe-init.sh
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=sysinit.target
