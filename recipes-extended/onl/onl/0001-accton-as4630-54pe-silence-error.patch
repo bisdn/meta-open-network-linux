@@ -1,0 +1,28 @@
+From 9301acb8e29fcc27716cc3183005288f9e23e801 Mon Sep 17 00:00:00 2001
+From: Rubens Figueiredo <rubens.figueiredo@bisdn.de>
+Date: Wed, 10 Nov 2021 11:56:16 +0100
+Subject: [PATCH] accton-as4630-54pe: silence error
+
+x86_64_accton_as4630_54pe/module/src/sysi.c:256:9:
+error: ignoring return value of 'system', declared with attribute
+warn_unused_result [-Werror=unused-result]
+---
+ .../onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c     | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c b/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c
+index c4eeef73..b2e01072 100755
+--- a/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c
++++ b/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c
+@@ -253,7 +253,7 @@ int onlp_sysi_platform_manage_fans(void)
+         /*critical case*/
+         AIM_SYSLOG_CRIT("Temperature critical", "Temperature critical", "Alarm for temperature critical is detected, reset DUT");
+         sleep(2);
+-        system(SHUTDOWN_DUT_CMD);
++        (void)!system(SHUTDOWN_DUT_CMD);
+     }
+     if(current_state!=ori_state)
+     {
+-- 
+2.31.1
+

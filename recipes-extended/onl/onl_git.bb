@@ -37,6 +37,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0010-Support-ACBEL-FSF019-PSU.patch \
            file://questone-2a;subdir=git/packages/platforms/celestica/x86-64 \
            file://0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
+           file://0001-accton-as4630-54pe-silence-error.patch \
 "
 
 inherit systemd
