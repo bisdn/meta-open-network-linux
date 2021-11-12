@@ -1,0 +1,1605 @@
+diff --git a/drivers/net/mdio/Kconfig b/drivers/net/mdio/Kconfig
+index a10cc460d7cf..ba9d75278e9b 100644
+--- a/drivers/net/mdio/Kconfig
++++ b/drivers/net/mdio/Kconfig
+@@ -178,6 +178,14 @@ config MDIO_THUNDER
+ 	  ThunderX SoCs when the MDIO bus device appears as a PCI
+ 	  device.
+ 
++config MDIO_XGS_IPROC
++	tristate "Broadcom XGS iProc MDIO bus controller"
++	depends on ARCH_XGS_IPROC || COMPILE_TEST
++	depends on HAS_IOMEM && OF_MDIO
++	help
++	  This module provides a driver for the MDIO busses found in the
++	  Broadcom XGS iProc SoC's.
++
+ comment "MDIO Multiplexers"
+ 
+ config MDIO_BUS_MUX
+diff --git a/drivers/net/mdio/Makefile b/drivers/net/mdio/Makefile
+index 5c498dde463f..3eac34b58682 100644
+--- a/drivers/net/mdio/Makefile
++++ b/drivers/net/mdio/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_MDIO_OCTEON)		+= mdio-octeon.o
+ obj-$(CONFIG_MDIO_SUN4I)		+= mdio-sun4i.o
+ obj-$(CONFIG_MDIO_THUNDER)		+= mdio-thunder.o
+ obj-$(CONFIG_MDIO_XGENE)		+= mdio-xgene.o
++obj-$(CONFIG_MDIO_XGS_IPROC)		+= mdio-xgs-iproc-cmicx.o mdio-xgs-iproc-cmicd.o mdio-xgs-iproc-cc.o
+ 
+ obj-$(CONFIG_MDIO_BUS_MUX)		+= mdio-mux.o
+ obj-$(CONFIG_MDIO_BUS_MUX_BCM_IPROC)	+= mdio-mux-bcm-iproc.o
+diff --git a/drivers/net/mdio/mdio-xgs-iproc-cc.c b/drivers/net/mdio/mdio-xgs-iproc-cc.c
+new file mode 100644
+index 000000000000..4cc4558c0b9f
+--- /dev/null
++++ b/drivers/net/mdio/mdio-xgs-iproc-cc.c
+@@ -0,0 +1,492 @@
++/*
++ * Copyright (C) 2016 Broadcom Corporation
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation version 2.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/io.h>
++#include <linux/delay.h>
++#include <linux/clk.h>
++#include <linux/platform_device.h>
++#include <linux/mii.h>
++#include <linux/phy.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/of_address.h>
++#include <linux/of_mdio.h>
++#include "mdio-xgs-iproc.h"
++
++#define MGMT_CTL_REG			0x000
++#define MGMT_CTL__BYP_SHIFT		10
++#define MGMT_CTL__BYP_WIDTH		1
++#define MGMT_CTL__BYP_MASK		((1 << MGMT_CTL__BYP_WIDTH) - 1)
++#define MGMT_CTL__EXT_SHIFT		9
++#define MGMT_CTL__EXT_WIDTH		1
++#define MGMT_CTL__EXT_MASK		((1 << MGMT_CTL__EXT_WIDTH) - 1)
++#define MGMT_CTL__BSY_SHIFT		8
++#define MGMT_CTL__BSY_WIDTH		1
++#define MGMT_CTL__BSY_MASK		((1 << MGMT_CTL__BSY_WIDTH) - 1)
++#define MGMT_CTL__PRE_SHIFT		7
++#define MGMT_CTL__PRE_WIDTH		1
++#define MGMT_CTL__PRE_MASK		((1 << MGMT_CTL__BSY_WIDTH) - 1)
++#define MGMT_CTL__MDCDIV_SHIFT		0
++#define MGMT_CTL__MDCDIV_WIDTH		7
++#define MGMT_CTL__MDCDIV_MASK		((1 << MGMT_CTL__MDCDIV_WIDTH) - 1)
++
++#define MGMT_CMD_DATA_REG		0x004
++#define MGMT_CMD_DATA__SB_SHIFT 	30
++#define MGMT_CMD_DATA__SB_WIDTH 	2
++#define MGMT_CMD_DATA__SB_MASK		((1 << MGMT_CMD_DATA__SB_WIDTH) - 1)
++#define MGMT_CMD_DATA__OP_SHIFT 	28
++#define MGMT_CMD_DATA__OP_WIDTH 	2
++#define MGMT_CMD_DATA__OP_MASK		((1 << MGMT_CMD_DATA__OP_WIDTH) - 1)
++#define MGMT_CMD_DATA__PA_SHIFT 	23
++#define MGMT_CMD_DATA__PA_WIDTH 	5
++#define MGMT_CMD_DATA__PA_MASK		((1 << MGMT_CMD_DATA__PA_WIDTH) - 1)
++#define MGMT_CMD_DATA__RA_SHIFT 	18
++#define MGMT_CMD_DATA__RA_WIDTH 	5
++#define MGMT_CMD_DATA__RA_MASK		((1 << MGMT_CMD_DATA__RA_WIDTH) - 1)
++#define MGMT_CMD_DATA__TA_SHIFT 	16
++#define MGMT_CMD_DATA__TA_WIDTH 	2
++#define MGMT_CMD_DATA__TA_MASK		((1 << MGMT_CMD_DATA__TA_WIDTH) - 1)
++#define MGMT_CMD_DATA__DATA_SHIFT	0
++#define MGMT_CMD_DATA__DATA_WIDTH	16
++#define MGMT_CMD_DATA__DATA_MASK	((1 << MGMT_CMD_DATA__DATA_WIDTH) - 1)
++
++#define MII_OP_HALT_USEC	10
++
++struct cc_mii_cmd {
++	int bus_id;
++	int ext_sel;
++	int phy_id;
++	int regnum;
++	u16 op_mode;
++	u16 val;
++};
++
++static struct iproc_mdio_ctrl *cc_mdio_ctrl = NULL;
++
++/*
++ * For HX4/KT2, the mdio bus is shared with iProc mdio and CMICd mdio 
++ * controllers. By default the mdio bus is released to CMICd for SDK to run.
++ * Set kernel argument mdio_bus_release to 0 if ethtool test is required.
++ */
++static bool mdio_bus_release = true;
++static int __init set_mdio_bus_release(char *str)
++{
++	return strtobool(str, &mdio_bus_release);
++}
++__setup("mdio_bus_release=", set_mdio_bus_release);
++
++
++/* HX4/KT2 need to release mdio bus from iProc to cmicd */
++bool xgs_mdio_bus_release(void)
++{
++	if (of_machine_is_compatible("brcm,helix4") || 
++		of_machine_is_compatible("brcm,katana2"))
++		return mdio_bus_release;
++	else
++		return 0;
++}
++
++/* HX4/KT2/SB2 needs to enable iProc mdio bus access, default is cimcd access */
++static void xgs_iproc_mdio_enable(struct iproc_mdio_ctrl *ctrl, int enable)
++{
++	void __iomem *iproc_mdio_enable_reg = NULL;
++	u32 iproc_mdio_sel;
++	u32 tmp;
++
++	if (!ctrl->iproc_mdio_enable_reg)
++		return;
++	
++	iproc_mdio_enable_reg = ctrl->iproc_mdio_enable_reg;
++	iproc_mdio_sel = ctrl->iproc_mdio_sel_bit;
++
++	tmp = readl(iproc_mdio_enable_reg);
++
++	if (enable) 
++		tmp |= (1 << iproc_mdio_sel);
++	else
++		tmp &= ~(1 << iproc_mdio_sel);
++
++	writel(tmp, iproc_mdio_enable_reg);
++}
++
++static inline u32 cc_mii_reg_read(struct iproc_mdio_ctrl *cc_mii, u32 reg)
++{
++	return readl(cc_mii->base + reg);
++}
++
++static inline void cc_mii_reg_write(struct iproc_mdio_ctrl *cc_mii, 
++				u32 reg, u32 data)
++{
++	writel(data, cc_mii->base + reg);
++}
++
++static int cc_mii_busy(struct iproc_mdio_ctrl *cc_mii, int to_usec)
++{
++	do {
++		if(!GET_REG_FIELD(cc_mii_reg_read(cc_mii, MGMT_CTL_REG), 
++			MGMT_CTL__BSY_SHIFT, MGMT_CTL__BSY_MASK))
++			return 0;
++
++		udelay(MII_OP_HALT_USEC);
++		to_usec -= MII_OP_HALT_USEC;
++	} while (to_usec > 0);
++
++	return 1;
++}
++
++static int do_cc_mii_op(struct iproc_mdio_ctrl *cc_mii, struct cc_mii_cmd *cmd)
++{
++	u32 cmd_data = 0;
++	u32 mgt_ctrl;
++	u32 op_mode = cmd->op_mode;
++	unsigned long flags;
++	int ret = 0;
++
++	if (MII_OP_MODE_WRITE == op_mode) {
++		ISET_REG_FIELD(cmd_data, MGMT_CMD_DATA__OP_SHIFT, 
++				MGMT_CMD_DATA__OP_MASK, 1);
++		ISET_REG_FIELD(cmd_data, MGMT_CMD_DATA__DATA_SHIFT,
++				MGMT_CMD_DATA__DATA_MASK, cmd->val);
++	}
++	else if (MII_OP_MODE_READ == op_mode) {
++		ISET_REG_FIELD(cmd_data, MGMT_CMD_DATA__OP_SHIFT, 
++				MGMT_CMD_DATA__OP_MASK, 2);
++	}
++	else {
++		pr_err("%s : invalid op code %d\n", __func__, op_mode);
++		return -EINVAL;
++	}
++
++	ISET_REG_FIELD(cmd_data, MGMT_CMD_DATA__PA_SHIFT, 
++			MGMT_CMD_DATA__PA_MASK, cmd->phy_id);
++	ISET_REG_FIELD(cmd_data, MGMT_CMD_DATA__RA_SHIFT,
++			MGMT_CMD_DATA__RA_MASK, cmd->regnum);
++	ISET_REG_FIELD(cmd_data, MGMT_CMD_DATA__TA_SHIFT,
++			MGMT_CMD_DATA__TA_MASK, 2);
++	ISET_REG_FIELD(cmd_data, MGMT_CMD_DATA__SB_SHIFT,
++			MGMT_CMD_DATA__SB_MASK, 1);
++
++	spin_lock_irqsave(&cc_mii->lock, flags);
++
++	if (cc_mii_busy(cc_mii, MII_OP_MAX_HALT_USEC)) {
++		ret = -EBUSY;
++		pr_err("%s : bus busy (1)\n", __func__);
++		goto err_exit_unlock;
++	}
++
++	mgt_ctrl = cc_mii_reg_read(cc_mii, MGMT_CTL_REG);
++	if (cmd->ext_sel != GET_REG_FIELD(mgt_ctrl, MGMT_CTL__EXT_SHIFT, 
++						MGMT_CTL__EXT_MASK)) {
++		SET_REG_FIELD(mgt_ctrl, MGMT_CTL__EXT_SHIFT, 
++				MGMT_CTL__EXT_MASK, cmd->ext_sel);
++		cc_mii_reg_write(cc_mii, MGMT_CTL_REG, mgt_ctrl);
++	}
++
++	cc_mii_reg_write(cc_mii, MGMT_CMD_DATA_REG, cmd_data);
++
++	if (cc_mii_busy(cc_mii, MII_OP_MAX_HALT_USEC)) {
++		ret = -EBUSY;
++		pr_err("%s : bus busy (2)\n", __func__);
++		goto err_exit_unlock;
++	}
++
++	if (MII_OP_MODE_READ == cmd->op_mode) {
++		ret = GET_REG_FIELD(cc_mii_reg_read(cc_mii, MGMT_CMD_DATA_REG), 
++			MGMT_CMD_DATA__DATA_SHIFT, MGMT_CMD_DATA__DATA_MASK);
++	}
++
++        spin_unlock_irqrestore(&cc_mii->lock, flags);
++
++	return ret;
++
++err_exit_unlock:
++        spin_unlock_irqrestore(&cc_mii->lock, flags);
++	return ret;
++}
++
++static int cc_mdiobus_read(struct mii_bus *bus, int phy_id, int regnum)
++{
++	struct iproc_mdiobus_private *bus_priv = bus->priv;
++	struct iproc_mdiobus_data *bus_data = bus_priv->bus_data;
++	struct cc_mii_cmd cmd = {0};
++	int ret;
++
++	xgs_iproc_mdio_enable(bus_priv->hw_ctrl, 1);
++
++	cmd.bus_id = bus_data->phybus_num;
++	if (IPROC_MDIOBUS_TYPE_EXTERNAL == bus_data->phybus_type)
++		cmd.ext_sel = 1;
++	cmd.phy_id = phy_id;
++	cmd.regnum = regnum;
++	cmd.op_mode = MII_OP_MODE_READ;
++
++	ret = do_cc_mii_op(bus_priv->hw_ctrl, &cmd);
++
++	xgs_iproc_mdio_enable(bus_priv->hw_ctrl, 0);
++
++	return ret;
++}
++
++static int cc_mdiobus_write(struct mii_bus *bus, int phy_id,
++				int regnum, u16 val)
++{
++	struct iproc_mdiobus_private *bus_priv = bus->priv;
++	struct iproc_mdiobus_data *bus_data = bus_priv->bus_data;
++	struct cc_mii_cmd cmd = {0};
++	int ret;
++
++	xgs_iproc_mdio_enable(bus_priv->hw_ctrl, 1);
++
++	cmd.bus_id = bus_data->phybus_num;
++
++	if (IPROC_MDIOBUS_TYPE_EXTERNAL == bus_data->phybus_type)
++		cmd.ext_sel = 1;
++
++	cmd.phy_id = phy_id;
++	cmd.regnum = regnum;
++	cmd.op_mode = MII_OP_MODE_WRITE;
++	cmd.val = val;
++
++	ret =  do_cc_mii_op(bus_priv->hw_ctrl, &cmd);
++
++	xgs_iproc_mdio_enable(bus_priv->hw_ctrl, 0);
++
++	return ret;
++}
++
++static struct iproc_mdio_ctrl * cc_mdio_res_alloc(void)
++{
++	if (!cc_mdio_ctrl) {
++		cc_mdio_ctrl = kzalloc(sizeof(*cc_mdio_ctrl), GFP_KERNEL);
++		if (!cc_mdio_ctrl)
++			return NULL;
++
++		spin_lock_init(&cc_mdio_ctrl->lock);
++		cc_mdio_ctrl->ref_cnt = 1;
++	}
++	else
++		cc_mdio_ctrl->ref_cnt++;
++
++	return cc_mdio_ctrl;
++}
++
++static void cc_mdio_res_free(struct iproc_mdio_ctrl *ctrl)
++{
++	if (ctrl) {
++		ctrl->ref_cnt--;
++		if (ctrl->ref_cnt == 0) {
++			iounmap(ctrl->base);
++			kfree(ctrl);
++			cc_mdio_ctrl = NULL;
++		}
++	}
++}
++
++static void cc_mii_init(struct iproc_mdio_ctrl *cc_mii, u32 mdio_clk_rate)
++{
++	u32 val = 0;
++
++	if(cc_mii->ref_cnt == 1) {
++		/* Set preamble enabled */
++		ISET_REG_FIELD(val, MGMT_CTL__PRE_SHIFT, MGMT_CTL__PRE_MASK, 1);
++		/* Set the MII clock to 1 MHz */
++		ISET_REG_FIELD(val, MGMT_CTL__MDCDIV_SHIFT, MGMT_CTL__MDCDIV_MASK, 
++				mdio_clk_rate/(1000000));
++		cc_mii_reg_write(cc_mii, MGMT_CTL_REG, val);
++	}
++}
++
++static int cc_mdiobus_probe(struct platform_device *pdev)
++{
++	struct mii_bus *mii_bus;
++	struct device_node *dn = pdev->dev.of_node;
++	struct resource *res;
++	struct iproc_mdiobus_private *bus_priv;
++	struct iproc_mdiobus_data *bus_data;
++	struct iproc_mdio_ctrl *cc_ctrl;
++	u32 mdio_clk_rate;
++	const char *mdio_bus_type;
++	struct clk *clk=NULL;
++	int ret;
++
++	/* hw_ctrl is shared */	
++	if (cc_mdio_ctrl)
++		goto hw_ctrl_allocated;
++		
++	cc_ctrl = cc_mdio_res_alloc();
++	if (!cc_ctrl) {
++		dev_err(&pdev->dev, "CC mdio resource alloc failed\n");
++		ret = -ENOMEM;
++		goto err_exit;
++	}
++
++	cc_ctrl->base = (void *)of_iomap(dn, 0);
++	if (!cc_ctrl->base) {
++		dev_err(&pdev->dev, "cc mdio register base map error\n");
++		ret = -ENXIO;
++		goto err_ctrl_free;
++	}
++
++	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, 
++			"iproc-mdio-enable");
++	if (res) {
++		cc_ctrl->iproc_mdio_enable_reg = 
++				devm_ioremap_resource(&pdev->dev, res);
++		if (IS_ERR(cc_ctrl->iproc_mdio_enable_reg)) {
++			ret = PTR_ERR(cc_ctrl->iproc_mdio_enable_reg);
++			goto err_ctrl_free;
++		}
++	}
++
++	if (cc_ctrl->iproc_mdio_enable_reg) {
++		if (of_property_read_u32(dn, "iproc-mdio-sel-bit",
++			&cc_ctrl->iproc_mdio_sel_bit)) {
++			dev_err(&pdev->dev, "No mdio bus select bit!\n");
++			ret = -EINVAL;
++			goto err_ctrl_free;
++		}
++	}
++
++hw_ctrl_allocated:
++	cc_ctrl = cc_mdio_ctrl;
++
++	clk = of_clk_get(dn, 0);
++	if (clk) {
++		mdio_clk_rate = clk_get_rate(clk) / 2;
++	} else {
++		dev_warn(&pdev->dev, "No CC MDIO clock available in DT, \
++			use default clock rate: 50MHz\n");
++		mdio_clk_rate = 50000000;
++	}
++
++	cc_mii_init(cc_ctrl, mdio_clk_rate);
++
++	/* If no property available, use default: "internal" */
++	if (of_property_read_string(dn, "bus-type", &mdio_bus_type))
++		mdio_bus_type = "internal";
++
++	bus_data = devm_kzalloc(&pdev->dev, sizeof(*bus_data), GFP_KERNEL);
++	if (!bus_data) {
++		dev_err(&pdev->dev, "iProc MDIO bus data alloc failed\n");
++		ret = -ENOMEM;
++		goto err_bus_data_free;
++	}
++
++	bus_priv = devm_kzalloc(&pdev->dev, sizeof(*bus_priv), GFP_KERNEL);
++	if (!bus_priv) {
++		dev_err(&pdev->dev, "iProc MDIO private data alloc failed\n");
++		ret = -ENOMEM;
++		goto err_bus_priv_free;
++	}
++
++	if (!strcmp(mdio_bus_type, "internal"))
++		bus_data->phybus_type = IPROC_MDIOBUS_TYPE_INTERNAL;
++	else
++		bus_data->phybus_type = IPROC_MDIOBUS_TYPE_EXTERNAL;
++
++	bus_priv->bus_data = bus_data;
++	bus_priv->hw_ctrl = cc_ctrl;
++
++	mii_bus = mdiobus_alloc();
++	if (!mii_bus) {
++		dev_err(&pdev->dev, "mdiobus alloc failed\n");
++		ret = -ENOMEM;
++		goto err_ctrl_free;
++	}
++
++	mii_bus->name = "iproc_cc_mdiobus";
++	snprintf(mii_bus->id, MII_BUS_ID_SIZE, "%s-%s", "cc mdio", 
++		bus_data->phybus_type? "external":"internal");
++	mii_bus->parent = &pdev->dev;
++	mii_bus->read = cc_mdiobus_read;
++	mii_bus->write = cc_mdiobus_write;
++	mii_bus->priv = bus_priv;
++
++	ret = of_mdiobus_register(mii_bus, dn);
++	if (ret) {
++		dev_err(&pdev->dev, "mdiobus register failed\n");
++		goto err_bus_free;
++	}
++
++	platform_set_drvdata(pdev, mii_bus);
++
++	return 0;
++
++err_bus_free:
++	mdiobus_free(mii_bus);
++err_bus_priv_free:
++	kfree(bus_priv);
++err_bus_data_free:
++	kfree(bus_data);
++err_ctrl_free:
++	cc_mdio_res_free(cc_ctrl);
++err_exit:
++	return ret;
++}
++
++static int cc_mdiobus_remove(struct platform_device *pdev)
++{
++	struct mii_bus *mii_bus = platform_get_drvdata(pdev);
++	struct iproc_mdiobus_private *bus_priv;
++
++	if (mii_bus) {
++		bus_priv = mii_bus->priv;
++
++		mdiobus_unregister(mii_bus);
++		if (bus_priv)
++			cc_mdio_res_free(bus_priv->hw_ctrl);
++		mdiobus_free(mii_bus);
++	}
++
++	return 0;
++}
++
++static const struct of_device_id cc_mdio_dt_ids[] = {
++	{ .compatible = "brcm,iproc-ccb-mdio"},
++	{ .compatible = "brcm,iproc-ccg-mdio"},
++	{  }
++};
++MODULE_DEVICE_TABLE(of, cc_mdio_dt_ids);
++
++
++static struct platform_driver iproc_cc_mdiobus_driver = 
++{
++	.driver = {
++		.name = "iproc_cc_mdio",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(cc_mdio_dt_ids),
++	},
++	.probe   = cc_mdiobus_probe,
++	.remove  = cc_mdiobus_remove,
++};
++
++static int __init cc_mdio_init(void)
++{
++	return platform_driver_register(&iproc_cc_mdiobus_driver);
++}
++
++static void __exit cc_mdio_exit(void)
++{
++	platform_driver_unregister(&iproc_cc_mdiobus_driver);
++}
++
++//module_init(cc_mdio_init);
++subsys_initcall(cc_mdio_init);
++module_exit(cc_mdio_exit);
++
++MODULE_AUTHOR("Broadcom Corporation");
++MODULE_DESCRIPTION("iProc CC mdio driver");
++MODULE_LICENSE("GPL");
++
+diff --git a/drivers/net/mdio/mdio-xgs-iproc-cmicd.c b/drivers/net/mdio/mdio-xgs-iproc-cmicd.c
+new file mode 100644
+index 000000000000..8cbf8a090a30
+--- /dev/null
++++ b/drivers/net/mdio/mdio-xgs-iproc-cmicd.c
+@@ -0,0 +1,457 @@
++/*
++ * Copyright (C) 2016 Broadcom Corporation
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation version 2.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/io.h>
++#include <linux/delay.h>
++#include <linux/platform_device.h>
++#include <linux/mii.h>
++#include <linux/phy.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/of_address.h>
++#include <linux/of_mdio.h>
++
++#include "mdio-xgs-iproc.h"
++
++/* CMICD MDIO */
++#define CMIC_MIIM_PARAM_OFFSET 0x080
++#define CMIC_MIIM_PARAM_MIIM_CYCLE_R 29
++#define CMIC_MIIM_PARAM_MIIM_CYCLE_W 3
++#define CMIC_MIIM_PARAM_INTERNAL_SEL 25
++#define CMIC_MIIM_PARAM_INTERNAL_SEL_W 1
++#define CMIC_MIIM_PARAM_BUS_ID_R 22
++#define CMIC_MIIM_PARAM_BUS_ID_W 3
++#define CMIC_MIIM_PARAM_C45_SEL 21
++#define CMIC_MIIM_PARAM_C45_SEL_W 1
++#define CMIC_MIIM_PARAM_PHY_ID_R 16
++#define CMIC_MIIM_PARAM_PHY_ID_W 5
++#define CMIC_MIIM_PARAM_PHY_DATA_R 0
++#define CMIC_MIIM_PARAM_PHY_DATA_W 16
++
++#define CMIC_MIIM_READ_DATA_OFFSET 0x084
++#define CMIC_MIIM_READ_DATA_DATA_R 0
++#define CMIC_MIIM_READ_DATA_DATA_W 16
++
++#define CMIC_MIIM_ADDR_OFFSET 0x088
++#define CMIC_MIIM_ADDR_C45_DTYPE_R 16
++#define CMIC_MIIM_ADDR_C45_DTYPE_W 5
++#define CMIC_MIIM_ADDR_C45_REGADR_R 0
++#define CMIC_MIIM_ADDR_C45_REGADR_W 16
++#define CMIC_MIIM_ADDR_C22_REGADR_R 0
++#define CMIC_MIIM_ADDR_C22_REGADR_W 5
++
++#define CMIC_MIIM_CTRL_OFFSET 0x08c
++#define CMIC_MIIM_CTRL_RD_START 1
++#define CMIC_MIIM_CTRL_RD_START_W 1
++#define CMIC_MIIM_CTRL_WR_START 0
++#define CMIC_MIIM_CTRL_WR_START_W 1
++
++#define CMIC_MIIM_STAT_OFFSET 0x090
++#define CMIC_MIIM_STAT_OPN_DONE 0
++#define CMIC_MIIM_STAT_OPN_DONE_W 1
++
++#define CMIC_COMMON_UC0_PIO_ENDIANESS 	0x1F0
++
++#define MIIM_PARAM_REG			CMIC_MIIM_PARAM_OFFSET
++#define MIIM_PARAM_MIIM_CYCLE_SHIFT	CMIC_MIIM_PARAM_MIIM_CYCLE_R
++#define MIIM_PARAM_MIIM_CYCLE_MASK	((1 << CMIC_MIIM_PARAM_MIIM_CYCLE_W)-1)
++#define MIIM_PARAM_INTERNAL_SEL_SHIFT	CMIC_MIIM_PARAM_INTERNAL_SEL
++#define MIIM_PARAM_INTERNAL_SEL_MASK	((1<<CMIC_MIIM_PARAM_INTERNAL_SEL_W)-1)
++#define MIIM_PARAM_BUS_ID_SHIFT 	CMIC_MIIM_PARAM_BUS_ID_R
++#define MIIM_PARAM_BUS_ID_MASK		((1 << CMIC_MIIM_PARAM_BUS_ID_W) - 1)
++#define MIIM_PARAM_C45_SEL_SHIFT	CMIC_MIIM_PARAM_C45_SEL
++#define MIIM_PARAM_C45_SEL_MASK 	((1 << CMIC_MIIM_PARAM_C45_SEL_W) - 1)
++#define MIIM_PARAM_PHY_ID_SHIFT 	CMIC_MIIM_PARAM_PHY_ID_R
++#define MIIM_PARAM_PHY_ID_MASK		((1 << CMIC_MIIM_PARAM_PHY_ID_W) - 1)
++#define MIIM_PARAM_PHY_DATA_SHIFT 	CMIC_MIIM_PARAM_PHY_DATA_R
++#define MIIM_PARAM_PHY_DATA_MASK	((1 << CMIC_MIIM_PARAM_PHY_DATA_W) - 1)
++
++#define MIIM_READ_DATA_REG 		CMIC_MIIM_READ_DATA_OFFSET
++#define MIIM_READ_DATA_DATA_SHIFT	CMIC_MIIM_READ_DATA_DATA_R
++#define MIIM_READ_DATA_DATA_MASK	((1 << CMIC_MIIM_READ_DATA_DATA_W) - 1)
++
++#define MIIM_ADDRESS_REG 		CMIC_MIIM_ADDR_OFFSET
++#define MIIM_ADDR_C45_DTYPE_SHIFT	CMIC_MIIM_ADDR_C45_DTYPE_R
++#define MIIM_ADDR_C45_DTYPE_MASK	((1 << CMIC_MIIM_ADDR_C45_DTYPE_W) - 1)
++#define MIIM_ADDR_C45_REGADR_SHIFT	CMIC_MIIM_ADDR_C45_REGADR_R
++#define MIIM_ADDR_C45_REGADR_MASK	((1 << CMIC_MIIM_ADDR_C45_REGADR_W) - 1)
++#define MIIM_ADDR_C22_REGADR_SHIFT	CMIC_MIIM_ADDR_C22_REGADR_R
++#define MIIM_ADDR_C22_REGADR_MASK	((1 << CMIC_MIIM_ADDR_C22_REGADR_W) - 1)
++
++#define MIIM_CTRL_REG 			CMIC_MIIM_CTRL_OFFSET
++#define MIIM_CTRL_RD_START_SHIFT	CMIC_MIIM_CTRL_RD_START
++#define MIIM_CTRL_RD_START_MASK 	((1 << CMIC_MIIM_CTRL_RD_START_W) - 1)
++#define MIIM_CTRL_WR_START_SHIFT	CMIC_MIIM_CTRL_WR_START
++#define MIIM_CTRL_WR_START_MASK 	((1 << CMIC_MIIM_CTRL_WR_START_W) - 1)
++
++#define MIIM_STAT_REG 			CMIC_MIIM_STAT_OFFSET
++#define MIIM_STAT_OPN_DONE_SHIFT	CMIC_MIIM_STAT_OPN_DONE
++#define MIIM_STAT_OPN_DONE_MASK 	((1 << CMIC_MIIM_STAT_OPN_DONE_W) - 1)
++
++struct cmicd_miim_cmd {
++	int bus_id;
++	int int_sel;
++	int phy_id;
++	int regnum;
++	int c45_sel;
++	u16 op_mode;
++	u16 val;
++};
++
++static struct iproc_mdio_ctrl *cmic_common = NULL;
++
++
++static inline u32 cmicd_miim_reg_read(struct iproc_mdio_ctrl *cmic_mdio, u32 reg)
++{
++	u32 value = readl(cmic_mdio->base + reg);
++#if (IS_ENABLED(CONFIG_CPU_BIG_ENDIAN))
++       if (readl(cmic_mdio->base + CMIC_COMMON_UC0_PIO_ENDIANESS) != 0)
++		/* CMICD is in big-endian mode */
++		value = swab32(value);
++#endif
++	return value;
++}
++
++static inline void cmicd_miim_reg_write(struct iproc_mdio_ctrl *cmic_mdio, 
++				u32 reg, u32 data)
++{
++	u32 value = data;
++#if (IS_ENABLED(CONFIG_CPU_BIG_ENDIAN))
++	if (readl(cmic_mdio->base + CMIC_COMMON_UC0_PIO_ENDIANESS) != 0)
++		/* CMICD is in big-endian mode */
++		value = swab32(data);
++#endif
++	writel(value, cmic_mdio->base + reg);
++}
++
++static inline void cmicd_miim_set_op_read(u32 *data, u32 set)
++{
++	SET_REG_FIELD(*data, MIIM_CTRL_RD_START_SHIFT, 
++			MIIM_CTRL_RD_START_MASK, set);
++}
++
++static inline void cmicd_miim_set_op_write(u32 *data, u32 set)
++{
++	SET_REG_FIELD(*data, MIIM_CTRL_WR_START_SHIFT, 
++			MIIM_CTRL_WR_START_MASK, set);
++}
++
++static int do_cmicd_miim_op(struct iproc_mdio_ctrl *cmic_mdio, u32 op, 
++					u32 param, u32 addr)
++{
++	u32 val, op_done;
++	unsigned long flags;
++	int ret = 0;
++	int usec = MII_OP_MAX_HALT_USEC;
++
++	if (op >= MII_OP_MODE_MAX) {
++		pr_err("%s : invalid op code %d\n", __func__, op);
++		return -EINVAL;
++	}
++
++	spin_lock_irqsave(&cmic_mdio->lock, flags);
++
++	cmicd_miim_reg_write(cmic_mdio, MIIM_PARAM_REG, param);
++	cmicd_miim_reg_write(cmic_mdio, MIIM_ADDRESS_REG, addr);
++	val = cmicd_miim_reg_read(cmic_mdio, MIIM_CTRL_REG);
++	if(op == MII_OP_MODE_READ)
++		cmicd_miim_set_op_read(&val, 1);
++	else
++		cmicd_miim_set_op_write(&val, 1);
++	cmicd_miim_reg_write(cmic_mdio, MIIM_CTRL_REG, val);
++
++	do {
++		op_done = GET_REG_FIELD(
++				cmicd_miim_reg_read(cmic_mdio, MIIM_STAT_REG),
++				MIIM_STAT_OPN_DONE_SHIFT, 
++				MIIM_STAT_OPN_DONE_MASK);
++		if (op_done)
++			break;
++
++		udelay(1);
++	} while (usec-- > 0);
++
++	if (op_done) {
++		if(op == MII_OP_MODE_READ)
++			ret = cmicd_miim_reg_read(cmic_mdio, MIIM_READ_DATA_REG);
++	} else {
++		ret = -ETIME;
++	}
++
++	val = cmicd_miim_reg_read(cmic_mdio, MIIM_CTRL_REG);
++	if(op == MII_OP_MODE_READ)
++		cmicd_miim_set_op_read(&val, 0);
++	else
++		cmicd_miim_set_op_write(&val, 0);
++	cmicd_miim_reg_write(cmic_mdio, MIIM_CTRL_REG, val);
++
++	spin_unlock_irqrestore(&cmic_mdio->lock, flags);
++
++	return ret;
++}
++
++
++static int cmicd_miim_op(struct iproc_mdio_ctrl *cmic_mdio, 
++		struct cmicd_miim_cmd *cmd)
++{
++	u32 miim_param =0, miim_addr = 0;
++
++	ISET_REG_FIELD(miim_param, MIIM_PARAM_BUS_ID_SHIFT, 
++			MIIM_PARAM_BUS_ID_MASK, cmd->bus_id);
++
++	if (cmd->int_sel)
++		ISET_REG_FIELD(miim_param, MIIM_PARAM_INTERNAL_SEL_SHIFT, 
++				MIIM_PARAM_INTERNAL_SEL_MASK, 1);
++
++	ISET_REG_FIELD(miim_param, MIIM_PARAM_PHY_ID_SHIFT, 
++			MIIM_PARAM_PHY_ID_MASK, cmd->phy_id);
++
++	if (cmd->op_mode == MII_OP_MODE_WRITE)
++		ISET_REG_FIELD(miim_param, MIIM_PARAM_PHY_DATA_SHIFT, 
++				MIIM_PARAM_PHY_DATA_MASK, cmd->val);
++
++	if (cmd->c45_sel) {
++		ISET_REG_FIELD(miim_param, MIIM_PARAM_C45_SEL_SHIFT, 
++				MIIM_PARAM_C45_SEL_MASK, 1);
++		ISET_REG_FIELD(miim_addr, MIIM_ADDR_C45_REGADR_SHIFT, 
++				MIIM_ADDR_C45_REGADR_MASK, cmd->regnum);
++		ISET_REG_FIELD(miim_addr, MIIM_ADDR_C45_DTYPE_SHIFT, 
++				MIIM_ADDR_C45_REGADR_MASK, cmd->regnum >> 16);
++	}
++	else {
++		ISET_REG_FIELD(miim_addr, MIIM_ADDR_C22_REGADR_SHIFT, 
++				MIIM_ADDR_C22_REGADR_MASK, cmd->regnum);
++	}
++
++	return do_cmicd_miim_op(cmic_mdio, cmd->op_mode, miim_param, miim_addr);
++}
++
++
++static int cmicd_mdiobus_read(struct mii_bus *bus, int phy_id, int regnum)
++{
++	struct iproc_mdiobus_private *bus_priv = bus->priv;
++	struct iproc_mdiobus_data *bus_data = bus_priv->bus_data;
++	struct cmicd_miim_cmd cmd = {0};
++
++	cmd.bus_id = bus_data->phybus_num;
++	if (IPROC_MDIOBUS_TYPE_INTERNAL == bus_data->phybus_type)
++		cmd.int_sel = 1;
++	cmd.phy_id = phy_id;
++	cmd.regnum = regnum;
++
++	if (regnum & MII_ADDR_C45)
++		cmd.c45_sel = 1;
++
++	cmd.op_mode = MII_OP_MODE_READ;
++
++	return cmicd_miim_op(bus_priv->hw_ctrl, &cmd);
++}
++
++static int cmicd_mdiobus_write(struct mii_bus *bus, int phy_id,
++				int regnum, u16 val)
++{
++	struct iproc_mdiobus_private *bus_priv = bus->priv;
++	struct iproc_mdiobus_data *bus_data = bus_priv->bus_data;
++	struct cmicd_miim_cmd cmd = {0};
++
++	cmd.bus_id = bus_data->phybus_num;
++	if (IPROC_MDIOBUS_TYPE_INTERNAL == bus_data->phybus_type)
++		cmd.int_sel = 1;
++	cmd.phy_id = phy_id;
++	cmd.regnum = regnum;
++	cmd.val = val;
++
++	if (regnum & MII_ADDR_C45)
++		cmd.c45_sel = 1;
++
++	cmd.op_mode = MII_OP_MODE_WRITE;
++
++	return cmicd_miim_op(bus_priv->hw_ctrl, &cmd);
++}
++
++static struct iproc_mdio_ctrl * cmicd_mdio_res_alloc(void)
++{
++	if (!cmic_common) {
++		cmic_common = kzalloc(sizeof(*cmic_common), GFP_KERNEL);
++		if (!cmic_common)
++			return NULL;
++		spin_lock_init(&cmic_common->lock);
++		cmic_common->ref_cnt = 1;
++	}
++	else
++		cmic_common->ref_cnt++;
++
++	return cmic_common;
++}
++
++static void cmicd_mdio_res_free(struct iproc_mdio_ctrl *ctrl)
++{
++	if (ctrl) {
++		ctrl->ref_cnt--;
++		if (ctrl->ref_cnt == 0) {
++			iounmap(ctrl->base);
++			kfree(ctrl);
++			cmic_common = NULL;
++		}
++	}
++}
++
++static int cmicd_mdiobus_probe(struct platform_device *pdev)
++{
++	struct mii_bus *mii_bus;
++	struct device_node *dn = pdev->dev.of_node;
++	struct iproc_mdiobus_private *bus_priv;
++	struct iproc_mdiobus_data *bus_data;
++	struct iproc_mdio_ctrl *cmicd_ctrl;
++	u32 mdio_bus_id;
++	const char *mdio_bus_type;
++	int ret;
++
++	cmicd_ctrl = cmicd_mdio_res_alloc();
++	if (!cmicd_ctrl) {
++		dev_err(&pdev->dev, "cmicd mdio resource alloc failed\n");
++		ret = -ENOMEM;
++		goto err_exit;
++	}
++
++	/* Get register base address for the first mdio node only */
++	if (!cmicd_ctrl->base)
++		cmicd_ctrl->base = of_iomap(dn, 0);
++	if (!cmicd_ctrl->base) {
++		dev_err(&pdev->dev, "cmicd mdio register base map error\n");
++		ret = -ENXIO;
++		goto err_ctrl_free;
++	}
++
++	/* If no property available, use default: 2 */
++	if (of_property_read_u32(dn, "#bus-id", &mdio_bus_id))
++		mdio_bus_id = 2;
++
++	/* If no property available, use default: "external" */
++	if (of_property_read_string(dn, "bus-type", &mdio_bus_type))
++		mdio_bus_type = "external";
++
++	bus_data = devm_kzalloc(&pdev->dev, sizeof(*bus_data), GFP_KERNEL);
++	if (!bus_data) {
++		dev_err(&pdev->dev, "iProc MDIO bus data alloc failed\n");
++		ret = -ENOMEM;
++		goto err_bus_data_free;
++	}
++
++	bus_priv = devm_kzalloc(&pdev->dev, sizeof(*bus_priv), GFP_KERNEL);
++	if (!bus_priv) {
++		dev_err(&pdev->dev, "iProc MDIO private data alloc failed\n");
++		ret = -ENOMEM;
++		goto err_bus_priv_free;
++	}
++
++	bus_data->phybus_num = mdio_bus_id;
++	if (!strcmp(mdio_bus_type, "internal"))
++		bus_data->phybus_type = IPROC_MDIOBUS_TYPE_INTERNAL;
++	else
++		bus_data->phybus_type = IPROC_MDIOBUS_TYPE_EXTERNAL;
++
++	bus_priv->bus_data = bus_data;
++	bus_priv->hw_ctrl = cmicd_ctrl;
++
++	mii_bus = mdiobus_alloc();
++	if (!mii_bus) {
++		dev_err(&pdev->dev, "mdiobus_alloc failed\n");
++		ret = -ENOMEM;
++		goto err_ctrl_free;
++	}
++
++	mii_bus->name = "iproc_cmicd_mdiobus";
++	snprintf(mii_bus->id, MII_BUS_ID_SIZE, "%s-%d-%d", "cmicd mdio", 
++		mdio_bus_id, bus_data->phybus_type? 1:0);
++	mii_bus->parent = &pdev->dev;
++	mii_bus->read = cmicd_mdiobus_read;
++	mii_bus->write = cmicd_mdiobus_write;
++	mii_bus->priv = bus_priv;
++
++	ret = of_mdiobus_register(mii_bus, dn);
++	if (ret) {
++		dev_err(&pdev->dev, "mdiobus register failed\n");
++		goto err_bus_free;
++	}
++
++	platform_set_drvdata(pdev, mii_bus);
++
++	return 0;
++
++err_bus_free:
++	mdiobus_free(mii_bus);
++err_bus_priv_free:
++	kfree(bus_priv);
++err_bus_data_free:
++	kfree(bus_data);
++err_ctrl_free:
++	cmicd_mdio_res_free(cmicd_ctrl);
++err_exit:
++	return ret;
++}
++
++static int cmicd_mdiobus_remove(struct platform_device *pdev)
++{
++	struct mii_bus *mii_bus = platform_get_drvdata(pdev);
++	struct iproc_mdiobus_private *bus_priv;
++
++	if (mii_bus) {
++		bus_priv = mii_bus->priv;
++
++		mdiobus_unregister(mii_bus);
++		if (bus_priv)
++			cmicd_mdio_res_free(bus_priv->hw_ctrl);
++		mdiobus_free(mii_bus);
++	}
++
++	return 0;
++}
++
++static const struct of_device_id cmicd_mdio_dt_ids[] = {
++	{ .compatible = "brcm,iproc-cmicd-mdio"},
++	{  }
++};
++MODULE_DEVICE_TABLE(of, cmicd_mdio_dt_ids);
++
++static struct platform_driver iproc_cmicd_mdiobus_driver = 
++{
++	.driver = {
++		.name = "iproc_cmicd_mdio",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(cmicd_mdio_dt_ids),
++	},
++	.probe   = cmicd_mdiobus_probe,
++	.remove  = cmicd_mdiobus_remove,
++};
++
++static int __init cmicd_mdio_init(void)
++{
++	return platform_driver_register(&iproc_cmicd_mdiobus_driver);
++}
++
++static void __exit cmicd_mdio_exit(void)
++{
++	platform_driver_unregister(&iproc_cmicd_mdiobus_driver);
++}
++
++//module_init(cmicd_mdio_init);
++subsys_initcall(cmicd_mdio_init);
++module_exit(cmicd_mdio_exit);
++
++MODULE_AUTHOR("Broadcom Corporation");
++MODULE_DESCRIPTION("iProc CMICd mdio driver");
++MODULE_LICENSE("GPL");
++
+diff --git a/drivers/net/mdio/mdio-xgs-iproc-cmicx.c b/drivers/net/mdio/mdio-xgs-iproc-cmicx.c
+new file mode 100644
+index 000000000000..fc88e90d90fa
+--- /dev/null
++++ b/drivers/net/mdio/mdio-xgs-iproc-cmicx.c
+@@ -0,0 +1,543 @@
++/*
++ * Copyright (C) 2016 Broadcom Corporation
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation version 2.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/io.h>
++#include <linux/delay.h>
++#include <linux/platform_device.h>
++#include <linux/mii.h>
++#include <linux/phy.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/of_address.h>
++#include <linux/of_mdio.h>
++
++#include "mdio-xgs-iproc.h"
++
++#define MIIM_CH0_CONTROL_REG						0x000
++#define MIIM_CH1_CONTROL_REG						0x010
++#define MIIM_CH2_CONTROL_REG						0x020
++#define MIIM_CH3_CONTROL_REG						0x030
++#define  MIIM_CONTROL__START_SHIFT					0
++#define  MIIM_CONTROL__START_WIDTH					1
++#define  MIIM_CONTROL__START_MASK					((1 << MIIM_CONTROL__START_WIDTH) - 1)
++#define MIIM_CH0_PARAMS_REG							0x004
++#define MIIM_CH1_PARAMS_REG							0x014
++#define MIIM_CH2_PARAMS_REG							0x024
++#define MIIM_CH3_PARAMS_REG							0x034
++#define  MIIM_PARAMS__RING_MAP_SHIFT				20
++#define  MIIM_PARAMS__RING_MAP_WIDTH				12
++#define  MIIM_PARAMS__RING_MAP_MASK					((1 << MIIM_PARAMS__RING_MAP_WIDTH) - 1)
++#define  MIIM_PARAMS__MDIO_OP_TYPE_SHIFT			17
++#define  MIIM_PARAMS__MDIO_OP_TYPE_WIDTH			3
++#define  MIIM_PARAMS__MDIO_OP_TYPE_MASK				((1 << MIIM_PARAMS__MDIO_OP_TYPE_WIDTH) - 1)
++#define   CLAUSE_22_WRITE_OP_MODE					0x0
++#define   CLAUSE_22_READ_OP_MODE					0x1
++#define   CLAUSE_45_WRITE_OP_MODE					0x5
++#define   CLAUSE_45_READ_OP_MODE					0x6
++#define  MIIM_PARAMS__SEL_INT_PHY_SHIFT				16
++#define  MIIM_PARAMS__SEL_INT_PHY_WIDTH				1
++#define  MIIM_PARAMS__SEL_INT_PHY_MASK				((1 << MIIM_PARAMS__SEL_INT_PHY_WIDTH) - 1)
++#define  MIIM_PARAMS__PHY_WR_DATA_SHIFT				0
++#define  MIIM_PARAMS__PHY_WR_DATA_WIDTH				16
++#define  MIIM_PARAMS__PHY_WR_DATA_MASK				((1 << MIIM_PARAMS__PHY_WR_DATA_WIDTH) - 1)
++#define MIIM_CH0_ADDRESS_REG						0x008
++#define MIIM_CH1_ADDRESS_REG						0x018
++#define MIIM_CH2_ADDRESS_REG						0x028
++#define MIIM_CH3_ADDRESS_REG						0x038
++#define  MIIM_ADDRESS__C45_REGADDR_SHIFT			16
++#define  MIIM_ADDRESS__C45_REGADDR_WIDTH			16
++#define  MIIM_ADDRESS__C45_REGADDR_MASK				((1 << MIIM_ADDRESS__C45_REGADDR_WIDTH) - 1)
++#define  MIIM_ADDRESS__C22_REGADDR_C45_DTYPE_SHIFT	11
++#define  MIIM_ADDRESS__C22_REGADDR_C45_DTYPE_WIDTH	5
++#define  MIIM_ADDRESS__C22_REGADDR_C45_DTYPE_MASK	((1 << MIIM_ADDRESS__C22_REGADDR_C45_DTYPE_WIDTH) - 1)
++#define  MIIM_ADDRESS__PHY_ID_SHIFT					6
++#define  MIIM_ADDRESS__PHY_ID_WIDTH					5
++#define  MIIM_ADDRESS__PHY_ID_MASK					((1 << MIIM_ADDRESS__PHY_ID_WIDTH) - 1)
++#define MIIM_CH0_STATUS_REG							0x00c
++#define MIIM_CH1_STATUS_REG							0x01c
++#define MIIM_CH2_STATUS_REG							0x02c
++#define MIIM_CH3_STATUS_REG							0x03c
++#define  MIIM_STATUS__DONE_SHIFT					18
++#define  MIIM_STATUS__DONE_WIDTH					1
++#define  MIIM_STATUS__DONE_MASK						((1 << MIIM_STATUS__DONE_WIDTH) - 1)
++#define  MIIM_STATUS__ERROR_SHIFT					17
++#define  MIIM_STATUS__ERROR_WIDTH					1
++#define  MIIM_STATUS__ERROR_MASK					((1 << MIIM_STATUS__ERROR_WIDTH) - 1)
++#define  MIIM_STATUS__ACTIVE_SHIFT					16
++#define  MIIM_STATUS__ACTIVE_WIDTH					1
++#define  MIIM_STATUS__ACTIVE_MASK					((1 << MIIM_STATUS__ACTIVE_WIDTH) - 1)
++#define  MIIM_STATUS__PHY_RD_DATA_SHIFT				0
++#define  MIIM_STATUS__PHY_RD_DATA_WIDTH				16
++#define  MIIM_STATUS__PHY_RD_DATA_MASK				((1 << MIIM_STATUS__PHY_RD_DATA_WIDTH) - 1)
++#define MIIM_RING0_CONTROL_REG						0x0f0
++#define MIIM_RING1_CONTROL_REG						0x0f4
++#define MIIM_RING2_CONTROL_REG						0x0f8
++#define MIIM_RING3_CONTROL_REG						0x0fc
++#define MIIM_RING4_CONTROL_REG						0x100
++#define MIIM_RING5_CONTROL_REG						0x104
++#define MIIM_RING6_CONTROL_REG						0x108
++#define MIIM_RING7_CONTROL_REG						0x10c
++#define MIIM_RING8_CONTROL_REG						0x110
++#define MIIM_RING9_CONTROL_REG						0x114
++#define MIIM_RING10_CONTROL_REG						0x118
++#define MIIM_RING11_CONTROL_REG						0x11c
++#define  MIIM_RING_CTRL__MDC_MODE_SHIFT				26
++#define  MIIM_RING_CTRL__MDC_MODE_WIDTH				1
++#define  MIIM_RING_CTRL__MDC_MODE_MASK				((1 << MIIM_RING_CTRL__MDC_MODE_WIDTH) - 1)
++#define  MIIM_RING_CTRL__PREAMBLE_SHIFT				24
++#define  MIIM_RING_CTRL__PREAMBLE_WIDTH				2
++#define  MIIM_RING_CTRL__PREAMBLE_MASK				((1 << MIIM_RING_CTRL__PREAMBLE_WIDTH) - 1)
++#define  MIIM_RING_CTRL__MDIO_OUT_DELAY_SHIFT		16
++#define  MIIM_RING_CTRL__MDIO_OUT_DELAY_WIDTH		8
++#define  MIIM_RING_CTRL__MDIO_OUT_DELAY_MASK		((1 << MIIM_RING_CTRL__MDIO_OUT_DELAY_WIDTH) - 1)
++#define  MIIM_RING_CTRL__CLOCK_DIVIDER_EXT_SHIFT	8
++#define  MIIM_RING_CTRL__CLOCK_DIVIDER_EXT_WIDTH	8
++#define  MIIM_RING_CTRL__CLOCK_DIVIDER_EXT_MASK		((1 << MIIM_RING_CTRL__CLOCK_DIVIDER_EXT_WIDTH) - 1)
++#define  MIIM_RING_CTRL__CLOCK_DIVIDER_INT_SHIFT	0
++#define  MIIM_RING_CTRL__CLOCK_DIVIDER_INT_WIDTH	8
++#define  MIIM_RING_CTRL__CLOCK_DIVIDER_INT_MASK		((1 << MIIM_RING_CTRL__CLOCK_DIVIDER_INT_WIDTH) - 1)
++#define MIIM_COMMON_CONTROL_REG						0x140
++#define  MIIM_COMM_CTRL__EXT_MDIO_MSTR_CNTRL_SHIFT	0
++#define  MIIM_COMM_CTRL__EXT_MDIO_MSTR_CNTRL_WIDTH	1
++#define  MIIM_COMM_CTRL__EXT_MDIO_MSTR_CNTRL_MASK	((1 << MIIM_COMM_CTRL__EXT_MDIO_MSTR_CNTRL_WIDTH) - 1)
++
++#define MIIM_MAX_RINGS				12
++
++struct cmicx_miim_cmd {
++	u32 bus_id;
++	u32 int_sel;
++	u32 phy_id;
++	u32 reg_num;
++	u32 c45_sel;
++	u16 op_mode;
++	u16 phy_data;
++};
++
++static inline u32 cmicx_miim_read(struct iproc_mdio_ctrl *mdio_ctrl, u32 reg)
++{
++	return readl(mdio_ctrl->base + reg);
++}
++
++static inline void cmicx_miim_write(struct iproc_mdio_ctrl *mdio_ctrl,
++				u32 reg, u32 data)
++{
++	writel(data, mdio_ctrl->base + reg);
++}
++
++static int cmicx_miim_init(struct iproc_mdio_ctrl *mdio_ctrl)
++{
++	u32 val;
++	u32 mstr_ctrl;
++
++	/* Give MDIO control to IPROC */
++	val = cmicx_miim_read(mdio_ctrl, MIIM_COMMON_CONTROL_REG);
++	mstr_ctrl = GET_REG_FIELD(val, MIIM_COMM_CTRL__EXT_MDIO_MSTR_CNTRL_SHIFT,
++						MIIM_COMM_CTRL__EXT_MDIO_MSTR_CNTRL_MASK);
++	if (!mstr_ctrl) {
++		ISET_REG_FIELD(val, MIIM_COMM_CTRL__EXT_MDIO_MSTR_CNTRL_SHIFT,
++				MIIM_COMM_CTRL__EXT_MDIO_MSTR_CNTRL_MASK, 1);
++		cmicx_miim_write(mdio_ctrl, MIIM_COMMON_CONTROL_REG, val);
++	}
++	return 0;
++}
++
++static int cmicx_miim_ring_init(struct iproc_mdio_ctrl *mdio_ctrl, u32 ring_idx,
++					int int_divider, int ext_divider, int out_delay)
++{
++    u32 ring_ctrl_reg[] = { MIIM_RING0_CONTROL_REG,
++                            MIIM_RING1_CONTROL_REG,
++                            MIIM_RING2_CONTROL_REG,
++                            MIIM_RING3_CONTROL_REG,
++                            MIIM_RING4_CONTROL_REG,
++                            MIIM_RING5_CONTROL_REG,
++                            MIIM_RING6_CONTROL_REG,
++                            MIIM_RING7_CONTROL_REG,
++							MIIM_RING8_CONTROL_REG,
++							MIIM_RING9_CONTROL_REG,
++							MIIM_RING10_CONTROL_REG,
++							MIIM_RING11_CONTROL_REG };
++	u32 val;
++
++	if (ring_idx >= MIIM_MAX_RINGS) {
++		return -EINVAL;
++	}
++
++	val = cmicx_miim_read(mdio_ctrl, ring_ctrl_reg[ring_idx]);
++	if (int_divider != -1) {
++		ISET_REG_FIELD(val, MIIM_RING_CTRL__CLOCK_DIVIDER_INT_SHIFT,
++				MIIM_RING_CTRL__CLOCK_DIVIDER_INT_MASK, int_divider);
++	}
++    if (ext_divider != -1) {
++		ISET_REG_FIELD(val, MIIM_RING_CTRL__CLOCK_DIVIDER_EXT_SHIFT,
++				MIIM_RING_CTRL__CLOCK_DIVIDER_EXT_MASK, ext_divider);
++    }
++    if (out_delay != -1) {
++		ISET_REG_FIELD(val, MIIM_RING_CTRL__MDIO_OUT_DELAY_SHIFT,
++				MIIM_RING_CTRL__MDIO_OUT_DELAY_MASK, out_delay);
++    }
++	cmicx_miim_write(mdio_ctrl, ring_ctrl_reg[ring_idx], val);
++
++    return 0;
++}
++
++static int cmicx_miim_operation(struct iproc_mdio_ctrl *mdio_ctrl,
++						struct cmicx_miim_cmd *miim_cmd)
++{
++	unsigned long flags;
++	u32 is_done, is_error;
++	u32 optype = 0;
++	u32 val;
++	int usec = MII_OP_MAX_HALT_USEC;
++	int ret = 0,bus_id = miim_cmd->bus_id;
++
++	spin_lock_irqsave(&mdio_ctrl->lock, flags);
++
++	/* prepare transaction data */
++	//val = cmicx_miim_read(mdio_ctrl, (MIIM_CH0_ADDRESS_REG + 0x10 * bus_id));
++	val = 0;
++	ISET_REG_FIELD(val, MIIM_ADDRESS__PHY_ID_SHIFT,
++			MIIM_ADDRESS__PHY_ID_MASK, miim_cmd->phy_id);
++	if (miim_cmd->c45_sel) {
++		ISET_REG_FIELD(val, MIIM_ADDRESS__C45_REGADDR_SHIFT,
++				MIIM_ADDRESS__C45_REGADDR_MASK, miim_cmd->reg_num);
++		ISET_REG_FIELD(val, MIIM_ADDRESS__C22_REGADDR_C45_DTYPE_SHIFT,
++				MIIM_ADDRESS__C22_REGADDR_C45_DTYPE_MASK, (miim_cmd->reg_num >> 16));
++    } else {
++		ISET_REG_FIELD(val, MIIM_ADDRESS__C22_REGADDR_C45_DTYPE_SHIFT,
++				MIIM_ADDRESS__C22_REGADDR_C45_DTYPE_MASK, miim_cmd->reg_num);
++	}
++	//cmicx_miim_write(mdio_ctrl, MIIM_CH1_ADDRESS_REG, val);
++	cmicx_miim_write(mdio_ctrl, (MIIM_CH0_ADDRESS_REG + 0x10 * bus_id), val);
++
++	/* _SOC_IF_ERR_EXIT(READ_MIIM_CH0_PARAMSr(unit, &reg_val)); */
++	//val = cmicx_miim_read(mdio_ctrl, (MIIM_CH0_PARAMS_REG + 0x10 * bus_id));
++	val = 0;
++	ISET_REG_FIELD(val, MIIM_PARAMS__PHY_WR_DATA_SHIFT,
++			MIIM_PARAMS__PHY_WR_DATA_MASK, miim_cmd->phy_data);
++	ISET_REG_FIELD(val, MIIM_PARAMS__SEL_INT_PHY_SHIFT,
++			MIIM_PARAMS__SEL_INT_PHY_MASK, miim_cmd->int_sel);
++	ISET_REG_FIELD(val, MIIM_PARAMS__RING_MAP_SHIFT,
++			MIIM_PARAMS__RING_MAP_MASK, (1 << miim_cmd->bus_id));
++	if (miim_cmd->c45_sel) {
++		optype = CLAUSE_45_READ_OP_MODE;
++		if (miim_cmd->op_mode == MII_OP_MODE_WRITE) {
++			optype = CLAUSE_45_WRITE_OP_MODE;
++		}
++	} else {
++		optype = CLAUSE_22_READ_OP_MODE;
++		if (miim_cmd->op_mode == MII_OP_MODE_WRITE) {
++			optype = CLAUSE_22_WRITE_OP_MODE;
++		}
++	}
++	ISET_REG_FIELD(val, MIIM_PARAMS__MDIO_OP_TYPE_SHIFT,
++			MIIM_PARAMS__MDIO_OP_TYPE_MASK, optype);
++	//cmicx_miim_write(mdio_ctrl, MIIM_CH1_PARAMS_REG, val);
++	cmicx_miim_write(mdio_ctrl, (MIIM_CH0_PARAMS_REG + 0x10 * bus_id), val);
++
++    /* start transaction */
++    val = 0;
++	ISET_REG_FIELD(val, MIIM_CONTROL__START_SHIFT,
++			MIIM_CONTROL__START_MASK, 0x1);
++	//cmicx_miim_write(mdio_ctrl, MIIM_CH1_CONTROL_REG, val);
++	cmicx_miim_write(mdio_ctrl, (MIIM_CH0_CONTROL_REG + 0x10 * bus_id), val);
++
++    /* poll for DONE bit */
++	do {
++		//val = cmicx_miim_read(mdio_ctrl, MIIM_CH1_STATUS_REG);
++		val = cmicx_miim_read(mdio_ctrl, (MIIM_CH0_STATUS_REG + 0x10 * bus_id));
++		is_done = GET_REG_FIELD(val, MIIM_STATUS__DONE_SHIFT, MIIM_STATUS__DONE_MASK);
++		if (is_done) {
++			break; /* MIIM operation is done */
++		}
++
++		udelay(1);
++	} while (usec-- > 0);
++
++    /* check for transaction error */
++	//val = cmicx_miim_read(mdio_ctrl, MIIM_CH1_STATUS_REG);
++	val = cmicx_miim_read(mdio_ctrl, (MIIM_CH0_STATUS_REG + 0x10 * bus_id));
++	is_error = GET_REG_FIELD(val, MIIM_STATUS__ERROR_SHIFT, MIIM_STATUS__ERROR_MASK);
++    if (is_error) {
++        printk(KERN_ERR "%s : mdio execution error.\n", __func__);
++		ret = -EIO;
++		goto exit;
++    }
++
++	/* in case of read - get data */
++	if (miim_cmd->op_mode == MII_OP_MODE_READ) {
++		miim_cmd->phy_data = GET_REG_FIELD(val, MIIM_STATUS__PHY_RD_DATA_SHIFT,
++										MIIM_STATUS__PHY_RD_DATA_MASK);
++    }
++
++exit:
++    /* cleanup */
++	//cmicx_miim_write(mdio_ctrl, MIIM_CH1_CONTROL_REG, 0);
++	cmicx_miim_write(mdio_ctrl, (MIIM_CH0_CONTROL_REG + 0x10 * bus_id), 0);
++	spin_unlock_irqrestore(&mdio_ctrl->lock, flags);
++
++    return ret;
++}
++
++static int cmicx_mdiobus_read(struct mii_bus *bus, int phy_id, int reg_num)
++{
++	struct iproc_mdiobus_private *mdio_bus_priv = bus->priv;
++	struct iproc_mdiobus_data *mdio_bus_data = mdio_bus_priv->bus_data;
++	struct cmicx_miim_cmd miim_cmd = { 0 };
++	int ret = 0;
++
++	if (IPROC_MDIOBUS_TYPE_INTERNAL == mdio_bus_data->phybus_type) {
++		miim_cmd.int_sel = 1;
++	}
++	if (reg_num & MII_ADDR_C45) {
++		miim_cmd.c45_sel = 1;
++	}
++	miim_cmd.bus_id = mdio_bus_data->phybus_num;
++	miim_cmd.phy_id = phy_id;
++	miim_cmd.reg_num = reg_num;
++	miim_cmd.op_mode = MII_OP_MODE_READ;
++	miim_cmd.phy_data = 0;
++
++	ret = cmicx_miim_operation(mdio_bus_priv->hw_ctrl, &miim_cmd);
++	if (ret == 0) {
++		return miim_cmd.phy_data;
++	}
++	return ret;
++}
++
++static int cmicx_mdiobus_write(struct mii_bus *bus, int phy_id,
++				int reg_num, u16 val)
++{
++	struct iproc_mdiobus_private *mdio_bus_priv = bus->priv;
++	struct iproc_mdiobus_data *mdio_bus_data = mdio_bus_priv->bus_data;
++	struct cmicx_miim_cmd miim_cmd = {0};
++
++	if (IPROC_MDIOBUS_TYPE_INTERNAL == mdio_bus_data->phybus_type) {
++		miim_cmd.int_sel = 1;
++	}
++	if (reg_num & MII_ADDR_C45) {
++		miim_cmd.c45_sel = 1;
++	}
++	miim_cmd.bus_id = mdio_bus_data->phybus_num;
++	miim_cmd.phy_id = phy_id;
++	miim_cmd.reg_num = reg_num;
++	miim_cmd.op_mode = MII_OP_MODE_WRITE;
++	miim_cmd.phy_data = val;
++
++	return cmicx_miim_operation(mdio_bus_priv->hw_ctrl, &miim_cmd);
++}
++
++/*************************************************************************************
++**************************************************************************************/
++static int cmicx_mdiobus_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct device_node *dn = pdev->dev.of_node;
++	struct mii_bus *mii_bus = NULL;
++	struct iproc_mdiobus_private *mdio_bus_priv = NULL;
++	struct iproc_mdiobus_data *mdio_bus_data = NULL;
++	struct iproc_mdio_ctrl *mdio_ctrl = NULL;
++	u32 mdio_bus_id;
++	int clock_divider, out_delay;
++	int divider_int = -1, divider_ext = -1;
++	const char *mdio_bus_type;
++	int ret;
++
++	mdio_ctrl = devm_kzalloc(dev, sizeof(*mdio_ctrl), GFP_KERNEL);
++	if (!mdio_ctrl) {
++		dev_err(dev, "cmicx mdio resource allocated failed\n");
++		return -ENOMEM;
++	}
++
++	spin_lock_init(&mdio_ctrl->lock);
++
++	/* Get register base address */
++	mdio_ctrl->base = of_iomap(dn, 0);
++	if (!mdio_ctrl->base) {
++		dev_err(dev, "cmicx mdio register base map error\n");
++		ret = -ENXIO;
++		goto err;
++	}
++
++	/* If no property available, use default: 2 */
++	if (of_property_read_u32(dn, "#bus-id", &mdio_bus_id)) {
++		mdio_bus_id = 2;
++	}
++
++	/* If no property available, use default: "external" */
++	if (of_property_read_string(dn, "bus-type", &mdio_bus_type)) {
++		mdio_bus_type = "external";
++	}
++
++	/* If no property available, use default: -1 */
++	if (of_property_read_u32(dn, "#divider", &clock_divider)) {
++		clock_divider = -1;
++	}
++
++	/* If no property available, use default: -1 */
++	if (of_property_read_u32(dn, "#delay", &out_delay)) {
++		out_delay = -1;
++	}
++
++	mdio_bus_data = devm_kzalloc(dev, sizeof(*mdio_bus_data), GFP_KERNEL);
++	if (!mdio_bus_data) {
++		dev_err(dev, "iProc MDIO bus data allocated failed\n");
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	mdio_bus_data->phybus_num = mdio_bus_id;
++	if (!strcmp(mdio_bus_type, "internal")) {
++		mdio_bus_data->phybus_type = IPROC_MDIOBUS_TYPE_INTERNAL;
++		divider_int = clock_divider;
++	} else {
++		mdio_bus_data->phybus_type = IPROC_MDIOBUS_TYPE_EXTERNAL;
++		divider_ext = clock_divider;
++	}
++
++	mdio_bus_priv = devm_kzalloc(dev, sizeof(*mdio_bus_priv), GFP_KERNEL);
++	if (!mdio_bus_priv) {
++		dev_err(dev, "iProc MDIO private data allocated failed\n");
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	mdio_bus_priv->bus_data = mdio_bus_data;
++	mdio_bus_priv->hw_ctrl = mdio_ctrl;
++
++	ret = cmicx_miim_init(mdio_ctrl);
++	if (ret) {
++		dev_err(dev, "cmicx init failed\n");
++		goto err;
++	}
++
++	ret = cmicx_miim_ring_init(mdio_ctrl, mdio_bus_id,
++							divider_int, divider_ext, out_delay);
++	if (ret) {
++		dev_err(dev, "cmicx init ring failed\n");
++		goto err;
++	}
++
++	mii_bus = mdiobus_alloc();
++	if (!mii_bus) {
++		dev_err(dev, "MII bus memory allocated failed\n");
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	mii_bus->name = "iproc_cmicx_mdiobus";
++	snprintf(mii_bus->id, MII_BUS_ID_SIZE, "%s-%d-%d", "cmicx mdio", mdio_bus_id,
++				(mdio_bus_data->phybus_type == IPROC_MDIOBUS_TYPE_EXTERNAL) ? 1 : 0);
++	mii_bus->parent = dev;
++	mii_bus->read = cmicx_mdiobus_read;
++	mii_bus->write = cmicx_mdiobus_write;
++	mii_bus->priv = mdio_bus_priv;
++
++	ret = of_mdiobus_register(mii_bus, dn);
++	if (ret) {
++		dev_err(dev, "mdiobus register failed\n");
++		goto err;
++	}
++
++	platform_set_drvdata(pdev, mii_bus);
++
++	return 0;
++
++err:
++	if (mii_bus) {
++		mdiobus_free(mii_bus);
++	}
++	if (mdio_bus_priv) {
++		devm_kfree(dev, mdio_bus_priv);
++	}
++	if (mdio_bus_data) {
++		devm_kfree(dev, mdio_bus_data);
++	}
++	if (mdio_ctrl->base) {
++		iounmap(mdio_ctrl->base);
++	}
++	if (mdio_ctrl) {
++		devm_kfree(dev, mdio_ctrl);
++	}
++
++	return ret;
++}
++
++static int cmicx_mdiobus_remove(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct mii_bus *mii_bus = platform_get_drvdata(pdev);
++	struct iproc_mdiobus_private *mdio_bus_priv;
++	struct iproc_mdiobus_data *mdio_bus_data;
++	struct iproc_mdio_ctrl *mdio_ctrl;
++
++	if (mii_bus) {
++		mdio_bus_priv = mii_bus->priv;
++		mdio_bus_data = mdio_bus_priv->bus_data;
++		mdio_ctrl = mdio_bus_priv->hw_ctrl;
++
++		mdiobus_unregister(mii_bus);
++		mdiobus_free(mii_bus);
++
++		if (mdio_bus_priv) {
++			if (mdio_ctrl) {
++				if (mdio_ctrl->base) {
++					iounmap(mdio_ctrl->base);
++				}
++				devm_kfree(dev, mdio_ctrl);
++			}
++			if (mdio_bus_data) {
++				devm_kfree(dev, mdio_bus_data);
++			}
++			devm_kfree(dev, mdio_bus_priv);
++		}
++	}
++
++	return 0;
++}
++
++static const struct of_device_id cmicx_mdio_dt_ids[] = {
++	{ .compatible = "brcm,iproc-cmicx-mdio"},
++	{  }
++};
++MODULE_DEVICE_TABLE(of, cmicx_mdio_dt_ids);
++
++static struct platform_driver iproc_cmicx_mdiobus_driver =
++{
++	.driver = {
++		.name = "iproc_cmicx_mdio",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(cmicx_mdio_dt_ids),
++	},
++	.probe   = cmicx_mdiobus_probe,
++	.remove  = cmicx_mdiobus_remove,
++};
++
++static int __init cmicx_mdio_init(void)
++{
++	return platform_driver_register(&iproc_cmicx_mdiobus_driver);
++}
++
++static void __exit cmicx_mdio_exit(void)
++{
++	platform_driver_unregister(&iproc_cmicx_mdiobus_driver);
++}
++
++subsys_initcall(cmicx_mdio_init);
++module_exit(cmicx_mdio_exit);
++
++MODULE_AUTHOR("Broadcom Corporation");
++MODULE_DESCRIPTION("iProc CMICx mdio driver");
++MODULE_LICENSE("GPL");
++
+diff --git a/drivers/net/mdio/mdio-xgs-iproc.h b/drivers/net/mdio/mdio-xgs-iproc.h
+new file mode 100644
+index 000000000000..554b5c937c3b
+--- /dev/null
++++ b/drivers/net/mdio/mdio-xgs-iproc.h
+@@ -0,0 +1,55 @@
++/*
++ * $Copyright Open Broadcom Corporation$
++ */
++
++
++#ifndef _XGS_IPROC_MDIO_H_
++#define _XGS_IPROC_MDIO_H_
++
++enum {
++	MII_OP_MODE_READ,
++	MII_OP_MODE_WRITE,
++	MII_OP_MODE_MAX
++};
++
++/* iProc General Interface for mdio bus support */
++struct iproc_mdiobus_data {
++	/* required for cmicd mdio controller supports several buses */
++	u32 phybus_num;
++	u32 phybus_type;
++};
++
++/*
++ * struct iproc_mdio_ctrl
++ * @base: base address of cmic_common
++ * @iproc_mdio_enable_reg: register addr of mdio bus enable
++ * @iproc_mdio_sel_bit: bit position in register for enabling mdio bus access
++ * @lock: spin lock protecting io access
++ */
++struct iproc_mdio_ctrl {
++	void __iomem *base;
++	void __iomem *iproc_mdio_enable_reg;
++	u32 iproc_mdio_sel_bit;
++	spinlock_t lock;
++	int ref_cnt;
++};
++
++struct iproc_mdiobus_private {
++	struct iproc_mdiobus_data *bus_data;
++	struct iproc_mdio_ctrl *hw_ctrl;
++};
++
++#define SET_REG_FIELD(reg_value, fshift, fmask, fvalue)	\
++	(reg_value) = ((reg_value) & ~((fmask) << (fshift))) |  \
++		(((fvalue) & (fmask)) << (fshift))
++#define ISET_REG_FIELD(reg_value, fshift, fmask, fvalue) \
++		(reg_value) = (reg_value) | (((fvalue) & (fmask)) << (fshift))
++#define GET_REG_FIELD(reg_value, fshift, fmask)	\
++	(((reg_value) & ((fmask) << (fshift))) >> (fshift))
++
++#define MII_OP_MAX_HALT_USEC	500
++
++#define IPROC_MDIOBUS_TYPE_INTERNAL     0
++#define IPROC_MDIOBUS_TYPE_EXTERNAL     1
++
++#endif /* _XGS_IPROC_MDIO_H_ */
+-- 
+2.33.0
+
