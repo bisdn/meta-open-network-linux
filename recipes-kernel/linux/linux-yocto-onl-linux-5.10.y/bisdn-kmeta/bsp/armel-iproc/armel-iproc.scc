@@ -2,39 +2,47 @@ define KMACHINE armel-iproc
 define KTYPE standard
 define KARCH arm
 
-patch brcm-iproc-5.10.patch
-patch drivers-usb-phy-phy-xgs-iproc-usb-phy-mode.patch
-patch drivers-i2c-busses-xgs_iproc_smbus-clk-freq.patch
-patch 0001-iproc-cmic-export-iproc_cmic_base_get.patch
-patch 0002-iproc-cmic-get-and-export-irq.patch
+# backports from 5.11
 
-patch 0001-ARM-9045-1-uncompress-Validate-start-of-physical-mem.patch
+# stable: patch 01-01-ARM-p2v-fix-handling-of-LPAE-translation-in-BE-mode.patch
+# stable: patch 01-02-ARM-assembler-introduce-adr_l-ldr_l-and-str_l-macros.patch
+patch 01-03-ARM-module-add-support-for-place-relative-relocation.patch
+patch 01-04-ARM-p2v-move-patching-code-to-separate-assembler-sou.patch
+patch 01-05-ARM-p2v-factor-out-shared-loop-processing.patch
+patch 01-06-ARM-p2v-factor-out-BE8-handling.patch
+patch 01-07-ARM-p2v-drop-redundant-type-argument-from-__pv_stub.patch
+patch 01-08-ARM-p2v-use-relative-references-in-patch-site-arrays.patch
+patch 01-09-ARM-p2v-simplify-__fixup_pv_table.patch
+patch 01-10-ARM-p2v-switch-to-MOVW-for-Thumb2-and-ARM-LPAE.patch
+patch 01-11-ARM-p2v-reduce-p2v-alignment-requirement-to-2-MiB.patch
 
-# stable: patch 0001-ARM-p2v-fix-handling-of-LPAE-translation-in-BE-mode.patch
-# stable: patch 0002-ARM-assembler-introduce-adr_l-ldr_l-and-str_l-macros.patch
-patch 0003-ARM-module-add-support-for-place-relative-relocation.patch
-patch 0004-ARM-p2v-move-patching-code-to-separate-assembler-sou.patch
-patch 0005-ARM-p2v-factor-out-shared-loop-processing.patch
-patch 0006-ARM-p2v-factor-out-BE8-handling.patch
-patch 0007-ARM-p2v-drop-redundant-type-argument-from-__pv_stub.patch
-patch 0008-ARM-p2v-use-relative-references-in-patch-site-arrays.patch
-patch 0009-ARM-p2v-simplify-__fixup_pv_table.patch
-patch 0010-ARM-p2v-switch-to-MOVW-for-Thumb2-and-ARM-LPAE.patch
-patch 0011-ARM-p2v-reduce-p2v-alignment-requirement-to-2-MiB.patch
+# stable: patch 02-01-ARM-efistub-replace-adrl-pseudo-op-with-adr_l-macro-.patch
+patch 02-02-ARM-head-common.S-use-PC-relative-insn-sequence-for-.patch
+patch 02-03-ARM-head-common.S-use-PC-relative-insn-sequence-for-.patch
+patch 02-04-ARM-head.S-use-PC-relative-insn-sequence-for-seconda.patch
+patch 02-05-ARM-kernel-use-relative-references-for-UP-SMP-altern.patch
+patch 02-06-ARM-head-use-PC-relative-insn-sequence-for-__smp_alt.patch
+patch 02-07-ARM-sleep.S-use-PC-relative-insn-sequence-for-sleep_.patch
+patch 02-08-ARM-head.S-use-PC-relative-insn-sequence-to-calculat.patch
+patch 02-09-ARM-kvm-replace-open-coded-VA-PA-calculations-with-a.patch
 
-# stable: patch 0001-ARM-efistub-replace-adrl-pseudo-op-with-adr_l-macro-.patch
-patch 0002-ARM-head-common.S-use-PC-relative-insn-sequence-for-.patch
-patch 0003-ARM-head-common.S-use-PC-relative-insn-sequence-for-.patch
-patch 0004-ARM-head.S-use-PC-relative-insn-sequence-for-seconda.patch
-patch 0005-ARM-kernel-use-relative-references-for-UP-SMP-altern.patch
-patch 0006-ARM-head-use-PC-relative-insn-sequence-for-__smp_alt.patch
-patch 0007-ARM-sleep.S-use-PC-relative-insn-sequence-for-sleep_.patch
-patch 0008-ARM-head.S-use-PC-relative-insn-sequence-to-calculat.patch
-patch 0009-ARM-kvm-replace-open-coded-VA-PA-calculations-with-a.patch
+# backports from 5.12
 
-patch 0001-ARM-9057-1-cache-v7-add-missing-ISB-after-cache-leve.patch
-patch 0002-ARM-9058-1-cache-v7-refactor-v7_invalidate_l1-to-avo.patch
-patch 0003-ARM-9059-1-cache-v7-get-rid-of-mini-stack.patch
+patch 03-01-ARM-9045-1-uncompress-Validate-start-of-physical-mem.patch
+
+# backports from 5.13
+
+patch 04-01-ARM-9057-1-cache-v7-add-missing-ISB-after-cache-leve.patch
+patch 04-02-ARM-9058-1-cache-v7-refactor-v7_invalidate_l1-to-avo.patch
+patch 04-03-ARM-9059-1-cache-v7-get-rid-of-mini-stack.patch
+
+# platform support
+
+patch 10-01-brcm-iproc-5.10.patch
+patch 10-02-drivers-usb-phy-phy-xgs-iproc-usb-phy-mode.patch
+patch 10-03-drivers-i2c-busses-xgs_iproc_smbus-clk-freq.patch
+patch 10-04-iproc-cmic-export-iproc_cmic_base_get.patch
+patch 10-05-iproc-cmic-get-and-export-irq.patch
 
 include cfg/bisdn-linux.scc
 
