@@ -1,10 +1,10 @@
 diff --git a/drivers/usb/phy/Kconfig b/drivers/usb/phy/Kconfig
-index 0df607fd128c..487458dcb0c8 100644
+index ef4787cd3d37..283bb87701ac 100644
 --- a/drivers/usb/phy/Kconfig
 +++ b/drivers/usb/phy/Kconfig
-@@ -191,6 +191,13 @@ config USB_XGS_IPROC_DRD
- 	help
- 	  BRCM iProc USB DRD controller support 
+@@ -184,6 +184,13 @@ config USB_ULPI_VIEWPORT
+ 	  Provides read/write operations to the ULPI phy register set for
+ 	  controllers with a viewport register (e.g. Chipidea/ARC controllers).
  
 +config USBPHY_XGS_IPROC
 +	tristate "BRCM iProc USB controller support"
@@ -17,13 +17,13 @@ index 0df607fd128c..487458dcb0c8 100644
  	tristate "Ingenic SoCs Transceiver Driver"
  	depends on MIPS || COMPILE_TEST
 diff --git a/drivers/usb/phy/Makefile b/drivers/usb/phy/Makefile
-index 5d512fe264dc..0bc65450f470 100644
+index b352bdbe8712..abe4b409623e 100644
 --- a/drivers/usb/phy/Makefile
 +++ b/drivers/usb/phy/Makefile
-@@ -24,5 +24,6 @@ obj-$(CONFIG_USB_MXS_PHY)		+= phy-mxs-usb.o
+@@ -23,5 +23,6 @@ obj-$(CONFIG_USB_MV_OTG)		+= phy-mv-usb.o
+ obj-$(CONFIG_USB_MXS_PHY)		+= phy-mxs-usb.o
  obj-$(CONFIG_USB_ULPI)			+= phy-ulpi.o
  obj-$(CONFIG_USB_ULPI_VIEWPORT)		+= phy-ulpi-viewport.o
- obj-$(CONFIG_USB_XGS_IPROC_DRD)		+= phy-xgs-iproc-drd.o
 +obj-$(CONFIG_USBPHY_XGS_IPROC)		+= phy-xgs-iproc.o
  obj-$(CONFIG_KEYSTONE_USB_PHY)		+= phy-keystone.o
  obj-$(CONFIG_JZ4770_PHY)		+= phy-jz4770.o
