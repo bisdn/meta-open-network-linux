@@ -1,7 +1,8 @@
-diff -urpN a/drivers/usb/phy/phy-xgs-iproc.c b/drivers/usb/phy/phy-xgs-iproc.c
---- a/drivers/usb/phy/phy-xgs-iproc.c	2018-12-17 14:49:55.121649311 +0000
-+++ b/drivers/usb/phy/phy-xgs-iproc.c	2018-12-17 14:50:06.529412019 +0000
-@@ -161,12 +161,22 @@ static int xgs_iproc_usb_phy_mode(struct
+diff --git a/drivers/usb/phy/phy-xgs-iproc.c b/drivers/usb/phy/phy-xgs-iproc.c
+index 8fb378ba2907..bbaae8e05612 100644
+--- a/drivers/usb/phy/phy-xgs-iproc.c
++++ b/drivers/usb/phy/phy-xgs-iproc.c
+@@ -161,12 +161,22 @@ static int xgs_iproc_usb_phy_mode(struct iproc_usb_priv *iproc_usb_data)
  	int usb_mode = IPROC_USB_MODE_HOST;
  	u32 __maybe_unused val;
  	int __maybe_unused gpio_pin, ret;
@@ -24,3 +25,6 @@ diff -urpN a/drivers/usb/phy/phy-xgs-iproc.c b/drivers/usb/phy/phy-xgs-iproc.c
  		/* gpio pin 4 to control host/device mode */
  		gpio_pin = of_get_named_gpio(dev->of_node, "usbdev-gpio", 0);
  
+-- 
+2.33.0
+
