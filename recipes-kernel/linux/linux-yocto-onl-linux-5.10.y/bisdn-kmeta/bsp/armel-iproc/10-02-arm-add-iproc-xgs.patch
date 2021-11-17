@@ -900,7 +900,7 @@ index 000000000000..35cd1896a318
 +};
 diff --git a/arch/arm/boot/dts/bcm-helix4.dtsi b/arch/arm/boot/dts/bcm-helix4.dtsi
 new file mode 100644
-index 000000000000..ee347c923744
+index 000000000000..66a4703ed4a7
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-helix4.dtsi
 @@ -0,0 +1,483 @@
@@ -1167,7 +1167,7 @@ index 000000000000..ee347c923744
 +		};
 +
 +		ehci0: usb@1802a000 {
-+			compatible = "generic-ehci";
++			compatible = "brcm,xgs-iproc-ehci", "generic-ehci";
 +			reg = <0x1802a000 0x1000>;
 +			interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>;
 +			usb-phy = <&usbphy0>;
