@@ -45,7 +45,7 @@ patch 10-04-arm-init-DEBUG_RODATA-fix.patch
 patch 10-05-hw_random-xgs-iproc-rng100.patch
 patch 10-06-clk-clk-iproc-armpll-avoid-overflow.patch
 patch 10-07-clk-clk-xgs-iproc.patch
-patch 10-08-gpio-gpio-xgs-iproc-legacy.patch
+patch 10-08-gpio-allow-xgs-iproc-for-ARCH_XGS_IPROC-as-well.patch
 patch 10-09-i2c-i2c-xgs-iproc.patch
 patch 10-10-mtd-brcmnand-ignore-warning.patch
 patch 10-11-bgmac-xgs-iproc-changes.patch
