@@ -39,6 +39,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
            file://0001-accton-as4630-54pe-silence-error.patch \
            file://0001-Validate-tx_disable-function-of-4-SFP-ports.patch \
+           file://0001-as4630-54pe-Fix-fan-LED-always-showing-fan-is-turned.patch \
 "
 
 inherit systemd
