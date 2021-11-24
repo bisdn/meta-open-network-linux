@@ -38,6 +38,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://questone-2a;subdir=git/packages/platforms/celestica/x86-64 \
            file://0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
            file://0001-accton-as4630-54pe-silence-error.patch \
+           file://0001-Validate-tx_disable-function-of-4-SFP-ports.patch \
 "
 
 inherit systemd
