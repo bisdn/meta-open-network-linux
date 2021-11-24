@@ -1,0 +1,77 @@
+From cc801ea825dfc5ddacd18d0430b60a592a996492 Mon Sep 17 00:00:00 2001
+From: roy_lee <roy_lee@edge-core.com>
+Date: Wed, 25 Nov 2020 15:45:15 +0800
+Subject: [PATCH] Validate tx_disable function of 4 SFP+ ports.
+
+Signed-off-by: roy_lee <roy_lee@edge-core.com>
+---
+ .../modules/builds/x86-64-accton-as4630-54pe-cpld.c   | 11 +++++------
+ .../x86_64_accton_as4630_54pe/module/src/sfpi.c       |  2 +-
+ 2 files changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
+index 6e36e1ca..b4618dc4 100755
+--- a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
++++ b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
+@@ -261,7 +261,7 @@ static ssize_t show_status(struct device *dev, struct device_attribute *da,
+             break;       
+         case MODULE_TXDISABLE_49 ... MODULE_TXDISABLE_50:
+             reg=0x5;
+-            mask=0x1 << (attr->index==MODULE_TXFAULT_49?7:3);
++            mask=0x1 << (attr->index==MODULE_TXDISABLE_49?7:3);
+             break;
+             
+         case MODULE_RXLOS_51 ... MODULE_RXLOS_52:
+@@ -278,7 +278,7 @@ static ssize_t show_status(struct device *dev, struct device_attribute *da,
+             break;       
+         case MODULE_TXDISABLE_51 ... MODULE_TXDISABLE_52:
+             reg=0x6;
+-            mask=0x1 << (attr->index==MODULE_TXFAULT_51?7:3);
++            mask=0x1 << (attr->index==MODULE_TXDISABLE_51?7:3);
+             break;
+         case MODULE_PRESENT_53 ... MODULE_PRESENT_54:
+             reg=0x21;
+@@ -321,16 +321,15 @@ static ssize_t set_tx_disable(struct device *dev, struct device_attribute *da,
+ 	if (status) {
+ 		return status;
+ 	}
+-    reg  = 0x9;
+     switch (attr->index)
+     {
+          case MODULE_TXDISABLE_49 ... MODULE_TXDISABLE_50:
+             reg=0x5;
+-            mask=0x1 << (attr->index==MODULE_TXFAULT_49?7:3);
++            mask=0x1 << (attr->index==MODULE_TXDISABLE_49?7:3);
+             break;
+         case MODULE_TXDISABLE_51 ... MODULE_TXDISABLE_52:
+             reg=0x6;
+-            mask=0x1 << (attr->index==MODULE_TXFAULT_51?7:3);
++            mask=0x1 << (attr->index==MODULE_TXDISABLE_51?7:3);
+             break;
+      
+ 	    default:
+@@ -344,7 +343,7 @@ static ssize_t set_tx_disable(struct device *dev, struct device_attribute *da,
+ 		goto exit;
+ 	}
+ 	/* Update tx_disable status */
+-	if (disable) {
++	if (!disable) {
+ 		status &= ~mask;
+ 	}
+ 	else {
+diff --git a/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/sfpi.c b/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/sfpi.c
+index d261574d..1b9d16cf 100755
+--- a/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/sfpi.c
++++ b/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/sfpi.c
+@@ -233,7 +233,7 @@ onlp_sfpi_control_set(int port, onlp_sfp_control_t control, int value)
+         case ONLP_SFP_CONTROL_TX_DISABLE:
+             {
+                 if(port>=48 && port<=51) {
+-                    if (onlp_file_write_int(0, MODULE_TXDISABLE_FORMAT, bus, addr, (port+1)) < 0) {
++                    if (onlp_file_write_int(value, MODULE_TXDISABLE_FORMAT, bus, addr, (port+1)) < 0) {
+                         AIM_LOG_ERROR("Unable to set tx_disable status to port(%d)\r\n", port);
+                         rv = ONLP_STATUS_E_INTERNAL;
+                     }
+-- 
+2.31.1
+
