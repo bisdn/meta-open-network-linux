@@ -1,0 +1,45 @@
+From 7b844e8850ea7d1a8ec0e8e7c95df74b835a589e Mon Sep 17 00:00:00 2001
+From: Brandon Chuang <brandon_chuang@edge-core.com>
+Date: Fri, 11 Dec 2020 02:06:01 +0000
+Subject: [PATCH] [as4630_54pe] Fix platform port config
+
+The correct port configuration of as4630_54pe is as below:
+root@localhost:~# onl-platform-show
+Model: AS4630-54PE
+Manufacturer: Accton
+Ports: 54 (48x1 + 4x25 + 2x100)
+
+Signed-off-by: Brandon Chuang <brandon_chuang@edge-core.com>
+---
+ .../all/vendor-config-onl/src/python/onl/platform/base.py     | 4 ++++
+ .../r0/src/python/x86_64_accton_as4630_54pe_r0/__init__.py    | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/packages/base/all/vendor-config-onl/src/python/onl/platform/base.py b/packages/base/all/vendor-config-onl/src/python/onl/platform/base.py
+index f6e9943b..92f34950 100755
+--- a/packages/base/all/vendor-config-onl/src/python/onl/platform/base.py
++++ b/packages/base/all/vendor-config-onl/src/python/onl/platform/base.py
+@@ -616,3 +616,7 @@ class OnlPlatformPortConfig_10x400_18x100_2x10(object):
+ class OnlPlatformPortConfig_48x25_8x100(object):
+     PORT_COUNT=56
+     PORT_CONFIG="48x25 + 8x100"
++
++class OnlPlatformPortConfig_48x1_4x25_2x100(object):
++    PORT_COUNT=54
++    PORT_CONFIG="48x1 + 4x25 + 2x100"
+diff --git a/packages/platforms/accton/x86-64/as4630-54pe/platform-config/r0/src/python/x86_64_accton_as4630_54pe_r0/__init__.py b/packages/platforms/accton/x86-64/as4630-54pe/platform-config/r0/src/python/x86_64_accton_as4630_54pe_r0/__init__.py
+index cff63e92..7553c914 100755
+--- a/packages/platforms/accton/x86-64/as4630-54pe/platform-config/r0/src/python/x86_64_accton_as4630_54pe_r0/__init__.py
++++ b/packages/platforms/accton/x86-64/as4630-54pe/platform-config/r0/src/python/x86_64_accton_as4630_54pe_r0/__init__.py
+@@ -2,7 +2,7 @@ from onl.platform.base import *
+ from onl.platform.accton import *
+ 
+ class OnlPlatform_x86_64_accton_as4630_54pe_r0(OnlPlatformAccton,
+-                                              OnlPlatformPortConfig_48x25_6x100):
++                                              OnlPlatformPortConfig_48x1_4x25_2x100):
+ 
+     PLATFORM='x86-64-accton-as4630-54pe-r0'
+     MODEL="AS4630-54PE"
+-- 
+2.31.1
+
