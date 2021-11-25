@@ -1,0 +1,50 @@
+From 021d1ff88ab9d27eb441547fac098a8c29ac4ca0 Mon Sep 17 00:00:00 2001
+From: Rubens Figueiredo <rubens.figueiredo@bisdn.de>
+Date: Thu, 25 Nov 2021 14:55:51 +0100
+Subject: [PATCH] accton-as4630-54pe: Avoid undefined behaviour
+
+memsetting a null pointer is undefined behaviour. This causes gcc to
+assume that a variable is non null for execution and compiles away all
+other checks for null pointers.
+
+Fixes the following coredump
+psu @ 2 = {
+Description: PSU-2
+Model:  YPEB1200AM
+SN:     SC000X182126000833
+Status: 0x00000001 [ PRESENT ]
+Caps:   0x00000151 [ AC,VOUT,IOUT,POUT ]
+Vin:    0
+Vout:   54500
+Iin:    0
+Iout:   1265
+Pin:    0
+Pout:   69000
+fan @ 5 = {
+
+Program received signal SIGSEGV, Segmentation fault.
+
+Signed-off-by: Rubens Figueiredo <rubens.figueiredo@bisdn.de>
+---
+ .../x86_64_accton_as4630_54pe/module/src/platform_lib.c      | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c b/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
+index 5f51e1cc..950c9fa5 100755
+--- a/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
++++ b/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
+@@ -101,7 +101,10 @@ psu_type_t get_psu_type(int id, char* modelname, int modelname_len)
+     /* Check model name */
+     node = (id == PSU1_ID) ? PSU1_AC_PMBUS_NODE(psu_mfr_model) : PSU2_AC_PMBUS_NODE(psu_mfr_model);
+     memset(model_name, 0x0, I2C_PSU_MODEL_NAME_LEN + 1);
+-    memset(modelname, 0x0, modelname_len); 
++
++    if (modelname)
++    	memset(modelname, 0x0, modelname_len); 
++
+     if (onlp_file_read_string(node, model_name, sizeof(model_name), 0) != 0) {
+         
+         return PSU_TYPE_UNKNOWN;
+-- 
+2.31.1
+
