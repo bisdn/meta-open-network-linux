@@ -1,0 +1,26 @@
+From 33bd2bd6ac83c1674ecc468a6c242117fe309ae6 Mon Sep 17 00:00:00 2001
+From: Jostar Yang <jostar_yang@accton.com.tw>
+Date: Tue, 16 Nov 2021 11:10:50 +0800
+Subject: [PATCH 3/3] Fix fan direction api
+
+Signed-off-by: Jostar Yang <jostar_yang@accton.com.tw>
+---
+ .../as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
+index 3aba8a50..d6d3cba0 100755
+--- a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
++++ b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
+@@ -554,7 +554,7 @@ static ssize_t set_duty_cycle(struct device *dev, struct device_attribute *da,
+ 
+ static u8 reg_val_to_direction(u8 reg_val, enum fan_id id)
+ {
+-    u8 mask = (1 << id);
++    u8 mask = (1 << (id+4));
+ 
+     reg_val &= mask;
+ 
+-- 
+2.31.1
+
