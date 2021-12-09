@@ -47,3 +47,6 @@ done
 
 # add EEPROM
 create_i2c_dev 24c02 0x57 1
+
+# add PoE MCU
+create_i2c_dev as4630_54pe_poe_mcu 0x20 16
