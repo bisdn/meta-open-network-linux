@@ -20,7 +20,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-systempath=/sys/kernel/debug/i2c-16-0020
+systempath=/sys/kernel/debug/16-0020
 readonly systempath
 
 if ! [ -d "$systempath" ]; then
