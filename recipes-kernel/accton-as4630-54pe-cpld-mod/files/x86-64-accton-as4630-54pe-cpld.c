@@ -144,6 +144,8 @@ static ssize_t show_status(struct device *dev, struct device_attribute *da,
              char *buf);
 static ssize_t set_tx_disable(struct device *dev, struct device_attribute *da,
 			const char *buf, size_t count);
+static ssize_t set_qsfp(struct device *dev, struct device_attribute *da,
+                        const char *buf, size_t count);
 static ssize_t access(struct device *dev, struct device_attribute *da,
 			const char *buf, size_t count);
 static ssize_t show_version(struct device *dev, struct device_attribute *da,
@@ -156,11 +158,6 @@ static struct as4630_54pe_cpld_data *as4630_54pe_fan_update_device(struct device
 static ssize_t fan_show_value(struct device *dev, struct device_attribute *da, char *buf);
 static ssize_t set_duty_cycle(struct device *dev, struct device_attribute *da,
                               const char *buf, size_t count);
-
-static ssize_t show_power(struct device *dev, struct device_attribute *da,
-             char *buf);
-
-
 
 /* transceiver attributes */
 #define DECLARE_SFP_TRANSCEIVER_SENSOR_DEVICE_ATTR(index) \
@@ -176,9 +173,13 @@ static ssize_t show_power(struct device *dev, struct device_attribute *da,
 	&sensor_dev_attr_module_tx_fault_##index.dev_attr.attr
 	
 #define DECLARE_QSFP_TRANSCEIVER_SENSOR_DEVICE_ATTR(index) \
+    static SENSOR_DEVICE_ATTR(module_lpmode_##index, S_IRUGO | S_IWUSR, show_status, set_qsfp, MODULE_LPMODE_##index); \
+    static SENSOR_DEVICE_ATTR(module_reset_##index, S_IRUGO | S_IWUSR, show_status, set_qsfp, MODULE_RESET_##index); \
     static SENSOR_DEVICE_ATTR(module_present_##index, S_IRUGO, show_status, NULL, MODULE_PRESENT_##index);
 
 #define DECLARE_QSFP_TRANSCEIVER_ATTR(index)  \
+    &sensor_dev_attr_module_lpmode_##index.dev_attr.attr, \
+    &sensor_dev_attr_module_reset_##index.dev_attr.attr, \
     &sensor_dev_attr_module_present_##index.dev_attr.attr
 
 
@@ -388,7 +389,7 @@ static ssize_t set_tx_disable(struct device *dev, struct device_attribute *da,
 	if (status) {
 		return status;
 	}
-
+    reg  = 0x9;
     switch (attr->index)
     {
          case MODULE_TXDISABLE_49 ... MODULE_TXDISABLE_50:
@@ -411,11 +412,11 @@ static ssize_t set_tx_disable(struct device *dev, struct device_attribute *da,
 		goto exit;
 	}
 	/* Update tx_disable status */
-	if (!disable) {
-		status &= ~mask;
+	if (disable) {
+		status |= mask;
 	}
 	else {
-	    status |= mask;
+	    status &= ~mask;
 	}
     status = as4630_54pe_cpld_write_internal(client, reg, status);
 	if (unlikely(status < 0)) {
