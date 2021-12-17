@@ -4,10 +4,10 @@ require linux-yocto-onl.inc
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-LINUX_VERSION ?= "5.15.6"
+LINUX_VERSION ?= "5.15.14"
 #https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.15.y
-SRCREV_machine ?= "a2547651bc896f95a3680a6a0a27401e7c7a1080"
-SRCREV_meta ?= "df57bc53f6ca3fb3b2d3a9e5331ceff533d6f508"
+SRCREV_machine ?= "d114b082bef784345bfac1e1d5c17257005284f2"
+SRCREV_meta ?= "72e4eafb6b3c999aefc56e1c1b9dfa0c94ae2fbb"
 
 SRC_URI += "\
     git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-5.15;destsuffix=kernel-meta \
