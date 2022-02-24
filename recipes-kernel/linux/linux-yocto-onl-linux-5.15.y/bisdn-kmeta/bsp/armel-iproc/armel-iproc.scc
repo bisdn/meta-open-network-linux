@@ -4,8 +4,6 @@ define KARCH arm
 
 # submitted upstream
 
-patch 09-01-Revert-net-ethernet-bgmac-Use-devm_platform_ioremap_.patch
-
 # platform support
 
 patch 10-01-soc-xgs_iproc-drivers.patch
