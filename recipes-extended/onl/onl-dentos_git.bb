@@ -12,4 +12,5 @@ SRC_URI += " \
            file://0001-file_uds-silence-unused-result-warnings.patch \
            file://0002-platform_manager-do-not-ignore-write-return-value.patch \
            file://0003-file-check-unix-socket-path-is-short-enough.patch \
+           file://0001-tn48m-fix-ignoring-unused-results-warnings.patch \
 "
