@@ -12,4 +12,5 @@ SRC_URI += " \
            file://onl/0001-file_uds-silence-unused-result-warnings.patch \
            file://onl/0002-platform_manager-do-not-ignore-write-return-value.patch \
            file://onl/0003-file-check-unix-socket-path-is-short-enough.patch \
+           file://delta-tn48m/0001-tn48m-fix-ignoring-unused-results-warnings.patch \
 "
