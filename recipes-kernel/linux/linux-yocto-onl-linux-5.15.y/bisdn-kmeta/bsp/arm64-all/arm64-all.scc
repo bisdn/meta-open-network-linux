@@ -1,0 +1,14 @@
+define KMACHINE arm64-all
+define KTYPE standard
+define KARCH arm64
+
+# submitted upstream
+
+# platform support
+
+patch 0001-Add-Delta-TN48M-TN48M-DN-series-dts.patch
+
+
+include cfg/bisdn-linux.scc
+
+kconf hardware arm64-all.cfg
