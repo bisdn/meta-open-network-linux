@@ -1,0 +1,63 @@
+From 208129c26e4fb8c14c24daee9c031c0bad418ce8 Mon Sep 17 00:00:00 2001
+From: Roger Luethi <roger.luethi@bisdn.de>
+Date: Sat, 19 Mar 2022 16:42:16 +0100
+Subject: [PATCH 2/2] as5835: rename psu_serial_numer -> psu_serial_number
+
+For the as5835-54x, the files that show the PSU serial numbers in sysfs
+are currently:
+
+/sys/bus/i2c/devices/11-0050/psu_serial_numer
+/sys/bus/i2c/devices/12-0053/psu_serial_numer
+
+Rename them to:
+
+/sys/bus/i2c/devices/11-0050/psu_serial_number
+/sys/bus/i2c/devices/12-0053/psu_serial_number
+
+Note: the change for the kernel driver, x86-64-accton-as5835-54x-psu.c,
+      does not have any effect when applied to meta-open-network-linux/
+      recipes-extended/onl. The change must be made to the copied driver
+      in meta-open-network-linux/recipes-kernel, too.
+
+Signed-off-by: Roger Luethi <roger.luethi@bisdn.de>
+---
+ .../as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c  | 4 ++--
+ .../builds/x86_64_accton_as5835_54x/module/src/platform_lib.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
+index c2b6e7a8..675b4043 100644
+--- a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
+@@ -82,13 +82,13 @@ enum as5835_54x_psu_sysfs_attributes {
+ static SENSOR_DEVICE_ATTR(psu_present,	S_IRUGO, show_status,	NULL, PSU_PRESENT);
+ static SENSOR_DEVICE_ATTR(psu_model_name, S_IRUGO, show_string,	NULL, PSU_MODEL_NAME);
+ static SENSOR_DEVICE_ATTR(psu_power_good, S_IRUGO, show_status,	NULL, PSU_POWER_GOOD);
+-static SENSOR_DEVICE_ATTR(psu_serial_numer, S_IRUGO, show_string,	NULL, PSU_SERIAL_NUMBER);
++static SENSOR_DEVICE_ATTR(psu_serial_number, S_IRUGO, show_string,	NULL, PSU_SERIAL_NUMBER);
+ 
+ static struct attribute *as5835_54x_psu_attributes[] = {
+ 	&sensor_dev_attr_psu_present.dev_attr.attr,
+ 	&sensor_dev_attr_psu_model_name.dev_attr.attr,
+ 	&sensor_dev_attr_psu_power_good.dev_attr.attr,
+-	&sensor_dev_attr_psu_serial_numer.dev_attr.attr,
++	&sensor_dev_attr_psu_serial_number.dev_attr.attr,
+ 	NULL
+ };
+ 
+diff --git a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
+index bf4d5d6e..ec84ab16 100644
+--- a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
++++ b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
+@@ -45,7 +45,7 @@ int get_psu_serial_number(int id, char *serial, int serial_len)
+     }
+     
+     /* Read AC serial number */
+-    node = (id == PSU1_ID) ? PSU1_AC_HWMON_NODE(psu_serial_numer) : PSU2_AC_HWMON_NODE(psu_serial_numer);
++    node = (id == PSU1_ID) ? PSU1_AC_HWMON_NODE(psu_serial_number) : PSU2_AC_HWMON_NODE(psu_serial_number);
+     ret = onlp_file_read_str(&sn, node);
+     if (ret <= 0 || ret > PSU_SERIAL_NUMBER_LEN) {
+         aim_free(sn);
+-- 
+2.35.1
+

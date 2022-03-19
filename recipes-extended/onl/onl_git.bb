@@ -45,6 +45,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0003-Fix-fan-direction-api.patch \
            file://0001-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
            file://0001-onl-as5835-don-t-ignore-psu2_ac_pmbus_node.patch \
+           file://0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
 "
 
 inherit systemd
