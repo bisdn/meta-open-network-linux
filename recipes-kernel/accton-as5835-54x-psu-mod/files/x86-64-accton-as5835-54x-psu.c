@@ -82,13 +82,13 @@ enum as5835_54x_psu_sysfs_attributes {
 static SENSOR_DEVICE_ATTR(psu_present,	S_IRUGO, show_status,	NULL, PSU_PRESENT);
 static SENSOR_DEVICE_ATTR(psu_model_name, S_IRUGO, show_string,	NULL, PSU_MODEL_NAME);
 static SENSOR_DEVICE_ATTR(psu_power_good, S_IRUGO, show_status,	NULL, PSU_POWER_GOOD);
-static SENSOR_DEVICE_ATTR(psu_serial_numer, S_IRUGO, show_string,	NULL, PSU_SERIAL_NUMBER);
+static SENSOR_DEVICE_ATTR(psu_serial_number, S_IRUGO, show_string,	NULL, PSU_SERIAL_NUMBER);
 
 static struct attribute *as5835_54x_psu_attributes[] = {
 	&sensor_dev_attr_psu_present.dev_attr.attr,
 	&sensor_dev_attr_psu_model_name.dev_attr.attr,
 	&sensor_dev_attr_psu_power_good.dev_attr.attr,
-	&sensor_dev_attr_psu_serial_numer.dev_attr.attr,
+	&sensor_dev_attr_psu_serial_number.dev_attr.attr,
 	NULL
 };
 
