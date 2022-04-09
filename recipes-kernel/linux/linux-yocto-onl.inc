@@ -1,4 +1,6 @@
+# https://git.yoctoproject.org/poky/tree/meta/classes/kernel.bbclass
 inherit kernel
+# https://git.yoctoproject.org/poky/tree/meta/recipes-kernel/linux/linux-yocto.inc
 require recipes-kernel/linux/linux-yocto.inc
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/linux-yocto-onl-${KBRANCH}:"
