@@ -10,3 +10,4 @@ patch 0001-prestera-select-CONFIG_DCB.patch
 include cfg/bisdn-linux.scc
 
 kconf hardware arm64-all.cfg
+kconf hardware onie.cfg
