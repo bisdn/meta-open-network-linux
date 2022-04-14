@@ -5,8 +5,11 @@ require linux-yocto-onl.inc
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 LINUX_VERSION ?= "5.15.35"
-#https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.15.y
+# https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.15.y
 SRCREV_machine ?= "81d8d30c35edf29c5c70186ccb14dac4a5ca38a8"
+
+# Use commit for kver matching (or close to) LINUX_VERSION
+# https://git.yoctoproject.org/yocto-kernel-cache/log/kver?h=yocto-5.15
 SRCREV_meta ?= "178b786485dfb3edb05af51f0ba9195ffa07e358"
 
 SRC_URI += "\
