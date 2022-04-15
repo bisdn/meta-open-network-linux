@@ -7,13 +7,16 @@ DESCRIPTION = "Marvell Prestera Firmware"
 LICENSE = "CLOSED"
 
 # Version of mrvl-fw-image_*_arm64.deb in
-# https://github.com/dentproject/dent-artifacts/tree/master/REPO/stretch/packages/binary-arm64
-PV = "3.1.2"
+# https://github.com/Marvell-switching/dent-artifacts/
+# It may take a long time for the artifacts to turn up in the master branch,
+# but the update branches are named predictably and seem to stay long after
+# being merged into master.
+PV = "3.2.1"
 
 PR = "r0"
 
-SRC_URI = "https://github.com/dentproject/dent-artifacts/raw/master/REPO/stretch/packages/binary-arm64/mrvl-fw-image_${PV}_arm64.deb;subdir=${BP}"
-SRC_URI[sha256sum] = "7a24c0f95750fbbe4e4b45cae116a278b626bf199867ecda587e2e93305af450"
+SRC_URI = "https://github.com/Marvell-switching/dent-artifacts/raw/update-mrvl-fw-${PV}/REPO/stretch/packages/binary-arm64/mrvl-fw-image_${PV}_arm64.deb;subdir=${BP}"
+SRC_URI[sha256sum] = "2959ad8088ee4ef0b8a20820c14ad3e5481bf698a7c348eeb5934307128a1e66"
 
 inherit bin_package
 
