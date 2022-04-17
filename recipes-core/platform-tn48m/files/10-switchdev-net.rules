@@ -1,1 +1,2 @@
-SUBSYSTEM=="net", ACTION=="add", ATTR{phys_switch_id}=="[0-9][0-9]", ATTR{phys_port_name}=="p[0-9]*", NAME="sw$attr{phys_port_name}"
+# Remove leading "p" from phys_port_name, then add "port"
+SUBSYSTEM=="net", ACTION=="add", ATTR{phys_switch_id}=="[0-9][0-9]", ATTR{phys_port_name}=="p[0-9]*", PROGRAM="/bin/bash -c 'tr -d p <<< $attr{phys_port_name}'", NAME="port%c"
