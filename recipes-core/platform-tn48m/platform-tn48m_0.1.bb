@@ -13,6 +13,7 @@ SRC_URI += " \
     file://platform-tn48m-init.sh \
     file://90-enp.link \
     file://fw_env.config \
+    file://10-switchdev-net.rules \
 "
 
 FILES:${PN} = " \
@@ -20,6 +21,7 @@ FILES:${PN} = " \
     ${bindir}/platform-tn48m-init.sh \
     ${sysconfdir}/systemd/network/90-enp.link \
     ${sysconfdir}/fw_env.config \
+    /etc/udev/rules.d/10-switchdev-net.rules \
 "
 
 
@@ -33,6 +35,10 @@ do_install() {
         install -m 0644 ${WORKDIR}/*.link ${D}${sysconfdir}/systemd/network/
         # uboot env
         install -m 0644 ${WORKDIR}/fw_env.config ${D}/${sysconfdir}/
+
+        # udev interface renaming
+        install -d ${D}/etc/udev/rules.d
+        install -m 0644 ${WORKDIR}/10-switchdev-net.rules ${D}/etc/udev/rules.d/
 }
 
 SYSTEMD_SERVICE:${PN}:append = "platform-tn48m-init.service"
