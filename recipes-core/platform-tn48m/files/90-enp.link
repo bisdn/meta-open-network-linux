@@ -1,4 +1,4 @@
 [Match]
-Path=*platform-18022000.ethernet*
+Path=platform-f2000000.ethernet
 [Link]
 Name=enp0
