@@ -23,6 +23,7 @@ SRCREV_FORMAT = "onl_infra_bigcode"
 # submodules are checked out individually to support license file checking
 SRC_URI = "${URI_ONL};name=onl \
            ${URI_INFRA};name=infra;destsuffix=git/${SUBMODULE_INFRA} \
+           file://0001-dynamically-resolve-python2-path.patch;patchdir=${SUBMODULE_INFRA} \
            ${URI_BIGCODE};name=bigcode;destsuffix=git/${SUBMODULE_BIGCODE} \
            file://onlpdump.service \
            file://0001-file_uds-silence-unused-result-warnings.patch \
@@ -48,12 +49,12 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
 "
 
-inherit systemd
+inherit systemd pythonnative
 
 SYSTEMD_SERVICE_${PN} = "onlpdump.service"
 SYSTEMD_AUTO_ENABLE = "enable"
 
-DEPENDS = "i2c-tools libedit"
+DEPENDS = "i2c-tools libedit python-pyyaml-native"
 
 S = "${WORKDIR}/git"
 PV = "1.1+git${SRCPV}"

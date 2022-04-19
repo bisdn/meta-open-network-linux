@@ -1,0 +1,313 @@
+From 230bd122efcb0df23cde02af86ada9cfa822b3ca Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 19 Apr 2022 14:26:12 +0200
+Subject: [PATCH] dynamically resolve python2 path
+
+Do not hardcode python2's location and instead resolve it dynamically.
+Allows e.g. using it within a ditro build environment, where python2 is
+not provided by the host os, but the build system with a local path.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ builder/unix/tools/dependmodules.py  | 2 +-
+ builder/unix/tools/manifesttool.py   | 2 +-
+ builder/unix/tools/mmg.py            | 2 +-
+ builder/unix/tools/modtool.py        | 2 +-
+ builder/unix/tools/modulegen.py      | 2 +-
+ builder/unix/tools/modulemakes.py    | 2 +-
+ builder/unix/tools/wod.py            | 2 +-
+ sourcegen/caimlogen.py               | 2 +-
+ sourcegen/cconfigdefgen.py           | 2 +-
+ sourcegen/cdefaultsourceformatter.py | 2 +-
+ sourcegen/cenumgen.py                | 2 +-
+ sourcegen/cflagsgen.py               | 2 +-
+ sourcegen/cfunctiongen.py            | 2 +-
+ sourcegen/cloggen.py                 | 2 +-
+ sourcegen/cm.py                      | 2 +-
+ sourcegen/cmacrogen.py               | 2 +-
+ sourcegen/cobjectgen.py              | 2 +-
+ sourcegen/cportingmacrogen.py        | 2 +-
+ sourcegen/cstructgen.py              | 2 +-
+ sourcegen/ctypesgen.py               | 2 +-
+ sourcegen/cutilgen.py                | 2 +-
+ sourcegen/cxenumgen.py               | 2 +-
+ sourcegen/cxmacrogen.py              | 2 +-
+ sourcegen/pyenumgen.py               | 2 +-
+ sourcegen/sg.py                      | 2 +-
+ sourcegen/sourceobjectgen.py         | 2 +-
+ tools/asr.py                         | 2 +-
+ 27 files changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/builder/unix/tools/dependmodules.py b/builder/unix/tools/dependmodules.py
+index e78df03..e51f860 100755
+--- a/builder/unix/tools/dependmodules.py
++++ b/builder/unix/tools/dependmodules.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/builder/unix/tools/manifesttool.py b/builder/unix/tools/manifesttool.py
+index e83f047..b60a2b4 100755
+--- a/builder/unix/tools/manifesttool.py
++++ b/builder/unix/tools/manifesttool.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/builder/unix/tools/mmg.py b/builder/unix/tools/mmg.py
+index 7f1eb8c..e2ae988 100755
+--- a/builder/unix/tools/mmg.py
++++ b/builder/unix/tools/mmg.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/builder/unix/tools/modtool.py b/builder/unix/tools/modtool.py
+index b6f0f91..345554c 100755
+--- a/builder/unix/tools/modtool.py
++++ b/builder/unix/tools/modtool.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ############################################################
+ #
+ # Module Management Tool
+diff --git a/builder/unix/tools/modulegen.py b/builder/unix/tools/modulegen.py
+index 2cbc4e2..a0fd127 100644
+--- a/builder/unix/tools/modulegen.py
++++ b/builder/unix/tools/modulegen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/builder/unix/tools/modulemakes.py b/builder/unix/tools/modulemakes.py
+index c65399d..b37a5c8 100755
+--- a/builder/unix/tools/modulemakes.py
++++ b/builder/unix/tools/modulemakes.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/builder/unix/tools/wod.py b/builder/unix/tools/wod.py
+index 9796be6..6be3114 100755
+--- a/builder/unix/tools/wod.py
++++ b/builder/unix/tools/wod.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/sourcegen/caimlogen.py b/sourcegen/caimlogen.py
+index 7591cde..fbe6fe0 100755
+--- a/sourcegen/caimlogen.py
++++ b/sourcegen/caimlogen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cconfigdefgen.py b/sourcegen/cconfigdefgen.py
+index bb5295c..4b734fb 100755
+--- a/sourcegen/cconfigdefgen.py
++++ b/sourcegen/cconfigdefgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cdefaultsourceformatter.py b/sourcegen/cdefaultsourceformatter.py
+index 9143ce9..790db85 100755
+--- a/sourcegen/cdefaultsourceformatter.py
++++ b/sourcegen/cdefaultsourceformatter.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ #################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/sourcegen/cenumgen.py b/sourcegen/cenumgen.py
+index c3ba81d..23f3a76 100755
+--- a/sourcegen/cenumgen.py
++++ b/sourcegen/cenumgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cflagsgen.py b/sourcegen/cflagsgen.py
+index 462ee57..f05ff0e 100755
+--- a/sourcegen/cflagsgen.py
++++ b/sourcegen/cflagsgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cfunctiongen.py b/sourcegen/cfunctiongen.py
+index 9077bef..ffc90a9 100755
+--- a/sourcegen/cfunctiongen.py
++++ b/sourcegen/cfunctiongen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cloggen.py b/sourcegen/cloggen.py
+index bb1d71d..7a2b926 100755
+--- a/sourcegen/cloggen.py
++++ b/sourcegen/cloggen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cm.py b/sourcegen/cm.py
+index c3a889f..4cfc6d4 100755
+--- a/sourcegen/cm.py
++++ b/sourcegen/cm.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ #################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/sourcegen/cmacrogen.py b/sourcegen/cmacrogen.py
+index 0753f71..1e66708 100755
+--- a/sourcegen/cmacrogen.py
++++ b/sourcegen/cmacrogen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cobjectgen.py b/sourcegen/cobjectgen.py
+index 02cebea..406c541 100755
+--- a/sourcegen/cobjectgen.py
++++ b/sourcegen/cobjectgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ #################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/sourcegen/cportingmacrogen.py b/sourcegen/cportingmacrogen.py
+index c3cbd1c..38028b9 100755
+--- a/sourcegen/cportingmacrogen.py
++++ b/sourcegen/cportingmacrogen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cstructgen.py b/sourcegen/cstructgen.py
+index 28978a1..6fc4378 100755
+--- a/sourcegen/cstructgen.py
++++ b/sourcegen/cstructgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/ctypesgen.py b/sourcegen/ctypesgen.py
+index c4d73c5..0be2b72 100755
+--- a/sourcegen/ctypesgen.py
++++ b/sourcegen/ctypesgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cutilgen.py b/sourcegen/cutilgen.py
+index 20b9b1d..9724d37 100755
+--- a/sourcegen/cutilgen.py
++++ b/sourcegen/cutilgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cxenumgen.py b/sourcegen/cxenumgen.py
+index 23b669d..2d9c93c 100755
+--- a/sourcegen/cxenumgen.py
++++ b/sourcegen/cxenumgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/cxmacrogen.py b/sourcegen/cxmacrogen.py
+index e175c6e..9e3dcf2 100755
+--- a/sourcegen/cxmacrogen.py
++++ b/sourcegen/cxmacrogen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/pyenumgen.py b/sourcegen/pyenumgen.py
+index 2e18247..9b1f375 100755
+--- a/sourcegen/pyenumgen.py
++++ b/sourcegen/pyenumgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ## SourceObject ##
+ #################################################################
+ #
+diff --git a/sourcegen/sg.py b/sourcegen/sg.py
+index 61c13e2..9d570e3 100755
+--- a/sourcegen/sg.py
++++ b/sourcegen/sg.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ #################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/sourcegen/sourceobjectgen.py b/sourcegen/sourceobjectgen.py
+index 5dca777..63f6e03 100755
+--- a/sourcegen/sourceobjectgen.py
++++ b/sourcegen/sourceobjectgen.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ #################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/tools/asr.py b/tools/asr.py
+index 9055763..2b0e2f3 100755
+--- a/tools/asr.py
++++ b/tools/asr.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/env python2
+ ############################################################
+ #
+ # AIM Syslog Reference Tool
+-- 
+2.35.1
+
