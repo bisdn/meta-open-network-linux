@@ -5,6 +5,7 @@ define KARCH arm64
 # submitted upstream
 
 # platform support
+patch 0001-prestera-select-CONFIG_DCB.patch
 
 include cfg/bisdn-linux.scc
 

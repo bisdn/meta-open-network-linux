@@ -1,0 +1,31 @@
+From f14db222c6c306147e693dc6913bcf5d04f5af68 Mon Sep 17 00:00:00 2001
+From: Roger Luethi <roger.luethi@bisdn.de>
+Date: Thu, 21 Apr 2022 15:15:40 +0200
+Subject: [PATCH] prestera: select CONFIG_DCB
+
+The updated prestera driver cannot work unless CONFIG_DCB=y. The proper
+solution would be to have a separate CONFIG_PRESTERA_DCB depend on DCB.
+
+This change enables CONFIG_DCB automatically if the prestera driver is
+enabled.
+
+Signed-off-by: Roger Luethi <roger.luethi@bisdn.de>
+---
+ drivers/net/ethernet/marvell/prestera/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/marvell/prestera/Kconfig b/drivers/net/ethernet/marvell/prestera/Kconfig
+index b6f20e2034c6..016eb482d07b 100644
+--- a/drivers/net/ethernet/marvell/prestera/Kconfig
++++ b/drivers/net/ethernet/marvell/prestera/Kconfig
+@@ -7,6 +7,7 @@ config PRESTERA
+ 	tristate "Marvell Prestera Switch ASICs support"
+ 	depends on NET_SWITCHDEV && VLAN_8021Q
+ 	depends on BRIDGE || BRIDGE=n
++	select DCB
+ 	select NET_DEVLINK
+ 	help
+ 	  This driver supports Marvell Prestera Switch ASICs family.
+-- 
+2.35.1
+
