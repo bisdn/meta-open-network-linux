@@ -1,5 +1,5 @@
 SUMMARY = ""
-LICENSE = "CLOSED"
+LICENSE = "EPL-1.0"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
