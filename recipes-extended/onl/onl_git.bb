@@ -3,7 +3,7 @@
 
 DESCRIPTION = "Open Network Linux Components for Yocto integration"
 HOMEPAGE = "https://www.opennetlinux.org/"
-LICENSE = "EPLv1.0"
+LICENSE = "EPL-1.0"
 LIC_FILES_CHKSUM = "\
   file://LICENSE;beginline=14;md5=7e6d108802170df125adb4f452c3c9dd \
   file://${SUBMODULE_INFRA}/LICENSE;md5=457079d296746aac524eb56eb6822ea8 \
