@@ -1,5 +1,5 @@
 SUMMARY = ""
-LICENSE = "EPLv1.0"
+LICENSE = "EPL-1.0"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/EPL-1.0;md5=57f8d5e2b3e98ac6e088986c12bf94e6"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
