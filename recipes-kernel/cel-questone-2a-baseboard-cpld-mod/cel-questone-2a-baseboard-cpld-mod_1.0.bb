@@ -1,4 +1,4 @@
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-or-later"
 LIC_FILES_CHKSUM = "file://questone2a_baseboard_cpld.c;beginline=6;endline=9;md5=7a0d0f37f38de4d6e61a03d518a9e16d"
 
 inherit module
