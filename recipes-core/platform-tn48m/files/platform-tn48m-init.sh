@@ -25,8 +25,13 @@ create_i2c_dev() {
 }
 
 # load modules
-modprobe arm64-delta-tn48m-cpld
-modprobe arm64-delta-tn48m-led
+if grep -q tn48m-dn /etc/onl/platform; then
+  modprobe arm64-delta-tn48m-dn-cpld
+  modprobe arm64-delta-tn48m-dn-led
+else
+  modprobe arm64-delta-tn48m-cpld
+  modprobe arm64-delta-tn48m-led
+fi
 modprobe prestera_pci
 
 # fan controller
