@@ -1,4 +1,4 @@
-From 208129c26e4fb8c14c24daee9c031c0bad418ce8 Mon Sep 17 00:00:00 2001
+From 66af86b68a4cc0fc208b5850d86c0acb6c3c9291 Mon Sep 17 00:00:00 2001
 From: Roger Luethi <roger.luethi@bisdn.de>
 Date: Sat, 19 Mar 2022 16:42:16 +0100
 Subject: [PATCH 2/2] as5835: rename psu_serial_numer -> psu_serial_number
@@ -46,18 +46,18 @@ index c2b6e7a8..675b4043 100644
  };
  
 diff --git a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
-index bf4d5d6e..ec84ab16 100644
+index 4a16cd6b..0c09f67e 100644
 --- a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
 +++ b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
-@@ -45,7 +45,7 @@ int get_psu_serial_number(int id, char *serial, int serial_len)
-     }
-     
+@@ -49,7 +49,7 @@ int get_psu_serial_number(int id, char *serial, int serial_len)
+     char *sn = NULL;
+ 
      /* Read AC serial number */
 -    node = (id == PSU1_ID) ? PSU1_AC_HWMON_NODE(psu_serial_numer) : PSU2_AC_HWMON_NODE(psu_serial_numer);
 +    node = (id == PSU1_ID) ? PSU1_AC_HWMON_NODE(psu_serial_number) : PSU2_AC_HWMON_NODE(psu_serial_number);
      ret = onlp_file_read_str(&sn, node);
-     if (ret <= 0 || ret > PSU_SERIAL_NUMBER_LEN) {
-         aim_free(sn);
+     if (ret <= 0 || ret > PSU_SERIAL_NUMBER_LEN || sn == NULL) {
+         AIM_FREE_IF_PTR(sn);
 -- 
 2.35.1
 

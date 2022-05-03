@@ -1,4 +1,4 @@
-From aa97d138d5ce1d2db49a8f4c2e0278b5a2b10830 Mon Sep 17 00:00:00 2001
+From e860cf76e0a8bfcfc4e4f0779243178c3c59eef2 Mon Sep 17 00:00:00 2001
 From: Roger Luethi <roger.luethi@bisdn.de>
 Date: Sat, 19 Mar 2022 16:27:28 +0100
 Subject: [PATCH 1/2] onl: as5835: don't ignore PSU2_AC_PMBUS_NODE
@@ -14,19 +14,19 @@ Signed-off-by: Roger Luethi <roger.luethi@bisdn.de>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
-index 4c9f9efb..bf4d5d6e 100644
+index aa854683..4a16cd6b 100644
 --- a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
 +++ b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
-@@ -82,7 +82,7 @@ psu_type_t get_psu_type(int id, char* modelname, int modelname_len)
+@@ -86,7 +86,7 @@ psu_type_t get_psu_type(int id, char* modelname, int modelname_len)
      if (strncmp(mn, "YM-1401A", 8) == 0) {
-         char *fd = aim_zmalloc(PSU_FAN_DIR_LEN + 1 + 1);
+         char *fd = NULL;
          
 -        node = (id == PSU1_ID) ? PSU1_AC_PMBUS_NODE(psu_fan_dir) : PSU1_AC_PMBUS_NODE(psu_fan_dir);
 +        node = (id == PSU1_ID) ? PSU1_AC_PMBUS_NODE(psu_fan_dir) : PSU2_AC_PMBUS_NODE(psu_fan_dir);
          ret = onlp_file_read_str(&fd, node);
  
-         if (ret <= 0 || ret > PSU_FAN_DIR_LEN) {
-@@ -148,4 +148,4 @@ int psu_ym1401_pmbus_info_set(int id, char *node, int value)
+         if (ret <= 0 || ret > PSU_FAN_DIR_LEN || fd == NULL) {
+@@ -152,4 +152,4 @@ int psu_ym1401_pmbus_info_set(int id, char *node, int value)
      }
  
      return ONLP_STATUS_OK;
