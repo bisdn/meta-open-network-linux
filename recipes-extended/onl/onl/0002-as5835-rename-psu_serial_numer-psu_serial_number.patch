@@ -1,4 +1,4 @@
-From 66af86b68a4cc0fc208b5850d86c0acb6c3c9291 Mon Sep 17 00:00:00 2001
+From 62aa7e80afca84a0ce2ad5ddca3091f88a29036e Mon Sep 17 00:00:00 2001
 From: Roger Luethi <roger.luethi@bisdn.de>
 Date: Sat, 19 Mar 2022 16:42:16 +0100
 Subject: [PATCH 2/2] as5835: rename psu_serial_numer -> psu_serial_number
@@ -26,15 +26,16 @@ Signed-off-by: Roger Luethi <roger.luethi@bisdn.de>
  2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
-index c2b6e7a8..675b4043 100644
+index cff3ffaf..4fa736a4 100644
 --- a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
 +++ b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
-@@ -82,13 +82,13 @@ enum as5835_54x_psu_sysfs_attributes {
+@@ -87,14 +87,14 @@ enum as5835_54x_psu_sysfs_attributes {
  static SENSOR_DEVICE_ATTR(psu_present,	S_IRUGO, show_status,	NULL, PSU_PRESENT);
  static SENSOR_DEVICE_ATTR(psu_model_name, S_IRUGO, show_string,	NULL, PSU_MODEL_NAME);
  static SENSOR_DEVICE_ATTR(psu_power_good, S_IRUGO, show_status,	NULL, PSU_POWER_GOOD);
 -static SENSOR_DEVICE_ATTR(psu_serial_numer, S_IRUGO, show_string,	NULL, PSU_SERIAL_NUMBER);
 +static SENSOR_DEVICE_ATTR(psu_serial_number, S_IRUGO, show_string,	NULL, PSU_SERIAL_NUMBER);
+ static SENSOR_DEVICE_ATTR(psu_fan_dir, S_IRUGO, show_string,	NULL, PSU_FAN_DIR);
  
  static struct attribute *as5835_54x_psu_attributes[] = {
  	&sensor_dev_attr_psu_present.dev_attr.attr,
@@ -42,11 +43,11 @@ index c2b6e7a8..675b4043 100644
  	&sensor_dev_attr_psu_power_good.dev_attr.attr,
 -	&sensor_dev_attr_psu_serial_numer.dev_attr.attr,
 +	&sensor_dev_attr_psu_serial_number.dev_attr.attr,
+ 	&sensor_dev_attr_psu_fan_dir.dev_attr.attr,
  	NULL
  };
- 
 diff --git a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
-index 4a16cd6b..0c09f67e 100644
+index 4ac61c6d..da7750ff 100644
 --- a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
 +++ b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.c
 @@ -49,7 +49,7 @@ int get_psu_serial_number(int id, char *serial, int serial_len)
