@@ -10,7 +10,7 @@ LIC_FILES_CHKSUM = "\
   file://${SUBMODULE_BIGCODE}/LICENSE;md5=dc6bd4d967e085fe783aa2abe7655c60 \
 "
 
-SRCREV_onl ?= "6a5e4179ec72d03ece986cac65a3b733bb61aef7"
+SRCREV_onl ?= "dd61cc1792290a459c394c5b7bdf4d4a27b6f651"
 SRCREV_infra ?= "8621a0bab76affaaad6dee0939fda0737c32c881"
 SRCREV_bigcode ?= "4bd372b72472981b5c612b577004fc61c74d98aa"
 
@@ -32,19 +32,15 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0005-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
            file://0006-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
            file://0007-accton-as4610-fix-value-truncation-when-accessing-le.patch \
-           file://0008-add_48x25_8x100_PlatformPortConfig.patch \
            file://0009-as7726-32x-silence-ignored-return-value-warnings.patch \
-           file://0010-Support-ACBEL-FSF019-PSU.patch \
            file://questone-2a;subdir=git/packages/platforms/celestica/x86-64 \
            file://0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
            file://0001-accton-as4630-54pe-silence-error.patch \
-           file://0001-Validate-tx_disable-function-of-4-SFP-ports.patch \
-           file://0001-as4630-54pe-Fix-fan-LED-always-showing-fan-is-turned.patch \
            file://0001-as4630-54pe-Add-SFP-reset-sysfs-and-fix-Led-drv.patch \
            file://0002-Add-rest-lpmode-code-to-sfpi_control-set-get-api.patch \
            file://0003-Fix-fan-direction-api.patch \
            file://0001-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
-           file://0001-onl-as5835-don-t-ignore-psu2_ac_pmbus_node.patch \
+           file://0001-onl-as5835-don-t-ignore-PSU2_AC_PMBUS_NODE.patch \
            file://0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
 "
 
