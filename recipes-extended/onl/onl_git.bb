@@ -40,7 +40,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://0002-Add-rest-lpmode-code-to-sfpi_control-set-get-api.patch \
            file://0003-Fix-fan-direction-api.patch \
            file://0001-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
-           file://0001-onl-as5835-don-t-ignore-PSU2_AC_PMBUS_NODE.patch \
+           file://0001-AS5835-54x-Support-psu_fan_dir-sysfs-for-YM-1401A-PS.patch \
            file://0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
            file://0001-ym2651y-fix-update-when-MFR_MODEL_OPTION-is-uninmple.patch \
            file://0001-accton-as4610-do-not-try-to-read-out-PSU-values-for-.patch \
