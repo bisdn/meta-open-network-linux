@@ -20,6 +20,7 @@ SRC_URI += " \
     file://platform-x86-64-accton-as4630-54te-r0-init.sh \
     file://platform-x86-64-accton-as5835-54x-r0-init.sh \
     file://platform-x86-64-accton-as7726-32x-r0-init.sh \
+    file://platform-x86-64-accton-csp7551-r0-init.sh \
     file://platform-x86-64-cel-questone-2a-r0-init.sh \
     file://platform-x86-64-delta-ag5648-r0-init.sh \
     file://platform-x86-64-delta-ag7648-r0-init.sh \
