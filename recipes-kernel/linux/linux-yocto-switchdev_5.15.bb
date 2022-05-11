@@ -1,12 +1,18 @@
-KBRANCH ?= "linux-5.15.y"
+KBRANCH ?= "dent-linux-5.15.y"
 
 require linux-yocto-onl.inc
+
+# Override FILESEXTRAPATHS_prepend set in linux-yocto-onl.inc
+FILESEXTRAPATHS_prepend := "${THISDIR}/linux-yocto-switchdev-${KBRANCH}:"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 LINUX_VERSION ?= "5.15.11"
-# https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.15.y
-SRCREV_machine ?= "fb6ad5cb3b6745e7bffc5fe19b130f3594375634"
+
+# Linux kernel repo
+# Override SRC_URI set in linux-yocto-onl.inc
+SRC_URI = "git://github.com/dentproject/linux.git;protocol=git;branch=${KBRANCH};nocheckout=1;name=machine"
+SRCREV_machine ?= "9daada80dd204d5ae25cc9538a68dba2e4cc9764"
 
 # Use commit for kver matching (or close to) LINUX_VERSION
 # https://git.yoctoproject.org/yocto-kernel-cache/log/kver?h=yocto-5.15
