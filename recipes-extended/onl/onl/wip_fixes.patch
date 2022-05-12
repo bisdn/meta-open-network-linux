@@ -1,0 +1,62 @@
+diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
+index 5964e28a..2d6eb475 100755
+--- a/packages/base/any/kernels/modules/ym2651y.c
++++ b/packages/base/any/kernels/modules/ym2651y.c
+@@ -817,23 +817,25 @@ static struct ym2651y_data *ym2651y_update_device(struct device *dev)
+                 goto exit;
+             }
+ 
+-            /* Read mfr_model_opt */
+-            command = 0xd0;
+-            length  = 1;
+-
+-            /* Read first byte to determine the length of data */
+-            status = ym2651y_read_block(client, command, &buf, length);
+-            if (status < 0) {
+-                dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+-                goto exit;
+-            }
+-
+-            status = ym2651y_read_block(client, command, data->mfr_model_opt, buf+1);
+-            data->mfr_model_opt[buf+1] = '\0';
+-
+-            if (status < 0) {
+-                dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+-                goto exit;
++            /* Read mfr_model_opt only when known to exist */
++            if (strncmp(data->mfr_model, "YM-2851", strlen("YM-2851")) == 0) {
++                command = 0xd0;
++                length  = 1;
++
++                /* Read first byte to determine the length of data */
++                status = ym2651y_read_block(client, command, &buf, length);
++                if (status < 0) {
++                    dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
++                    goto exit;
++                }
++
++                status = ym2651y_read_block(client, command, data->mfr_model_opt, buf+1);
++                data->mfr_model_opt[buf+1] = '\0';
++
++                if (status < 0) {
++                   dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
++                   goto exit;
++                }
+             }
+ 
+             /* Read mfr_revsion */
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
+index 93400410..f18875ea 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
+@@ -109,6 +109,10 @@ psu_caps_get(int pid, onlp_psu_info_t* info)
+ {
+     int val   = 0;
+ 
++    if (strncmp(info->model, "YM-1921", strlen("YM-1921")) == 0) {
++        return ONLP_STATUS_E_UNSUPPORTED;
++    }
++
+     /* Read voltage, current and power */
+     if (psu_pmbus_info_get(pid, "psu_v_out", &val) == 0) {
+         info->mvout = val;

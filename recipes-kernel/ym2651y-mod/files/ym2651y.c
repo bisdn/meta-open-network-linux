@@ -817,23 +817,25 @@ static struct ym2651y_data *ym2651y_update_device(struct device *dev)
                 goto exit;
             }
 
-            /* Read mfr_model_opt */
-            command = 0xd0;
-            length  = 1;
+            /* Read mfr_model_opt only when known to exist */
+            if (strncmp(data->mfr_model, "YM-2851", strlen("YM-2851")) == 0) {
+                command = 0xd0;
+                length  = 1;
 
-            /* Read first byte to determine the length of data */
-            status = ym2651y_read_block(client, command, &buf, length);
-            if (status < 0) {
-                dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
-                goto exit;
-            }
+                /* Read first byte to determine the length of data */
+                status = ym2651y_read_block(client, command, &buf, length);
+                if (status < 0) {
+                    dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+                    goto exit;
+                }
 
-            status = ym2651y_read_block(client, command, data->mfr_model_opt, buf+1);
-            data->mfr_model_opt[buf+1] = '\0';
+                status = ym2651y_read_block(client, command, data->mfr_model_opt, buf+1);
+                data->mfr_model_opt[buf+1] = '\0';
 
-            if (status < 0) {
-                dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
-                goto exit;
+                if (status < 0) {
+                   dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+                   goto exit;
+                }
             }
 
             /* Read mfr_revsion */
