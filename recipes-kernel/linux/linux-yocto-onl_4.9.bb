@@ -2,7 +2,7 @@ KBRANCH ?= "linux-4.9.y"
 
 require linux-yocto-onl.inc
 
-LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
+LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 
 LINUX_VERSION ?= "4.9.313"
 # https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.15.y
