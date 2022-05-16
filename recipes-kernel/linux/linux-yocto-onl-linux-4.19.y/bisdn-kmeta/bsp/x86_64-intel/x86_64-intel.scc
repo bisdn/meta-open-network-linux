@@ -1,0 +1,7 @@
+define KMACHINE x86_64-intel
+define KTYPE standard
+define KARCH x86
+
+include cfg/bisdn-linux.scc
+
+kconf hardware x86_64-intel.cfg

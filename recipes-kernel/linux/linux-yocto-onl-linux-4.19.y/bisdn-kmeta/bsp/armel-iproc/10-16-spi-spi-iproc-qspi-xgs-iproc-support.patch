@@ -1,0 +1,389 @@
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 83e352b0c8f9..41d8cae86999 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -180,8 +180,8 @@ config SPI_BCM63XX_HSSPI
+ config SPI_BCM_QSPI
+ 	tristate "Broadcom BSPI and MSPI controller support"
+ 	depends on ARCH_BRCMSTB || ARCH_BCM || ARCH_BCM_IPROC || \
+-			BMIPS_GENERIC || COMPILE_TEST
+-	default ARCH_BCM_IPROC
++			ARCH_XGS_IPROC || BMIPS_GENERIC || COMPILE_TEST
++	default ARCH_BCM_IPROC || ARCH_XGS_IPROC
+ 	help
+ 	  Enables support for the Broadcom SPI flash and MSPI controller.
+ 	  Select this option for any one of BRCMSTB, iProc NSP and NS2 SoCs
+diff --git a/drivers/spi/spi-bcm-qspi.c b/drivers/spi/spi-bcm-qspi.c
+index 3043677ba222..b5c625ad340a 100644
+--- a/drivers/spi/spi-bcm-qspi.c
++++ b/drivers/spi/spi-bcm-qspi.c
+@@ -78,7 +78,7 @@
+ #define BSPI_BPP_MODE_SELECT_MASK		BIT(8)
+ #define BSPI_BPP_ADDR_SELECT_MASK		BIT(16)
+ 
+-#define BSPI_READ_LENGTH			256
++//#define BSPI_READ_LENGTH			512
+ 
+ /* MSPI register offsets */
+ #define MSPI_SPCR0_LSB				0x000
+@@ -117,6 +117,8 @@
+ 
+ #define MSPI_MSPI_STATUS_SPIF			BIT(0)
+ 
++#define CRU_CTRL_REG				0x0
++
+ #define INTR_BASE_BIT_SHIFT			0x02
+ #define INTR_COUNT				0x07
+ 
+@@ -170,6 +172,7 @@ enum base_type {
+ 	MSPI,
+ 	BSPI,
+ 	CHIP_SELECT,
++	CRU_CTRL,
+ 	BASEMAX,
+ };
+ 
+@@ -194,12 +197,14 @@ struct bcm_qspi_dev_id {
+ struct qspi_trans {
+ 	struct spi_transfer *trans;
+ 	int byte;
++	int slots;
+ 	bool mspi_last_trans;
+ };
+ 
+ struct bcm_qspi {
+ 	struct platform_device *pdev;
+ 	struct spi_master *master;
++	struct spi_device *spi_dev;
+ 	struct clk *clk;
+ 	u32 base_clk;
+ 	u32 max_speed_hz;
+@@ -482,11 +487,12 @@ static int bcm_qspi_bspi_set_mode(struct bcm_qspi *qspi,
+ 	qspi->xfer_mode.flex_mode = true;
+ 
+ 	if (!bcm_qspi_bspi_ver_three(qspi)) {
+-		u32 val, mask;
++		u32 val, mask, endian;
+ 
+-		val = bcm_qspi_read(qspi, BSPI, BSPI_STRAP_OVERRIDE_CTRL);
++		val = qspi->s3_strap_override_ctrl;
+ 		mask = BSPI_STRAP_OVERRIDE_CTRL_OVERRIDE;
+-		if (val & mask || qspi->s3_strap_override_ctrl & mask) {
++		endian = BSPI_STRAP_OVERRIDE_CTRL_ENDAIN_MODE;
++		if ((val & mask) && (val & ~(mask | endian))) {
+ 			qspi->xfer_mode.flex_mode = false;
+ 			bcm_qspi_write(qspi, BSPI, BSPI_FLEX_MODE_ENABLE, 0);
+ 			error = bcm_qspi_bspi_set_override(qspi, op, hp);
+@@ -625,6 +631,8 @@ static void bcm_qspi_update_parms(struct bcm_qspi *qspi,
+ static int bcm_qspi_setup(struct spi_device *spi)
+ {
+ 	struct bcm_qspi_parms *xp;
++	struct bcm_qspi *qspi = spi_master_get_devdata(spi->master);
++	u32 tmp;
+ 
+ 	if (spi->bits_per_word > 16)
+ 		return -EINVAL;
+@@ -636,8 +644,20 @@ static int bcm_qspi_setup(struct spi_device *spi)
+ 			return -ENOMEM;
+ 		spi_set_ctldata(spi, xp);
+ 	}
+-	xp->speed_hz = spi->max_speed_hz;
++
+ 	xp->mode = spi->mode;
++	xp->speed_hz = spi->max_speed_hz;
++
++	/* Set BSPI clock rate */
++	tmp = bcm_qspi_read(qspi, CRU_CTRL, CRU_CTRL_REG);
++	tmp &= ~0x6;
++	if (spi->max_speed_hz >= 62500000)
++		tmp |= 0x6;
++	else if (spi->max_speed_hz >= 50000000)
++		tmp |= 0x2;
++	else if (spi->max_speed_hz >= 31250000)
++		tmp |= 0x4;
++	bcm_qspi_write(qspi, CRU_CTRL, CRU_CTRL_REG, tmp);
+ 
+ 	if (spi->bits_per_word)
+ 		xp->bits_per_word = spi->bits_per_word;
+@@ -725,22 +745,25 @@ static void read_from_hw(struct bcm_qspi *qspi, int slots)
+ 	tp = qspi->trans_pos;
+ 
+ 	for (slot = 0; slot < slots; slot++) {
++		if (tp.trans->rx_buf) {
+ 		if (tp.trans->bits_per_word <= 8) {
+ 			u8 *buf = tp.trans->rx_buf;
+ 
+ 			if (buf)
+-				buf[tp.byte] = read_rxram_slot_u8(qspi, slot);
++					buf[tp.byte] =
++						read_rxram_slot_u8(qspi, slot);
+ 			dev_dbg(&qspi->pdev->dev, "RD %02x\n",
+ 				buf ? buf[tp.byte] : 0x0);
+ 		} else {
+ 			u16 *buf = tp.trans->rx_buf;
+ 
+ 			if (buf)
+-				buf[tp.byte / 2] = read_rxram_slot_u16(qspi,
+-								      slot);
++					buf[tp.byte / 2] =
++						read_rxram_slot_u16(qspi, slot);
+ 			dev_dbg(&qspi->pdev->dev, "RD %04x\n",
+ 				buf ? buf[tp.byte / 2] : 0x0);
+ 		}
++		}
+ 
+ 		update_qspi_trans_byte_count(qspi, &tp,
+ 					     TRANS_STATUS_BREAK_NONE);
+@@ -823,6 +846,9 @@ static int write_to_hw(struct bcm_qspi *qspi, struct spi_device *spi)
+ 		slot++;
+ 	}
+ 
++	/* save slot number for read_from_hw() */
++	qspi->trans_pos.slots = slot;
++
+ 	if (!slot) {
+ 		dev_err(&qspi->pdev->dev, "%s: no data to send?", __func__);
+ 		goto done;
+@@ -863,9 +889,9 @@ static int bcm_qspi_bspi_exec_mem_op(struct spi_device *spi,
+ 				     const struct spi_mem_op *op)
+ {
+ 	struct bcm_qspi *qspi = spi_master_get_devdata(spi->master);
+-	u32 addr = 0, len, rdlen, len_words, from = 0;
++	u32 addr = 0, len, len_words, from = 0;
+ 	int ret = 0;
+-	unsigned long timeo = msecs_to_jiffies(100);
++	unsigned long timeo = msecs_to_jiffies(1000);
+ 	struct bcm_qspi_soc_intc *soc_intc = qspi->soc_intc;
+ 
+ 	if (bcm_qspi_bspi_ver_three(qspi))
+@@ -900,47 +926,37 @@ static int bcm_qspi_bspi_exec_mem_op(struct spi_device *spi,
+ 	 * into RAF buffer read lengths
+ 	 */
+ 	len = op->data.nbytes;
+-	qspi->bspi_rf_op_idx = 0;
+ 
+-	do {
+-		if (len > BSPI_READ_LENGTH)
+-			rdlen = BSPI_READ_LENGTH;
+-		else
+-			rdlen = len;
+-
+-		reinit_completion(&qspi->bspi_done);
+-		bcm_qspi_enable_bspi(qspi);
+-		len_words = (rdlen + 3) >> 2;
+-		qspi->bspi_rf_op = op;
+-		qspi->bspi_rf_op_status = 0;
+-		qspi->bspi_rf_op_len = rdlen;
+-		dev_dbg(&qspi->pdev->dev,
+-			"bspi xfr addr 0x%x len 0x%x", addr, rdlen);
+-		bcm_qspi_write(qspi, BSPI, BSPI_RAF_START_ADDR, addr);
+-		bcm_qspi_write(qspi, BSPI, BSPI_RAF_NUM_WORDS, len_words);
+-		bcm_qspi_write(qspi, BSPI, BSPI_RAF_WATERMARK, 0);
+-		if (qspi->soc_intc) {
+-			/*
+-			 * clear soc MSPI and BSPI interrupts and enable
+-			 * BSPI interrupts.
+-			 */
+-			soc_intc->bcm_qspi_int_ack(soc_intc, MSPI_BSPI_DONE);
+-			soc_intc->bcm_qspi_int_set(soc_intc, BSPI_DONE, true);
+-		}
++	if (bcm_qspi_bspi_ver_three(qspi) == true)
++		addr = (addr + 0xc00000) & 0xffffff;
+ 
+-		/* Must flush previous writes before starting BSPI operation */
+-		mb();
+-		bcm_qspi_bspi_lr_start(qspi);
+-		if (!wait_for_completion_timeout(&qspi->bspi_done, timeo)) {
+-			dev_err(&qspi->pdev->dev, "timeout waiting for BSPI\n");
+-			ret = -ETIMEDOUT;
+-			break;
+-		}
++	reinit_completion(&qspi->bspi_done);
++	bcm_qspi_enable_bspi(qspi);
++	len_words = (len + 3) >> 2;
++	qspi->bspi_rf_op = op;
++	qspi->bspi_rf_op_status = 0;
++	qspi->bspi_rf_op_idx = 0;
++	qspi->bspi_rf_op_len = len;
++	dev_dbg(&qspi->pdev->dev, "bspi xfr addr 0x%x len 0x%x", addr, len);
++	bcm_qspi_write(qspi, BSPI, BSPI_RAF_START_ADDR, addr);
++	bcm_qspi_write(qspi, BSPI, BSPI_RAF_NUM_WORDS, len_words);
++	bcm_qspi_write(qspi, BSPI, BSPI_RAF_WATERMARK, 0);
++	if (qspi->soc_intc) {
++		/*
++		 * clear soc MSPI and BSPI interrupts and enable
++		 * BSPI interrupts.
++		 */
++		soc_intc->bcm_qspi_int_ack(soc_intc, MSPI_BSPI_DONE);
++		soc_intc->bcm_qspi_int_set(soc_intc, BSPI_DONE, true);
++	}
+ 
+-		/* set msg return length */
+-		addr += rdlen;
+-		len -= rdlen;
+-	} while (len);
++	/* Must flush previous writes before starting BSPI operation */
++	mb();
++	bcm_qspi_bspi_lr_start(qspi);
++	if (!wait_for_completion_timeout(&qspi->bspi_done, timeo)) {
++		dev_err(&qspi->pdev->dev, "timeout waiting for BSPI\n");
++		ret = -ETIMEDOUT;
++	}
+ 
+ 	return ret;
+ }
+@@ -950,25 +966,23 @@ static int bcm_qspi_transfer_one(struct spi_master *master,
+ 				 struct spi_transfer *trans)
+ {
+ 	struct bcm_qspi *qspi = spi_master_get_devdata(master);
+-	int slots;
+-	unsigned long timeo = msecs_to_jiffies(100);
++	unsigned long timeo = msecs_to_jiffies(1000);
+ 
+ 	if (!spi->cs_gpiod)
+ 		bcm_qspi_chip_select(qspi, spi->chip_select);
+ 	qspi->trans_pos.trans = trans;
+ 	qspi->trans_pos.byte = 0;
++	qspi->spi_dev = spi;
+ 
+-	while (qspi->trans_pos.byte < trans->len) {
+ 		reinit_completion(&qspi->mspi_done);
+ 
+-		slots = write_to_hw(qspi, spi);
++	write_to_hw(qspi, spi);
++
+ 		if (!wait_for_completion_timeout(&qspi->mspi_done, timeo)) {
+ 			dev_err(&qspi->pdev->dev, "timeout waiting for MSPI\n");
+ 			return -ETIMEDOUT;
+ 		}
+ 
+-		read_from_hw(qspi, slots);
+-	}
+ 	bcm_qspi_enable_bspi(qspi);
+ 
+ 	return 0;
+@@ -1082,7 +1096,24 @@ static irqreturn_t bcm_qspi_mspi_l2_isr(int irq, void *dev_id)
+ 		bcm_qspi_write(qspi, MSPI, MSPI_MSPI_STATUS, status);
+ 		if (qspi->soc_intc)
+ 			soc_intc->bcm_qspi_int_ack(soc_intc, MSPI_DONE);
++
++		if (qspi->trans_pos.trans->tx_buf &&
++			(qspi->trans_pos.trans->len <= MSPI_NUM_CDRAM)) {
+ 		complete(&qspi->mspi_done);
++			spi_finalize_current_transfer(qspi->master);
++			return IRQ_HANDLED;
++		}
++
++		read_from_hw(qspi, qspi->trans_pos.slots);
++
++		if (qspi->trans_pos.trans) {
++			write_to_hw(qspi, qspi->spi_dev);
++		}
++		else {
++			complete(&qspi->mspi_done);
++			spi_finalize_current_transfer(qspi->master);
++		}
++
+ 		return IRQ_HANDLED;
+ 	}
+ 
+@@ -1101,6 +1132,8 @@ static irqreturn_t bcm_qspi_bspi_lr_l2_isr(int irq, void *dev_id)
+ 		if (qspi->bspi_rf_op_len == 0) {
+ 			qspi->bspi_rf_op = NULL;
+ 			if (qspi->soc_intc) {
++				/* Ack BSPI done interrupt */
++				soc_intc->bcm_qspi_int_ack(soc_intc, BSPI_DONE);
+ 				/* disable soc BSPI interrupt */
+ 				soc_intc->bcm_qspi_int_set(soc_intc, BSPI_DONE,
+ 							   false);
+@@ -1112,11 +1145,12 @@ static irqreturn_t bcm_qspi_bspi_lr_l2_isr(int irq, void *dev_id)
+ 				bcm_qspi_bspi_lr_clear(qspi);
+ 			else
+ 				bcm_qspi_bspi_flush_prefetch_buffers(qspi);
+-		}
+-
++		} else {
+ 		if (qspi->soc_intc)
+-			/* clear soc BSPI interrupt */
+-			soc_intc->bcm_qspi_int_ack(soc_intc, BSPI_DONE);
++				/* Ack FIFO full interrupt */
++				soc_intc->bcm_qspi_int_ack(soc_intc,
++							BSPI_FIFO_FULL);
++		}
+ 	}
+ 
+ 	status &= INTR_BSPI_LR_SESSION_DONE_MASK;
+@@ -1359,8 +1393,6 @@ int bcm_qspi_probe(struct platform_device *pdev,
+ 	master->num_chipselect = NUM_CHIPSELECT;
+ 	master->use_gpio_descriptors = true;
+ 
+-	qspi->big_endian = of_device_is_big_endian(dev->of_node);
+-
+ 	if (!of_property_read_u32(dev->of_node, "num-cs", &val))
+ 		master->num_chipselect = val;
+ 
+@@ -1396,6 +1428,26 @@ int bcm_qspi_probe(struct platform_device *pdev,
+ 			return PTR_ERR(qspi->base[CHIP_SELECT]);
+ 	}
+ 
++ 	/* iProc BSPI clock is set through CRU control */
++ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "cru_ctrl");
++ 	if (res) {
++ 		qspi->base[CRU_CTRL] = devm_ioremap_resource(dev, res);
++ 		if (IS_ERR(qspi->base[CRU_CTRL])) {
++ 			ret = PTR_ERR(qspi->base[CRU_CTRL]);
++ 			goto qspi_probe_err;
++ 		}
++ 	}
++
++	qspi->big_endian = of_device_is_big_endian(dev->of_node);
++
++	val = bcm_qspi_read(qspi, BSPI, BSPI_STRAP_OVERRIDE_CTRL);
++	if (qspi->big_endian == 0 && IS_ENABLED(CONFIG_CPU_BIG_ENDIAN)) {
++		val |= BSPI_STRAP_OVERRIDE_CTRL_ENDAIN_MODE;
++		val |= BSPI_STRAP_OVERRIDE_CTRL_OVERRIDE;
++		bcm_qspi_write(qspi, BSPI, BSPI_STRAP_OVERRIDE_CTRL, val);
++	}
++	qspi->s3_strap_override_ctrl = val;
++
+ 	qspi->dev_ids = kcalloc(num_irqs, sizeof(struct bcm_qspi_dev_id),
+ 				GFP_KERNEL);
+ 	if (!qspi->dev_ids)
+diff --git a/drivers/spi/spi-bcm-qspi.h b/drivers/spi/spi-bcm-qspi.h
+index 01aec6460108..b68e275bc721 100644
+--- a/drivers/spi/spi-bcm-qspi.h
++++ b/drivers/spi/spi-bcm-qspi.h
+@@ -48,7 +48,8 @@ enum {
+ 	MSPI_DONE = 0x1,
+ 	BSPI_DONE = 0x2,
+ 	BSPI_ERR = 0x4,
+-	MSPI_BSPI_DONE = 0x7
++	MSPI_BSPI_DONE = 0x7,
++	BSPI_FIFO_FULL = 0x8
+ };
+ 
+ struct bcm_qspi_soc_intc {
+@@ -84,6 +85,8 @@ static inline u32 get_qspi_mask(int type)
+ 		return INTR_MSPI_DONE_MASK;
+ 	case BSPI_DONE:
+ 		return BSPI_LR_INTERRUPTS_ALL;
++	case BSPI_FIFO_FULL:
++		return INTR_BSPI_LR_FULLNESS_REACHED_MASK;
+ 	case MSPI_BSPI_DONE:
+ 		return QSPI_INTERRUPTS_ALL;
+ 	case BSPI_ERR:
+diff --git a/drivers/spi/spi-iproc-qspi.c b/drivers/spi/spi-iproc-qspi.c
+index de297dacfd57..5a12127f8bfe 100644
+--- a/drivers/spi/spi-iproc-qspi.c
++++ b/drivers/spi/spi-iproc-qspi.c
+@@ -135,6 +135,7 @@ static int bcm_iproc_remove(struct platform_device *pdev)
+ static const struct of_device_id bcm_iproc_of_match[] = {
+ 	{ .compatible = "brcm,spi-nsp-qspi" },
+ 	{ .compatible = "brcm,spi-ns2-qspi" },
++	{ .compatible = "brcm,spi-xgs-iproc-qspi" },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, bcm_iproc_of_match);
+-- 
+2.33.0
+
