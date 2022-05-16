@@ -38,10 +38,10 @@ create_i2c_dev() {
 }
 
 # load modules
-modprobe x86-64-accton-as5835-54x-cpld
-modprobe x86-64-accton-as5835-54x-psu
-modprobe x86-64-accton-as5835-54x-leds
-modprobe x86-64-accton-as5835-54x-fan
+modprobe fpga_driver
+modprobe accton_i2c_cpld
+modprobe x86-64-accton-csp7551-sfp
+modprobe at24_csp7551
 
 # initialize multiplexer (PCA9548)
 create_i2c_dev pca9548 0x77 1
