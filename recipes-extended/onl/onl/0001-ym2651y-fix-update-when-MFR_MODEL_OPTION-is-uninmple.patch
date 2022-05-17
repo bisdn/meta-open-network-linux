@@ -1,0 +1,77 @@
+Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/889]
+
+From f100eabba20bdca3796bcb97b670d0095c96ffa4 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 13 May 2022 12:24:11 +0200
+Subject: [PATCH] ym2651y: fix update when MFR_MODEL_OPTION is uninmplemented
+
+Not every PSU implements the MFR_MODEL_OPTION register. If it does not
+it will return 0xff on read, which will then subsequently break trying
+to read out the full string.
+
+The value of 0xff causes an integer overflow to 0 when trying to read
+the whole string, which then causes the I2C driver to reject the 0
+length read with -71 (EPROTO):
+
+[ 1480.358408] ym2651 50-005b: reg 208, err -71
+
+This e.g. breaks AS7726-32X-F with FSF019-611 PSUs, which do not have
+this register implemented.
+
+Example error output when running onlpdump(onlps):
+
+   psu @ 1 = {
+05-13 10:25:53.198289 [onlplib] Failed to read input file '/sys/bus/i2c/devices/50-005b/psu_fan_dir'
+       Description: PSU-1
+       Model:  FSF019-611
+       SN:     NULL
+       Status: 0x00000005 [ PRESENT,UNPLUGGED ]
+       Caps:   0x00000000
+       Vin:    0
+       Vout:   0
+       Iin:    0
+       Iout:   0
+       Pin:    0
+       Pout:   0
+   }
+
+Fix this by checking that the returned value is valid (!= 0xff) before
+attempting to read the value.
+
+Fixes: 16f0424f ("[as7816-64x] Support YM-2851J DC PSU")
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ packages/base/any/kernels/modules/ym2651y.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
+index 5964e28a..45442c0e 100755
+--- a/packages/base/any/kernels/modules/ym2651y.c
++++ b/packages/base/any/kernels/modules/ym2651y.c
+@@ -828,12 +828,17 @@ static struct ym2651y_data *ym2651y_update_device(struct device *dev)
+                 goto exit;
+             }
+ 
+-            status = ym2651y_read_block(client, command, data->mfr_model_opt, buf+1);
+-            data->mfr_model_opt[buf+1] = '\0';
+-
+-            if (status < 0) {
+-                dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+-                goto exit;
++            /* Register may not be implemented, in that case it returns 0xff */
++            if (buf == 0xff) {
++                dev_dbg(&client->dev, "reg %d not available\n", command);
++            } else {
++                status = ym2651y_read_block(client, command, data->mfr_model_opt, buf+1);
++                data->mfr_model_opt[buf+1] = '\0';
++
++                if (status < 0) {
++                    dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
++                    goto exit;
++                }
+             }
+ 
+             /* Read mfr_revsion */
+-- 
+2.35.1
+
