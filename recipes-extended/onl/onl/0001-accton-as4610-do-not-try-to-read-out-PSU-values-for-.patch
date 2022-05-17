@@ -1,0 +1,37 @@
+Upstream-Status: Ticket created at Edgecore
+
+From 6c7966147b9289da2305a4808c55266fead401fa Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 17 May 2022 10:22:52 +0200
+Subject: [PATCH] accton-as4610: do not try to read out PSU values for YM-1921
+
+Reading PSU output values on YM-1921 seems to be unreliable and can
+lockup the I2C bus, which causes system hangs and ultimately resets by
+the watchdog. Other PSUs seem to be fine, so it looks like an issue with
+the PSU, not the I2C bus.
+
+So for now treat the YM-1921 PSUs as unsupported for these values.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../arm-accton-as4610/arm_accton_as4610/module/src/psui.c     | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
+index 93400410..f18875ea 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
+@@ -109,6 +109,10 @@ psu_caps_get(int pid, onlp_psu_info_t* info)
+ {
+     int val   = 0;
+ 
++    if (strncmp(info->model, "YM-1921", strlen("YM-1921")) == 0) {
++        return ONLP_STATUS_E_UNSUPPORTED;
++    }
++
+     /* Read voltage, current and power */
+     if (psu_pmbus_info_get(pid, "psu_v_out", &val) == 0) {
+         info->mvout = val;
+-- 
+2.35.1
+
