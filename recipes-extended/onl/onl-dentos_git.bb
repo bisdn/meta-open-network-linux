@@ -1,6 +1,9 @@
 # Copyright (C) 2018 Tobias Jungel <tobias.jungel@bisdn.de>
 # Released under the MIT license (see COPYING.MIT for the terms)
 
+DESCRIPTION = "dentOS Components for Yocto integration"
+HOMEPAGE = "https://dent.dev/"
+
 require onl.inc
 
 LIC_FILES_CHECKSUM += "file://LICENSE;beginline=8;md5=7e6d108802170df125adb4f452c3c9dd"
