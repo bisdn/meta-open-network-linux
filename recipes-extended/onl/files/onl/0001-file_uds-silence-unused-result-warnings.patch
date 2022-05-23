@@ -1,7 +1,7 @@
 From cc75588a7aa5e3f580148e4339ebb1caaefea889 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 19 Mar 2021 12:00:28 +0100
-Subject: [PATCH 1/7] file_uds: silence unused result warnings
+Subject: [PATCH] file_uds: silence unused result warnings
 
 We don't seem to care if these fail, so silence them in a way that works
 with GCC.

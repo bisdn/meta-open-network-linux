@@ -1,7 +1,7 @@
 From 33fc087611498552845f5d27b149798609296257 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 19 Apr 2021 16:52:16 +0200
-Subject: [PATCH 7/7] accton-as4610: fix value truncation when accessing leds
+Subject: [PATCH] accton-as4610: fix value truncation when accessing leds
 
 Some leds, namely PSU1/2 and FAN support the mode
 LED_MODE_AUTO_BLINKING. This mode has the numeric value of 10, which
