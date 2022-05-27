@@ -12,7 +12,7 @@ LINUX_VERSION ?= "5.15.11"
 # Linux kernel repo
 # Override SRC_URI set in linux-yocto-onl.inc
 SRC_URI = "git://github.com/dentproject/linux.git;protocol=git;branch=${KBRANCH};nocheckout=1;name=machine"
-SRCREV_machine ?= "9daada80dd204d5ae25cc9538a68dba2e4cc9764"
+SRCREV_machine ?= "686f3f29dd06e1fbdf687c9b49a76a8476caf78e"
 
 # Use commit for kver matching (or close to) LINUX_VERSION
 # https://git.yoctoproject.org/yocto-kernel-cache/log/kver?h=yocto-5.15
