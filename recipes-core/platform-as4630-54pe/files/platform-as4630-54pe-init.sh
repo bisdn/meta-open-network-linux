@@ -21,6 +21,13 @@ create_i2c_dev pca9548 0x77 1
 create_i2c_dev pca9548 0x71 2
 create_i2c_dev pca9548 0x70 3
 
+# allow SFP LEDs to be controlled by MAC
+OTHER=$(i2cget -y -f 0x3 0x60 0x86)
+if [ "$(($OTHER & 0x80))" == "0" ]; then
+	OTHER=$(($OTHER | 0x80))
+	i2cset -y -f 0x3 0x60 0x86 $OTHER
+fi
+
 # add CPLD
 create_i2c_dev as4630_54pe_cpld 0x60 3
 
