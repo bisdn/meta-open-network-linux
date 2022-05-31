@@ -53,6 +53,33 @@ ARCH = "${TARGET_ARCH}"
 TOOLCHAIN = "gcc-local"
 NO_USE_GCC_VERSION_TOOL="1"
 
+def onl_arch_map(arch, tune):
+    tune_features = tune.split()
+    if arch == "allarch":
+        return "all"
+    if arch in ["i586", "i686"]:
+        return "i386"
+    if arch == "x86_64":
+        if "mx32" in tune_features:
+            return "x32"
+        return "amd64"
+    if arch.startswith("mips"):
+        endian = ["el", ""]["bigendian" in tune_features]
+        if "n64" in tune_features:
+            return "mips64" + endian
+        if "n32" in tune_features:
+            return "mipsn32" + endian
+        return "mips" + endian
+    if arch == "powerpc":
+        return arch + ["", "spe"]["spe" in tune_features]
+    if arch == "aarch64":
+        return "arm64"
+    if arch == "arm":
+        return arch + ["el", "hf"]["callconvention-hard" in tune_features]
+    return arch
+
+ONL_BUILD_ARCH = "${@onl_arch_map(d.getVar('TARGET_ARCH'), d.getVar('TUNE_FEATURES'))}"
+
 ###
 # TODO CFLAGS?
 EXTRA_OEMAKE = "\
