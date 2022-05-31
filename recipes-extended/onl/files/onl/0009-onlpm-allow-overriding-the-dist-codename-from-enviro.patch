@@ -1,0 +1,38 @@
+Upstream-Status: Inappropriate [Hack for building with yocto]
+
+From c93de5cc415e211f6c2079616701ab4be019b4dd Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 23 Jun 2022 11:13:22 +0200
+Subject: [PATCH 3/3] onlpm: allow overriding the dist codename from environment
+
+Yocto does not provide a lsb_release module, so add support for
+overriding the dist codename, and only try to use lsb_release if unset.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ tools/onlpm.py | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/tools/onlpm.py b/tools/onlpm.py
+index d4403c0d3b65..ce0913e154f9 100755
+--- a/tools/onlpm.py
++++ b/tools/onlpm.py
+@@ -21,11 +21,13 @@ import onlu
+ from string import Template
+ import re
+ import json
+-import lsb_release
+ import pickle
+ import traceback
+ 
+-g_dist_codename = lsb_release.get_distro_information().get('CODENAME')
++g_dist_codename=os.environ.get('ONL_DEBIAN_SUITE', None)
++if g_dist_codename is None:
++    import lsb_release
++    g_dist_codename = lsb_release.get_distro_information().get('CODENAME')
+ 
+ logger = onlu.init_logging('onlpm', logging.INFO)
+ 
+-- 
+2.36.1
+
