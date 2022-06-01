@@ -11,4 +11,3 @@ ONIE_PLATFORM ?= "${ONIE_ARCH}-${ONIE_MACHINE}-r${ONIE_MACHINE_REV}"
 # onl vars
 ONL_DEBIAN_SUITE = "buster"
 ONL_PLATFORM="${@'${ONIE_ARCH}-${ONIE_MACHINE}'.replace('_', '-')}"
-ONL_ARCH="${@'${ONIE_ARCH}'.replace('_', '-')}"
