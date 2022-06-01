@@ -5,6 +5,7 @@ define KARCH arm64
 # submitted upstream
 
 # platform support
+patch 0001-Add-Delta-TN48M-TN48M-DN-series-dts.patch
 patch 0001-prestera-select-CONFIG_DCB.patch
 
 include cfg/bisdn-linux.scc
