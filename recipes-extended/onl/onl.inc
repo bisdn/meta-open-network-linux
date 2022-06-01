@@ -79,6 +79,7 @@ def onl_arch_map(arch, tune):
     return arch
 
 ONL_BUILD_ARCH = "${@onl_arch_map(d.getVar('TARGET_ARCH'), d.getVar('TUNE_FEATURES'))}"
+ONL_DEBIAN_SUITE = "buster"
 
 ###
 # TODO CFLAGS?
