@@ -7,6 +7,7 @@ patch 0001-net-ipv6-apply-IFLA_INET6_ADDR_GEN_MODE-immediately.patch
 include features/bpf/bpf.scc
 include features/cgroups/cgroups.scc
 include features/tun/tun.scc
+include cfg/fs/ext4.scc
 include cfg/net/bridge.scc
 include cgl/cfg/net/ip_vs.scc
 
