@@ -1,0 +1,11 @@
+[Unit]
+Description=onlpd platform manager daemon
+After=network.target
+
+[Service]
+ExecStart=@BINDIR@/onlpd -M /run/onlpd.pid
+PIDFile=/run/onlpd.pid
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

@@ -19,12 +19,12 @@ SRCREV_FORMAT = "onl_infra_bigcode"
 SRC_URI = "${URI_ONL};name=onl \
            ${URI_INFRA};name=infra;destsuffix=git/${SUBMODULE_INFRA} \
            ${URI_BIGCODE};name=bigcode;destsuffix=git/${SUBMODULE_BIGCODE} \
-           file://onlpdump.service \
+           file://onlpd.service \
 "
 
 inherit systemd python3native
 
-SYSTEMD_SERVICE_${PN} = "onlpdump.service"
+SYSTEMD_SERVICE_${PN} = "onlpd.service"
 SYSTEMD_AUTO_ENABLE = "enable"
 
 DEPENDS = "i2c-tools libedit python3-pyyaml-native"
@@ -123,7 +123,6 @@ do_compile() {
   ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${ONLP_PLATFORM}:${ONL_BUILD_ARCH})
 
   V=1 VERBOSE=1 oe_runmake -C ${ONLP_DIR}/builds/lib alltargets
-  V=1 VERBOSE=1 oe_runmake -C ${ONLP_DIR}/builds/onlpdump alltargets
 }
 
 do_install() {
@@ -143,7 +142,8 @@ do_install() {
   ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${ONLP_PLATFORM}:${ONL_BUILD_ARCH})
 
   # install onlpdump
-  install -m 0755 ${ONLP_DIR}/builds/onlpdump/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlps ${D}${bindir}/onlpdump
+  install -m 0755 packages/base/any/onlp/builds/onlpd/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlpd ${D}${bindir}
+  ln -r -s ${D}${bindir}/onlpd ${D}${bindir}/onlpdump
 
   # install headers
   install -m 0644 packages/base/any/onlp/src/onlp/module/inc/onlp/*.h ${D}${includedir}/onlp/
@@ -175,7 +175,7 @@ do_install() {
 
   # service file
   install -d ${D}${systemd_unitdir}/system
-  install -m 0644 ${WORKDIR}/onlpdump.service ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/onlpd.service ${D}${systemd_unitdir}/system
   sed -i -e 's,@BINDIR@,${bindir},g' \
          ${D}${systemd_unitdir}/system/*.service
 }
