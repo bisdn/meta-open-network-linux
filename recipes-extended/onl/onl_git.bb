@@ -25,8 +25,10 @@ SRC_URI += " \
            file://onl/0009-onlpm-allow-overriding-the-dist-codename-from-enviro.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
+           file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://infra/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_INFRA} \
            file://infra/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_INFRA} \
+           file://infra/0003-avoid-multiple-global-definitions-for-__not_empty__.patch;patchdir=${SUBMODULE_INFRA} \
            file://accton-as4610/0001-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
            file://accton-as4610/0002-accton-as4610-fix-value-truncation-when-accessing-le.patch \
            file://accton-as4610/0003-accton-as4610-do-not-try-to-read-out-PSU-values-for-.patch \
