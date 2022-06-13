@@ -1,0 +1,202 @@
+Upstream-Status: unsubmitted
+
+From 47fbd141f6ca3998b5086ccdcdbcc7684a390eb1 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Mon, 13 Jun 2022 15:56:01 +0200
+Subject: [PATCH] avoid multiple global definitions for not_empty
+
+GCC 10 and newer treat multiple definitions of a symbol as an error by
+default. Fix this by using unique variable names following the example
+from
+
+  modules/VPI/module/src/vpi_bridge.c
+
+Fixes the following build error:
+
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_time_windows.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_time_windows.c:44: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.c:139: first defined here
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sleep_windows.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sleep_windows.c:33: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.c:139: first defined here
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_osx.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_osx.c:28: multiple definition of `not_empty'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_none.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_none.c:69: first defined here
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sleep_osx.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sleep_osx.c:28: multiple definition of `not_empty'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_none.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_none.c:69: first defined here
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_windows.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_windows.c:69: multiple definition of `not_empty'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_none.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sem_none.c:69: first defined here
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_time_osx.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_time_osx.c:51: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.c:139: first defined here
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_time_none.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_time_none.c:44: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.c:139: first defined here
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sleep_none.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sleep_none.c:33: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.c:139: first defined here
+| collect2: error: ld returned 1 exit status
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ modules/OS/module/src/os_sem_none.c      | 2 +-
+ modules/OS/module/src/os_sem_osx.c       | 2 +-
+ modules/OS/module/src/os_sem_posix.c     | 2 +-
+ modules/OS/module/src/os_sem_windows.c   | 2 +-
+ modules/OS/module/src/os_sleep_none.c    | 2 +-
+ modules/OS/module/src/os_sleep_osx.c     | 2 +-
+ modules/OS/module/src/os_sleep_posix.c   | 2 +-
+ modules/OS/module/src/os_sleep_windows.c | 2 +-
+ modules/OS/module/src/os_time_none.c     | 2 +-
+ modules/OS/module/src/os_time_osx.c      | 2 +-
+ modules/OS/module/src/os_time_posix.c    | 2 +-
+ modules/OS/module/src/os_time_windows.c  | 2 +-
+ modules/sff/module/src/sff_tool.c        | 2 +-
+ 13 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/modules/OS/module/src/os_sem_none.c b/modules/OS/module/src/os_sem_none.c
+index 4300c8a42bf4..4e6afb39bd42 100644
+--- a/modules/OS/module/src/os_sem_none.c
++++ b/modules/OS/module/src/os_sem_none.c
+@@ -66,6 +66,6 @@ os_sem_give(os_sem_t sem)
+ }
+ 
+ #else
+-int not_empty;
++int os_sem_none_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_sem_osx.c b/modules/OS/module/src/os_sem_osx.c
+index 718d03535680..4836aa68d048 100644
+--- a/modules/OS/module/src/os_sem_osx.c
++++ b/modules/OS/module/src/os_sem_osx.c
+@@ -25,6 +25,6 @@
+ #define OS_CONFIG_INCLUDE_POSIX 1
+ #include "os_sem_posix.c"
+ #else
+-int not_empty;
++int os_sem_osx_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_sem_posix.c b/modules/OS/module/src/os_sem_posix.c
+index 36491bc22f9f..2223f6d0c024 100644
+--- a/modules/OS/module/src/os_sem_posix.c
++++ b/modules/OS/module/src/os_sem_posix.c
+@@ -259,6 +259,6 @@ os_sem_take_timeout(os_sem_t sem, uint64_t usecs)
+ }
+ 
+ #else
+-int not_empty;
++int os_sleep_posix_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_sem_windows.c b/modules/OS/module/src/os_sem_windows.c
+index 4015d56fd1ac..d741ef2ed79f 100644
+--- a/modules/OS/module/src/os_sem_windows.c
++++ b/modules/OS/module/src/os_sem_windows.c
+@@ -66,6 +66,6 @@ os_sem_give(os_sem_t sem)
+ }
+ 
+ #else
+-int not_empty;
++int os_sem_windows_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_sleep_none.c b/modules/OS/module/src/os_sleep_none.c
+index d3aa1750f02f..55e854c475b4 100644
+--- a/modules/OS/module/src/os_sleep_none.c
++++ b/modules/OS/module/src/os_sleep_none.c
+@@ -30,6 +30,6 @@ os_sleep_usecs(uint64_t usecs)
+ 
+ 
+ #else
+-int __not_empty__;
++int os_sleep_none_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_sleep_osx.c b/modules/OS/module/src/os_sleep_osx.c
+index bb3c2b62392a..4cddba509b4f 100644
+--- a/modules/OS/module/src/os_sleep_osx.c
++++ b/modules/OS/module/src/os_sleep_osx.c
+@@ -25,6 +25,6 @@
+ #define OS_CONFIG_INCLUDE_POSIX 1
+ #include "os_sleep_posix.c"
+ #else
+-int not_empty;
++int os_sleep_osx_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_sleep_posix.c b/modules/OS/module/src/os_sleep_posix.c
+index fa0da3226b8b..68116d263cac 100644
+--- a/modules/OS/module/src/os_sleep_posix.c
++++ b/modules/OS/module/src/os_sleep_posix.c
+@@ -35,6 +35,6 @@ os_sleep_usecs(uint64_t usecs)
+ 
+ 
+ #else
+-int __not_empty__;
++int os_sleep_posix_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_sleep_windows.c b/modules/OS/module/src/os_sleep_windows.c
+index dfc5e10bff29..a2babdf70116 100644
+--- a/modules/OS/module/src/os_sleep_windows.c
++++ b/modules/OS/module/src/os_sleep_windows.c
+@@ -30,6 +30,6 @@ os_sleep_usecs(uint64_t usecs)
+ 
+ 
+ #else
+-int __not_empty__;
++int os_sleep_windows_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_time_none.c b/modules/OS/module/src/os_time_none.c
+index 0edb770cb4d3..1cce93d27021 100644
+--- a/modules/OS/module/src/os_time_none.c
++++ b/modules/OS/module/src/os_time_none.c
+@@ -41,6 +41,6 @@ os_time_thread(void)
+ }
+ 
+ #else
+-int __not_empty__;
++int os_time_none_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_time_osx.c b/modules/OS/module/src/os_time_osx.c
+index 75749624f1b5..4177d0f69c52 100644
+--- a/modules/OS/module/src/os_time_osx.c
++++ b/modules/OS/module/src/os_time_osx.c
+@@ -48,6 +48,6 @@ os_time_thread(void)
+ }
+ 
+ #else
+-int __not_empty__;
++int os_time_osx_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_time_posix.c b/modules/OS/module/src/os_time_posix.c
+index 00be7514c37a..bb4a4164404c 100644
+--- a/modules/OS/module/src/os_time_posix.c
++++ b/modules/OS/module/src/os_time_posix.c
+@@ -51,6 +51,6 @@ os_time_thread(void)
+ }
+ 
+ #else
+-int __not_empty__;
++int os_time_posix_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/OS/module/src/os_time_windows.c b/modules/OS/module/src/os_time_windows.c
+index 7c8861c932a5..3110e6e120cb 100644
+--- a/modules/OS/module/src/os_time_windows.c
++++ b/modules/OS/module/src/os_time_windows.c
+@@ -41,6 +41,6 @@ os_time_thread(void)
+ }
+ 
+ #else
+-int __not_empty__;
++int os_time_windows_c_not_empty = 1;
+ #endif
+ 
+diff --git a/modules/sff/module/src/sff_tool.c b/modules/sff/module/src/sff_tool.c
+index 81427f9b0d05..32b23aa3b50f 100644
+--- a/modules/sff/module/src/sff_tool.c
++++ b/modules/sff/module/src/sff_tool.c
+@@ -136,7 +136,7 @@ sff_tool(int argc, char* argv[])
+ }
+ 
+ #else
+-int __not_empty__;
++int sff_tool_c_not_empty = 1;
+ #endif
+ 
+ 
+-- 
+2.36.1
+
