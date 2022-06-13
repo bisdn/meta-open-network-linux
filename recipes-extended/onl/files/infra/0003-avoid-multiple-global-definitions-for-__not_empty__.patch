@@ -1,0 +1,85 @@
+Upstream-Status: unsubmitted
+
+From 141b312886abb5a787b5b27a277f41ed019b810e Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Mon, 13 Jun 2022 15:46:48 +0200
+Subject: [PATCH] avoid multiple global definitions for __not_empty__
+
+GCC 10 and newer treat multiple definitions of a symbol as an error by
+default. Fix this by using unique variable names.
+
+Fixes the following build error:
+
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/modules/AIM/module/src/aim_daemon.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/modules/AIM/module/src/aim_daemon.c:431: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/modules/AIM/module/src/aim_pvs_syslog.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/modules/AIM/module/src/aim_pvs_syslog.c:118: first defined here
+| /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.c:139: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/modules/AIM/module/src/aim_pvs_syslog.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/modules/AIM/module/src/aim_pvs_syslog.c:118: first defined here
+| collect2: error: ld returned 1 exit status
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ modules/AIM/module/src/aim_daemon.c            | 2 +-
+ modules/AIM/module/src/aim_pvs_syslog.c        | 2 +-
+ modules/AIM/module/src/posix/aim_sem_posix.c   | 2 +-
+ modules/AIM/module/src/posix/aim_sleep_posix.c | 2 +-
+ modules/AIM/module/src/posix/aim_time_posix.c  | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/modules/AIM/module/src/aim_daemon.c b/modules/AIM/module/src/aim_daemon.c
+index d283973b5ebc..69a67383421b 100644
+--- a/modules/AIM/module/src/aim_daemon.c
++++ b/modules/AIM/module/src/aim_daemon.c
+@@ -428,5 +428,5 @@ aim_daemonize(aim_daemon_config_t* config,
+ 
+ 
+ #else
+-int __not_empty__;
++int aim_daemon_c_not_empty = 1;
+ #endif
+diff --git a/modules/AIM/module/src/aim_pvs_syslog.c b/modules/AIM/module/src/aim_pvs_syslog.c
+index 6d40f1899de7..724f2a8ea7cd 100644
+--- a/modules/AIM/module/src/aim_pvs_syslog.c
++++ b/modules/AIM/module/src/aim_pvs_syslog.c
+@@ -115,7 +115,7 @@ aim_pvs_syslog_destroy__(aim_object_t* obj)
+ }
+ 
+ #else
+-int __not_empty__;
++int aim_pvs_syslog_c_not_empty = 1;
+ #endif /* AIM_CONFIG_INCLUDE_PVS_SYSLOG */
+ 
+ 
+diff --git a/modules/AIM/module/src/posix/aim_sem_posix.c b/modules/AIM/module/src/posix/aim_sem_posix.c
+index 3cc8897a6335..b7e224068dff 100644
+--- a/modules/AIM/module/src/posix/aim_sem_posix.c
++++ b/modules/AIM/module/src/posix/aim_sem_posix.c
+@@ -262,5 +262,5 @@ aim_sem_take_timeout(aim_sem_t sem, uint64_t usecs)
+ }
+ 
+ #else
+-int not_empty;
++int aim_sem_posix_c_not_empty = 1;
+ #endif
+diff --git a/modules/AIM/module/src/posix/aim_sleep_posix.c b/modules/AIM/module/src/posix/aim_sleep_posix.c
+index 276b3086a896..db3b5e5cfb9b 100644
+--- a/modules/AIM/module/src/posix/aim_sleep_posix.c
++++ b/modules/AIM/module/src/posix/aim_sleep_posix.c
+@@ -35,5 +35,5 @@ aim_sleep_usecs(uint64_t usecs)
+ 
+ 
+ #else
+-int __not_empty__;
++int aim_sleep_posix_c_not_empty = 1;
+ #endif
+diff --git a/modules/AIM/module/src/posix/aim_time_posix.c b/modules/AIM/module/src/posix/aim_time_posix.c
+index a4611af285ac..9ada7e1da495 100644
+--- a/modules/AIM/module/src/posix/aim_time_posix.c
++++ b/modules/AIM/module/src/posix/aim_time_posix.c
+@@ -50,5 +50,5 @@ aim_time_thread(void)
+ }
+ 
+ #else
+-int __not_empty__;
++int aim_time_posix_c_not_empty = 1;
+ #endif
+-- 
+2.36.1
+
