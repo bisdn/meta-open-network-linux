@@ -20,7 +20,7 @@ SRC_URI[sha256sum] = "df4a669f7fff9cc302784085bd4b72fab216a426a3f72c892b28a537b7
 
 inherit autotools ptest
 
-PACKAGECONFIG_class-target ??= "\
+PACKAGECONFIG:class-target ??= "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', 'bluez', '', d)} \
 "
 
@@ -29,12 +29,12 @@ PACKAGECONFIG[libunwind] = "--with-libunwind,--without-libunwind,libunwind"
 
 EXTRA_OECONF += "--enable-mpers=no --disable-gcc-Werror"
 
-CFLAGS_append_libc-musl = " -Dsigcontext_struct=sigcontext"
+CFLAGS:append:libc-musl = " -Dsigcontext_struct=sigcontext"
 
 TESTDIR = "tests"
 PTEST_BUILD_HOST_PATTERN = "^(DEB_CHANGELOGTIME|RPM_CHANGELOGTIME|WARN_CFLAGS_FOR_BUILD|LDFLAGS_FOR_BUILD)"
 
-do_install_append() {
+do_install:append() {
 	# We don't ship strace-graph here because it needs perl
 	rm ${D}${bindir}/strace-graph
 }
@@ -50,7 +50,7 @@ do_install_ptest() {
         sed -i -e '/^src/s/strace.*[1-9]/ptest/' ${D}/${PTEST_PATH}/${TESTDIR}/Makefile
 }
 
-RDEPENDS_${PN}-ptest += "make coreutils grep gawk sed"
+RDEPENDS:${PN}-ptest += "make coreutils grep gawk sed"
 
 BBCLASSEXTEND = "native"
 TOOLCHAIN = "gcc"

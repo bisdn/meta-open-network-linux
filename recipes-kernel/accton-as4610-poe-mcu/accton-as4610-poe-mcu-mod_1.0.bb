@@ -16,9 +16,9 @@ KERNEL_MODULE_AUTOLOAD += "accton_as4610_poe_mcu"
 
 EXTRA_OEMAKE += " KBUILD_MODPOST_WARN=1"
 
-FILES_${PN} += "${sbindir}/poectl"
+FILES:${PN} += "${sbindir}/poectl"
 
-do_install_append() {
+do_install:append() {
     install -d ${D}${sbindir}
     install -m 0755 ${WORKDIR}/poectl ${D}${sbindir}
 }

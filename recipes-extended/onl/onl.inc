@@ -24,7 +24,7 @@ SRC_URI = "${URI_ONL};name=onl \
 
 inherit systemd python3native
 
-SYSTEMD_SERVICE_${PN} = "onlpd.service"
+SYSTEMD_SERVICE:${PN} = "onlpd.service"
 SYSTEMD_AUTO_ENABLE = "enable"
 
 DEPENDS = "i2c-tools libedit python3-pyyaml-native"
@@ -34,7 +34,7 @@ PV = "1.1+git${SRCPV}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 PROVIDES += "libonlp libonlp-platform libonlp-platform-defaults"
-INSANE_SKIP_${PN} = "file-rdeps"
+INSANE_SKIP:${PN} = "file-rdeps"
 
 #### TODO onl.bbclass?
 ONL = "${S}"

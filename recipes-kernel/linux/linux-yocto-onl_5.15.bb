@@ -26,7 +26,7 @@ SRC_URI += "\
     file://kernel-meta;type=kmeta;name=kernel-meta;destsuffix=kernel-meta \
 "
 
-SRC_URI_append_arm = "\
+SRC_URI:append:arm = "\
     file://arch/arm/boot/dts;subdir=git \
 "
 
