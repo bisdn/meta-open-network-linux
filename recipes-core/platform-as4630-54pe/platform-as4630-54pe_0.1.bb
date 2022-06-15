@@ -2,7 +2,7 @@ SUMMARY = ""
 LICENSE = "EPL-1.0"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/EPL-1.0;md5=57f8d5e2b3e98ac6e088986c12bf94e6"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 inherit systemd
 
@@ -13,7 +13,7 @@ SRC_URI += " \
 "
 
 # TODO ADD FILES
-FILES_${PN} = " \
+FILES:${PN} = " \
     ${systemd_system_unitdir}/platform-as4630-54pe-init.service \
     ${bindir}/platform-as4630-54pe-init.sh \
     ${sysconfdir}/systemd/network/90-enp.link \
@@ -31,4 +31,4 @@ do_install() {
         install -m 0644 ${WORKDIR}/*.link ${D}${sysconfdir}/systemd/network/
 }
 
-SYSTEMD_SERVICE_${PN}_append = "platform-as4630-54pe-init.service"
+SYSTEMD_SERVICE:${PN}:append = "platform-as4630-54pe-init.service"

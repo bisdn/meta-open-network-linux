@@ -2,7 +2,7 @@ SUMMARY = ""
 LICENSE = "EPL-1.0"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/EPL-1.0;md5=57f8d5e2b3e98ac6e088986c12bf94e6"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 inherit systemd
 
@@ -12,7 +12,7 @@ SRC_URI += " \
     file://platform-as7726-32x-init.sh \
 "
 
-FILES_${PN} = " \
+FILES:${PN} = " \
     ${systemd_system_unitdir}/platform-as7726-32x-init.service \
     ${bindir}/8v89307_init.sh \
     ${bindir}/platform-as7726-32x-init.sh \
@@ -27,4 +27,4 @@ do_install() {
         install -m 0755 ${WORKDIR}/platform-as7726-32x-init.sh ${D}${bindir}
 }
 
-SYSTEMD_SERVICE_${PN}_append = "platform-as7726-32x-init.service"
+SYSTEMD_SERVICE:${PN}:append = "platform-as7726-32x-init.service"
