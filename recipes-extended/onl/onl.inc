@@ -22,12 +22,12 @@ SRC_URI = "${URI_ONL};name=onl \
            file://onlpdump.service \
 "
 
-inherit systemd
+inherit systemd python3native
 
 SYSTEMD_SERVICE_${PN} = "onlpdump.service"
 SYSTEMD_AUTO_ENABLE = "enable"
 
-DEPENDS = "i2c-tools libedit"
+DEPENDS = "i2c-tools libedit python3-pyyaml-native"
 
 S = "${WORKDIR}/git"
 PV = "1.1+git${SRCPV}"
