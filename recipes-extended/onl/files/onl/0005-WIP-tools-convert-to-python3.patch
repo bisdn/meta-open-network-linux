@@ -1,0 +1,920 @@
+Upstream-Status: incomplete,untested
+
+From 66cf99b318f5d6a2500fb3698468bfa0ace94451 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 16 Jun 2022 10:30:25 +0200
+Subject: [PATCH 1/2] WIP: tools: convert to python3
+
+Convert the build code from python2 to python3:
+
+* ran 2to3 on all files
+* s/python2/python3/
+* added text=True to all check_output() invocations
+
+Only tested in so far the build scripts are used within bisdn-linux, so
+most parts are untested.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ tools/cpiomod.py           |  2 +-
+ tools/filenamer.py         |  6 ++--
+ tools/flat-image-tree.py   | 12 +++----
+ tools/make-versions.py     | 10 +++---
+ tools/mkinstaller.py       | 14 ++++----
+ tools/onl-init-pkgs.py     |  8 ++---
+ tools/onl-nos-create.py    |  2 +-
+ tools/onl-platform-pkgs.py |  4 +--
+ tools/onlplatform.py       |  8 ++---
+ tools/onlpm.py             | 71 ++++++++++++++++++++------------------
+ tools/onlrfs.py            | 38 ++++++++++----------
+ tools/onlu.py              | 16 ++++-----
+ tools/onlvi.py             |  2 +-
+ tools/onlyaml.py           | 16 +++++----
+ tools/sjson.py             |  4 +--
+ tools/submodules.py        | 10 +++---
+ 16 files changed, 115 insertions(+), 108 deletions(-)
+
+diff --git a/tools/cpiomod.py b/tools/cpiomod.py
+index dc20fb136461..ee3fbfbac03f 100755
+--- a/tools/cpiomod.py
++++ b/tools/cpiomod.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ import sys
+ import os
+ import argparse
+diff --git a/tools/filenamer.py b/tools/filenamer.py
+index be62362e5dac..b316543ff907 100755
+--- a/tools/filenamer.py
++++ b/tools/filenamer.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # This script provides the file naming scheme for
+@@ -19,8 +19,8 @@ versions['UARCH'] = manifest['arch'].upper().replace("POWERPC","PPC")
+ versions['OS_RELEASE_VERSION_ID'] = manifest['os-release']['VERSION_ID']
+ 
+ if ops.type == 'swi':
+-    print "%(FNAME_PRODUCT_VERSION)s_ONL-OS%(OS_RELEASE_VERSION_ID)s_%(FNAME_BUILD_ID)s_%(UARCH)s.swi" % versions
++    print("%(FNAME_PRODUCT_VERSION)s_ONL-OS%(OS_RELEASE_VERSION_ID)s_%(FNAME_BUILD_ID)s_%(UARCH)s.swi" % versions)
+ elif ops.type == 'installer':
+-    print "%(FNAME_PRODUCT_VERSION)s_ONL-OS%(OS_RELEASE_VERSION_ID)s_%(FNAME_BUILD_ID)s_%(UARCH)s_INSTALLER" % versions
++    print("%(FNAME_PRODUCT_VERSION)s_ONL-OS%(OS_RELEASE_VERSION_ID)s_%(FNAME_BUILD_ID)s_%(UARCH)s_INSTALLER" % versions)
+ else:
+     raise ValueError("Unknown type '%s'" % ops.type)
+diff --git a/tools/flat-image-tree.py b/tools/flat-image-tree.py
+index c4290dafb4b7..85d29974c944 100755
+--- a/tools/flat-image-tree.py
++++ b/tools/flat-image-tree.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # Flat Image Tree Generator
+@@ -212,7 +212,7 @@ class FlatImageTree(object):
+         self.add_dict(name, d)
+ 
+     def add_platform_package(self, package):
+-        print package
++        print(package)
+         platform = package.replace(":%s" % ops.arch, "").replace("onl-platform-config-", "")
+ 
+         vpkg = "onl-vendor-config-onl:all"
+@@ -264,22 +264,22 @@ class FlatImageTree(object):
+         f.write("""    images {\n\n""")
+ 
+         f.write("""        /* Kernel Images */\n""")
+-        for k in kdict.values():
++        for k in list(kdict.values()):
+             k.write(f)
+ 
+         f.write("""\n""")
+         f.write("""        /* DTB Images */\n""")
+-        for d in ddict.values():
++        for d in list(ddict.values()):
+             d.write(f)
+ 
+         f.write("""\n""")
+         f.write("""        /* Initrd Images */\n""")
+-        for i in idict.values():
++        for i in list(idict.values()):
+             i.write(f)
+ 
+         f.write("""    };\n""")
+         f.write("""    configurations {\n""")
+-        for (name, (kernel, dtb, initrd)) in self.configurations.iteritems():
++        for (name, (kernel, dtb, initrd)) in list(self.configurations.items()):
+             f.write("""        %s {\n""" % name)
+             f.write("""            description = "%s";\n""" % name)
+             f.write("""            kernel = "%s";\n""" % (KernelImage(kernel, ops.arch).name))
+diff --git a/tools/make-versions.py b/tools/make-versions.py
+index adda82f3ebda..be779c4a7cdc 100755
+--- a/tools/make-versions.py
++++ b/tools/make-versions.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ import os
+ import sys
+@@ -23,10 +23,10 @@ class OnlVersionsGenerator(object):
+         self.ops = ops
+ 
+         if ops.sha1:
+-            self.build_sha1 = ops.sha1
++            self.build_sha1 = ops.sha1.decode('utf8')
+         else:
+             cmd = ('git', 'rev-list', 'HEAD', '-1',)
+-            self.build_sha1 = subprocess.check_output(cmd).strip()
++            self.build_sha1 = subprocess.check_output(cmd, text=True).strip()
+ 
+         if ops.timestamp:
+             self.build_timestamp = ops.timestamp
+@@ -40,7 +40,7 @@ class OnlVersionsGenerator(object):
+                 data = {}
+                 data['product'] = product
+                 data['build_timestamp'] = self.build_timestamp
+-                data['build_sha1'] = self.build_sha1
++                data['build_sha1'] = self.build_sha1.decode('utf8')
+                 if config is not None:
+                     data['build_config'] = config
+                 self.generate(data)
+@@ -51,7 +51,7 @@ class OnlVersionsGenerator(object):
+         for attribute in directory:
+             if attribute.startswith("V_"):
+                 key = attribute.replace("V_", "")
+-                data[key] = getattr(self.implementation, attribute)(d)
++                data[key] = (getattr(self.implementation, attribute)(d))
+ 
+ 
+         if not os.path.isdir(self.ops.output_dir):
+diff --git a/tools/mkinstaller.py b/tools/mkinstaller.py
+index d54c805f4a21..df8e400b9e4f 100755
+--- a/tools/mkinstaller.py
++++ b/tools/mkinstaller.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # Build an ONL Installer
+@@ -67,7 +67,7 @@ class InstallerShar(object):
+         sys.exit(1)
+ 
+     def find_file(self, package, filename):
+-        return subprocess.check_output("onlpm --find-file %s %s" % (package, filename), shell=True).strip()
++        return subprocess.check_output("onlpm --find-file %s %s" % (package, filename), shell=True).decode('utf-8').strip()
+ 
+     def setvar(self, name, value):
+         self.template = self.template.replace("@%s@" % name, value)
+@@ -76,12 +76,12 @@ class InstallerShar(object):
+         self.initrd = self.find_file(package, filename)
+         self.add_file(self.initrd)
+         if add_platforms:
+-            for platform in subprocess.check_output("onlpm --platform-manifest %s" % (package), shell=True).split():
++            for platform in subprocess.check_output("onlpm --platform-manifest %s" % (package), shell=True, text=True).split():
+                 logger.info("Adding platform %s..." % platform)
+                 kernel = subprocess.check_output([os.path.join(self.ONL, 'tools', 'onlplatform.py'),
+                                                   platform,
+                                                   self.arch,
+-                                                  'kernel']).strip()
++                                                  'kernel'], text=True).strip()
+ 
+                 logger.info("Platform %s using kernel %s..." % (platform, os.path.basename(kernel)))
+                 self.add_file(kernel)
+@@ -94,7 +94,7 @@ class InstallerShar(object):
+     def add_fit(self, package, filename, add_platforms=True):
+         self.fit = self.find_file(package, filename)
+         VONL=os.path.join(self.ONL, "packages", "base", "all", "vendor-config-onl")
+-        offsets = subprocess.check_output("PYTHONPATH=%s/src/python %s/src/bin/pyfit -v offset %s --initrd" % (VONL, VONL, self.fit), shell=True).split()
++        offsets = subprocess.check_output("PYTHONPATH=%s/src/python %s/src/bin/pyfit -v offset %s --initrd" % (VONL, VONL, self.fit), shell=True, text=True).split()
+         self.setvar('INITRD_ARCHIVE', os.path.basename(self.fit))
+         self.setvar('INITRD_OFFSET', offsets[0])
+         self.setvar('INITRD_SIZE', str(int(offsets[1]) - int(offsets[0])))
+@@ -129,7 +129,7 @@ class InstallerShar(object):
+ 
+     def add_swi(self, package):
+         edir = os.path.join(self.work_dir, "swidir")
+-        subprocess.check_output('onlpm --extract-dir %s %s' % (package, edir), shell=True)
++        subprocess.check_output('onlpm --extract-dir %s %s' % (package, edir), shell=True, text=True)
+         for (root, dirs, files) in os.walk(edir):
+             for f in files:
+                 if f.endswith(".swi"):
+@@ -142,7 +142,7 @@ class InstallerShar(object):
+             shutil.copy(f, self.work_dir)
+ 
+         for d in self.dirs:
+-            print "Copying %s -> %s..." % (d, self.work_dir)
++            print("Copying %s -> %s..." % (d, self.work_dir))
+             subprocess.check_call(["cp", "-R", d, self.work_dir])
+ 
+         with open(os.path.join(self.work_dir, 'installer.sh'), "w") as f:
+diff --git a/tools/onl-init-pkgs.py b/tools/onl-init-pkgs.py
+index a0a12fd60d82..ad752a53ec8a 100755
+--- a/tools/onl-init-pkgs.py
++++ b/tools/onl-init-pkgs.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # This script produces a YAML list on stdout of all
+@@ -12,7 +12,7 @@ ap.add_argument('init', metavar='INIT-SYSTEM', choices=['sysvinit', 'systemd'],
+ ops = ap.parse_args()
+ 
+ if ops.init == 'sysvinit':
+-    print '- sysvinit-core'
++    print('- sysvinit-core')
+ elif ops.init == 'systemd':
+-    print '- systemd'
+-    print '- systemd-sysv'
++    print('- systemd')
++    print('- systemd-sysv')
+diff --git a/tools/onl-nos-create.py b/tools/onl-nos-create.py
+index 19327c3704b5..c78be5e2434d 100755
+--- a/tools/onl-nos-create.py
++++ b/tools/onl-nos-create.py
+@@ -505,7 +505,7 @@ class OnlVersionImplementation(object):
+             # The current branch is used as the release version.
+             self.release = False
+             cmd = ('git', 'rev-parse', '--abbrev-ref', 'HEAD')
+-            branch = subprocess.check_output(cmd).strip()
++            branch = subprocess.check_output(cmd, text=True).strip()
+             self.PRODUCTS[0]['version'] = branch
+ 
+     def V_OS_NAME(self, data):
+diff --git a/tools/onl-platform-pkgs.py b/tools/onl-platform-pkgs.py
+index 920c74ad87e2..7a990e460ae0 100755
+--- a/tools/onl-platform-pkgs.py
++++ b/tools/onl-platform-pkgs.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # This script expects a yaml file containing the list
+@@ -41,7 +41,7 @@ if not ops.no_builtins:
+ 
+ for p in platforms:
+     for pattern in PATTERNS:
+-        print "- ", pattern % dict(platform=p)
++        print("- ", pattern % dict(platform=p))
+ 
+ 
+ 
+diff --git a/tools/onlplatform.py b/tools/onlplatform.py
+index 06c284e786e9..4ac5670a6c45 100755
+--- a/tools/onlplatform.py
++++ b/tools/onlplatform.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ 
+ """onlplatform.py
+ 
+@@ -67,7 +67,7 @@ def extractVendor(platform, arch):
+     pkg = "onl-platform-config-%s:%s" % (platform, arch,)
+     l = pm.opr.lookup_all(pkg)
+     if not l:
+-        raise SystemExit("cannot find package %s:%s"
++        raise SystemExit("gannot find package %s:%s"
+                          % (platform, arch,))
+     l = [x for x in pm.package_groups if pkg in x]
+     l = list(itertools.chain(*[x.prerequisite_packages() for x in l]))
+@@ -75,11 +75,11 @@ def extractVendor(platform, arch):
+     return "\n".join(l)
+ 
+ if ops.key in ('kernel', 'initrd', 'dtb', 'itb',):
+-    print extractKey(ops.platform, ops.arch, ops.key)
++    print(extractKey(ops.platform, ops.arch, ops.key))
+     sys.exit(0)
+ 
+ if ops.key == 'vendor':
+-    print extractVendor(ops.platform, ops.arch)
++    print(extractVendor(ops.platform, ops.arch))
+     sys.exit(0)
+ 
+ raise SystemExit("invalid key %s" % ops.key)
+diff --git a/tools/onlpm.py b/tools/onlpm.py
+index 70098d8565f8..db4625da53c7 100755
+--- a/tools/onlpm.py
++++ b/tools/onlpm.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # ONL Package Management
+@@ -6,6 +6,7 @@
+ ############################################################
+ import argparse
+ import os
++import errno
+ import sys
+ import logging
+ import yaml
+@@ -21,7 +22,8 @@ from string import Template
+ import re
+ import json
+ import lsb_release
+-import cPickle as pickle
++import pickle
++import traceback
+ 
+ g_dist_codename = lsb_release.get_distro_information().get('CODENAME')
+ 
+@@ -63,7 +65,7 @@ class OnlPackageServiceScript(object):
+         if self.SCRIPT is None:
+             raise AttributeError("The SCRIPT attribute must be provided by the deriving class.")
+ 
+-        with tempfile.NamedTemporaryFile(dir=dir, delete=False) as f:
++        with tempfile.NamedTemporaryFile(mode="w", dir=dir, delete=False) as f:
+             f.write(self.SCRIPT % dict(service=os.path.basename(service.replace(".init", ""))))
+             self.name = f.name
+ 
+@@ -173,7 +175,7 @@ class OnlPackage(object):
+             for d in reversed(results):
+                 if d:
+                     ddict.update(d)
+-        except Exception, e:
++        except Exception as e:
+             sys.stderr.write("%s\n" % e)
+             sys.stderr.write("package file: %s\n" % pkg)
+             raise
+@@ -214,7 +216,7 @@ class OnlPackage(object):
+         #
+         # The key value precedence is package dict, common dict, default dict.
+         #
+-        self.pkg = dict(ddict.items() + cdict.items() + pdict.items())
++        self.pkg = dict(list(ddict.items()) + list(cdict.items()) + list(pdict.items()))
+ 
+         # Validate all required package keys are present and well-formed.
+         if not 'external' in self.pkg:
+@@ -339,8 +341,8 @@ class OnlPackage(object):
+                 dstpath = os.path.join(root, dst)
+                 try:
+                     os.makedirs(dstpath)
+-                except OSError, e:
+-                    if e.errno != os.errno.EEXIST:
++                except OSError as e:
++                    if e.errno != errno.EEXIST:
+                         raise
+                 shutil.copy(src, dstpath)
+             else:
+@@ -398,7 +400,7 @@ class OnlPackage(object):
+             if os.path.exists(src):
+                 OnlPackage.copyf(src, dst, root)
+ 
+-        for (link, src) in self.pkg.get('links', {}).iteritems():
++        for (link, src) in self.pkg.get('links', {}).items():
+             logger.info("Linking %s -> %s..." % (link, src))
+             # The source must be relative to the existing root directory.
+             if link.startswith('/'):
+@@ -855,7 +857,7 @@ class OnlPackageRepoUnlocked(object):
+     def contents(self, pkg):
+         path = self.lookup(pkg)
+         if path:
+-            print "** %s contents:" % path
++            print("** %s contents:" % path)
+             onlu.execute(['dpkg', '-c', path])
+ 
+ 
+@@ -981,7 +983,7 @@ class OnlPackageManager(object):
+ 
+                 try:
+                     self.package_groups = pickle.load(open(cache, "rb"))
+-                except Exception, e:
++                except Exception as e:
+                     logger.warn("The existing package cache is corrupted. It will be rebuilt.")
+                     return False
+ 
+@@ -1000,7 +1002,7 @@ class OnlPackageManager(object):
+ 
+     def __builder_arches(self):
+         arches = [ 'all', 'amd64' ]
+-        arches = arches + subprocess.check_output(['dpkg', '--print-foreign-architectures']).split()
++        arches = arches + subprocess.check_output(['dpkg', '--print-foreign-architectures'], text=True).split()
+         return arches
+ 
+     def __build_cache(self, basedir):
+@@ -1021,7 +1023,8 @@ class OnlPackageManager(object):
+                             logger.debug('  Loaded package file %s' % os.path.join(root, f))
+                             if pg.distcheck() and pg.buildercheck(builder_arches):
+                                 self.package_groups.append(pg)
+-                        except OnlPackageError, e:
++                        except OnlPackageError as e:
++                            traceback.print_exc()
+                             logger.error("%s: " % e)
+                             logger.warn("Skipping %s due to errors." % os.path.join(root, f))
+ 
+@@ -1074,7 +1077,7 @@ class OnlPackageManager(object):
+                         try:
+                             manager = submodules.OnlSubmoduleManager(root)
+                             manager.require(path, depth=depth, recursive=recursive)
+-                        except submodules.OnlSubmoduleError, e:
++                        except submodules.OnlSubmoduleError as e:
+                             raise OnlPackageError(e.value)
+ 
+                 # Process prerequisite packages
+@@ -1138,7 +1141,7 @@ class OnlPackageManager(object):
+     def list(self):
+         rv = {}
+         for pg in self.filtered_package_groups():
+-            for (p,d) in pg.list().iteritems():
++            for (p,d) in pg.list().items():
+                 rv[p] = d
+         return rv
+ 
+@@ -1149,7 +1152,7 @@ class OnlPackageManager(object):
+         TARGETS={}
+         ARCHS={}
+ 
+-        for (p,d) in packages.iteritems():
++        for (p,d) in packages.items():
+             (name,arch) = p.split(':')
+             target = p.replace(':', '_')
+             depends = " ".join(d.get('packages', [])).replace(':', '_')
+@@ -1185,12 +1188,12 @@ class OnlPackageManager(object):
+         handle.write("#\n")
+         handle.write("############################################################\n")
+ 
+-        for (t, d) in TARGETS.iteritems():
++        for (t, d) in TARGETS.items():
+             handle.write("%s : %s\n" % (t, d['depends']))
+             handle.write("\tset -o pipefail && onlpm.py --ro-cache --require %s |& tee $(BUILDING)/$@\n" % (d['package']))
+             handle.write("\tmv $(BUILDING)/$@ $(FINISHED)/\n")
+ 
+-        for (arch, targets) in ARCHS.iteritems():
++        for (arch, targets) in ARCHS.items():
+             handle.write("############################################################\n")
+             handle.write("#\n")
+             handle.write("# These rules represent the build stages for arch='%s'\n" % arch)
+@@ -1237,7 +1240,7 @@ def defaultPm():
+     if envJson:
+         for j in envJson.split(':'):
+             data = json.load(open(j))
+-            for (k, v) in data.iteritems():
++            for (k, v) in data.items():
+                 try:
+                     v = v.encode('ascii')
+                 except UnicodeEncodeError:
+@@ -1307,7 +1310,7 @@ if __name__ == '__main__':
+     if ops.include_env_json:
+         for j in ops.include_env_json.split(':'):
+             data = json.load(open(j))
+-            for (k, v) in data.iteritems():
++            for (k, v) in data.items():
+                 try:
+                     v = v.encode('ascii')
+                 except UnicodeEncodeError:
+@@ -1347,7 +1350,7 @@ if __name__ == '__main__':
+ 
+         if ops.in_repo:
+             for p in ops.in_repo:
+-                print "%s: %s" % (p, p in pm.opr)
++                print("%s: %s" % (p, p in pm.opr))
+             sys.exit(0)
+ 
+         for pdir in ops.packagedirs:
+@@ -1358,12 +1361,13 @@ if __name__ == '__main__':
+         if ops.list_tagged:
+             for pg in pm.package_groups:
+                 for p in pg.packages:
++                    print("tags: %s" % p.pkg.get('tags',[]))
+                     if p.tagged(ops.list_tagged):
+                         if ops.arch in [ p.pkg['arch'], "all", None ]:
+-                            print "%-64s" % p.id(),
++                            print("%-64s" % p.id()),
+                             if ops.show_group:
+-                                print "[ ", pg._pkgs['__source'], "]",
+-                            print
++                                print("[ ", pg._pkgs['__source'], "]"),
++                            print()
+ 
+         if ops.list_platforms:
+             if not ops.arch:
+@@ -1371,14 +1375,14 @@ if __name__ == '__main__':
+                 sys.exit(1)
+             platforms = pm.list_platforms(ops.arch)
+             if ops.csv:
+-                print ','.join(platforms)
++                print(','.join(platforms))
+             else:
+                 for p in platforms:
+-                    print "%-64s" % p
++                    print("%-64s" % p)
+ 
+         # List all packages, no filtering
+         if ops.list_all:
+-            print pm
++            print(pm)
+ 
+         if ops.pmake:
+             pm.pmake()
+@@ -1387,10 +1391,10 @@ if __name__ == '__main__':
+         pm.filter(subdir = ops.subdir, arches=ops.arches)
+ 
+         if ops.list:
+-            print pm
++            print(pm)
+ 
+         if ops.pkg_info:
+-            print pm.pkg_info()
++            print(pm.pkg_info())
+ 
+ 
+         ############################################################
+@@ -1422,13 +1426,13 @@ if __name__ == '__main__':
+             (p, f) = ops.find_file
+             pm.require(p, force=ops.force, build_missing=not ops.no_build_missing)
+             path = pm.opr.get_file(p, f)
+-            print path
++            print(path)
+ 
+         if ops.find_dir:
+             (p, d) = ops.find_dir
+             pm.require(p, force=ops.force, build_missing=not ops.no_build_missing)
+             path = pm.opr.get_dir(p, d)
+-            print path
++            print(path)
+ 
+         if ops.link_file:
+             for (p, f, dst) in ops.link_file:
+@@ -1481,7 +1485,7 @@ if __name__ == '__main__':
+             path = pm.opr.get_file(ops.platform_manifest, 'manifest.json')
+             if path:
+                 m = json.load(open(path))
+-                print " ".join(m['platforms'])
++                print(" ".join(m['platforms']))
+ 
+ 
+         ############################################################
+@@ -1495,8 +1499,9 @@ if __name__ == '__main__':
+         if ops.lookup:
+             logger.debug("looking up %s", ops.lookup)
+             for p in pm.opr.lookup_all(ops.lookup):
+-                print p
++                print(p)
+ 
+-    except (OnlPackageError, onlyaml.OnlYamlError), e:
++    except (OnlPackageError, onlyaml.OnlYamlError) as e:
++        traceback.print_exc()
+         logger.error(e)
+         sys.exit(1)
+diff --git a/tools/onlrfs.py b/tools/onlrfs.py
+index a9a4cb5dddf6..18aca0f62f1f 100755
+--- a/tools/onlrfs.py
++++ b/tools/onlrfs.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # ONL Root Filesystem Generator
+@@ -16,7 +16,7 @@ import fcntl
+ import subprocess
+ import glob
+ import submodules
+-import StringIO
++from io import StringIO
+ from collections import Iterable
+ import onlyaml
+ import onlu
+@@ -77,10 +77,10 @@ class OnlRfsSystemAdmin(object):
+         # Can't use the userdel command because of potential uid 0 in-user problems while running ourselves
+         for line in fileinput.input(pf, inplace=True):
+             if not line.startswith('%s:' % username):
+-                print line,
++                print(line),
+         for line in fileinput.input(sf, inplace=True):
+             if not line.startswith('%s:' % username):
+-                print line,
++                print(line),
+ 
+         self.chmod("go-wx", pf);
+         self.chmod("go-wx", sf);
+@@ -205,9 +205,9 @@ class OnlMultistrapConfig(object):
+         self.localrepos = []
+ 
+     def generate_handle(self, handle):
+-        for (name, fields) in self.config.iteritems():
++        for (name, fields) in self.config.items():
+             handle.write("[%s]\n" % name)
+-            for (k,v) in fields.iteritems():
++            for (k,v) in fields.items():
+ 
+                 if type(v) is bool:
+                     v = 'true' if v == True else 'false'
+@@ -237,8 +237,8 @@ class OnlMultistrapConfig(object):
+ 
+     def get_packages(self):
+         pkgs = []
+-        for (name, fields) in self.config.iteritems():
+-            for (k,v) in fields.iteritems():
++        for (name, fields) in self.config.items():
++            for (k,v) in fields.items():
+                 if k == 'packages':
+                     if type(v) is list:
+                         pkgs = pkgs + list(onlu.sflatten(v))
+@@ -282,7 +282,7 @@ class OnlRfsContext(object):
+                              ex=OnlRfsError("Could install new resolv.conf"))
+             return self
+ 
+-        except Exception, e:
++        except Exception as e:
+             logger.error("Exception %s in OnlRfsContext::__enter__" % e)
+             self.__exit__(None, None, None)
+             raise e
+@@ -394,7 +394,7 @@ class OnlRfsBuilder(object):
+ 
+         script = os.path.join(dir_, "tmp/configure.sh")
+         with open(script, "w") as f:
+-            os.chmod(script, 0700)
++            os.chmod(script, 0o0700)
+             f.write("""#!/bin/bash -ex
+ /bin/echo -e "#!/bin/sh\\nexit 101" >/usr/sbin/policy-rc.d
+ chmod +x /usr/sbin/policy-rc.d
+@@ -477,10 +477,10 @@ rm -f /usr/sbin/policy-rc.d
+ 
+ 
+                 ua = OnlRfsSystemAdmin(dir_)
+-                for (group, values) in Configure.get('groups', {}).iteritems():
++                for (group, values) in Configure.get('groups', {}).items():
+                     ua.groupadd(group=group, **values if values else {})
+ 
+-                for (user, values) in Configure.get('users', {}).iteritems():
++                for (user, values) in Configure.get('users', {}).items():
+                     if user == 'root':
+                         if 'password' in values:
+                             ua.user_password_set(user, values['password'])
+@@ -527,7 +527,7 @@ rm -f /usr/sbin/policy-rc.d
+                         for line in fileinput.input(f, inplace=True):
+                             if re.match("^[123456]:.*", line):
+                                line = "#" + line
+-                            print line,
++                            print(line),
+ 
+                         ua.chmod('go-w', f)
+                         ua.chmod('go-w', os.path.dirname(f))
+@@ -553,7 +553,7 @@ rm -f /usr/sbin/policy-rc.d
+                     OnlRfsSystemAdmin.chmod('777', os.path.dirname(asrf))
+                     asro.format(os.path.join(dir_, asropts['file']), fmt=asropts['format'])
+ 
+-                for (mf, fields) in Configure.get('manifests', {}).iteritems():
++                for (mf, fields) in Configure.get('manifests', {}).items():
+                     logger.info("Configuring manifest %s..." % mf)
+                     if mf.startswith('/'):
+                         mf = mf[1:]
+@@ -571,7 +571,7 @@ rm -f /usr/sbin/policy-rc.d
+                     else:
+                         md['platforms'] = fields['platforms'].split(',')
+ 
+-                    for (k, v) in fields.get('keys', {}).iteritems():
++                    for (k, v) in fields.get('keys', {}).items():
+                         if k in md:
+                             md[k].update(v)
+                         else:
+@@ -581,7 +581,7 @@ rm -f /usr/sbin/policy-rc.d
+                         json.dump(md, f, indent=2)
+                     onlu.execute("sudo chmod a-w %s" % mname)
+ 
+-                for (fname, v) in Configure.get('files', {}).get('add', {}).iteritems():
++                for (fname, v) in Configure.get('files', {}).get('add', {}).items():
+                     if fname.startswith('/'):
+                         fname = fname[1:]
+                     dst = os.path.join(dir_, fname)
+@@ -640,7 +640,7 @@ rm -f /usr/sbin/policy-rc.d
+ 
+                     cmd = (ONLPM, '--lookup', pkg,)
+                     try:
+-                        buf = subprocess.check_output(cmd)
++                        buf = subprocess.check_output(cmd, text=True)
+                     except subprocess.CalledProcessError as ex:
+                         logger.error("cannot find %s", pkg)
+                         raise ValueError("update failed")
+@@ -718,7 +718,7 @@ if __name__ == '__main__':
+             sys.exit(0)
+ 
+         if ops.show_packages:
+-            print "\n".join(x.get_packages())
++            print("\n".join(x.get_packages()))
+             sys.exit(0)
+ 
+         if ops.dir is None:
+@@ -760,5 +760,5 @@ if __name__ == '__main__':
+                     os.unlink(ops.squash)
+                 raise OnlRfsError("Squash creation failed.")
+ 
+-    except (OnlRfsError, onlyaml.OnlYamlError), e:
++    except (OnlRfsError, onlyaml.OnlYamlError) as e:
+         logger.error(e.value)
+diff --git a/tools/onlu.py b/tools/onlu.py
+index b3e6cdf62379..438aa3061b6f 100644
+--- a/tools/onlu.py
++++ b/tools/onlu.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # Common utilities for the ONL python tools.
+@@ -121,7 +121,7 @@ def execute(args, sudo=False, chroot=None, ex=None):
+         try:
+             subprocess.check_call(args, shell=shell)
+             rv = 0
+-        except subprocess.CalledProcessError, e:
++        except subprocess.CalledProcessError as e:
+             if ex:
+                 raise ex
+             rv = e.returncode
+@@ -132,7 +132,7 @@ def execute(args, sudo=False, chroot=None, ex=None):
+ # Flatten lists if string lists
+ def sflatten(coll):
+     for i in coll:
+-            if isinstance(i, Iterable) and not isinstance(i, basestring):
++            if isinstance(i, Iterable) and not isinstance(i, str):
+                 for subc in sflatten(i):
+                     if subc:
+                         yield subc
+@@ -161,10 +161,10 @@ def userdel(username):
+     # Can't use the userdel command because of potential uid 0 in-user problems while running ourselves
+     for line in fileinput.input('/etc/passwd', inplace=True):
+         if not line.startswith('%s:' % username):
+-            print line,
++            print(line),
+     for line in fileinput.input('/etc/shadow', inplace=True):
+         if not line.startswith('%s:' % username):
+-            print line,
++            print(line),
+ 
+ ############################################################
+ #
+@@ -227,7 +227,7 @@ def filepath(absdir, relpath, eklass, required=True):
+ 
+     # Globs that result in a single file are allowed:
+     g = glob.glob(p)
+-    if len(g) is 0:
++    if len(g) == 0:
+         if required:
+             raise eklass("'%s' did not match any files." % p)
+     elif len(g) > 1:
+@@ -240,12 +240,12 @@ def filepath(absdir, relpath, eklass, required=True):
+ def validate_src_dst_file_tuples(absdir, data, dstsubs, eklass, required=True):
+     files = []
+     if type(data) is dict:
+-        for (s,d) in data.iteritems():
++        for (s,d) in data.items():
+             files.append((s,d))
+     elif type(data) is list:
+         for e in data:
+             if type(e) is dict:
+-                for (s,d) in e.iteritems():
++                for (s,d) in e.items():
+                     files.append((s,d))
+             elif type(e) in [ list, tuple ]:
+                 if len(e) != 2:
+diff --git a/tools/onlvi.py b/tools/onlvi.py
+index e1331c607758..04fcc5bc25ea 100644
+--- a/tools/onlvi.py
++++ b/tools/onlvi.py
+@@ -17,7 +17,7 @@ class OnlVersionImplementation(object):
+             # The current branch is used as the release version.
+             self.release = False
+             cmd = ('git', 'rev-parse', '--abbrev-ref', 'HEAD')
+-            branch = subprocess.check_output(cmd).strip()
++            branch = subprocess.check_output(cmd, text=True).strip()
+             self.PRODUCTS[0]['version'] = branch
+ 
+     def V_OS_NAME(self, data):
+diff --git a/tools/onlyaml.py b/tools/onlyaml.py
+index 92c9ce5922ee..d80cff2f019d 100755
+--- a/tools/onlyaml.py
++++ b/tools/onlyaml.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # Extended YAML Support
+@@ -39,6 +39,8 @@ def loadf(fname, vard={}):
+     def interpolate(s, d):
+ 
+         error_string = "Yaml variable substitution error: '%s' could not be resolved."
++        # if type(s) is not str:
++        #    s = s.decode('utf-8')
+ 
+         try:
+             template = Template(s)
+@@ -103,14 +105,14 @@ def loadf(fname, vard={}):
+     string = open(fname).read()
+     try:
+         data = yaml.load(string)
+-    except Exception, e:
++    except Exception as e:
+         raise OnlYamlError("%s\n(filename: %s)" % (e, fname))
+ 
+     if type(data) is dict:
+         _v = dflatten({}, data.get('variables', {}))
+         variables.update(_v)
+ 
+-        for (k,v) in _v.iteritems():
++        for (k,v) in list(_v.items()):
+             k = interpolate(k, variables)
+             v = interpolate(v, variables)
+             variables[k] = v
+@@ -126,9 +128,9 @@ def loadf(fname, vard={}):
+ 
+     try:
+         data = yaml.load(string)
+-    except OnlYamlError, e:
++    except OnlYamlError as e:
+         raise e
+-    except Exception, e:
++    except Exception as e:
+         raise OnlYamlError("Interpolation produced invalid results:\n%s\n" %  string)
+ 
+     return data
+@@ -138,10 +140,10 @@ if __name__ == '__main__':
+     import sys
+     try:
+         if len(sys.argv) == 2:
+-            print yaml.dump(loadf(sys.argv[1]))
++            print(yaml.dump(loadf(sys.argv[1])))
+         else:
+             sys.stderr.write("usage: %s <yamlfile>\n" % sys.argv[0])
+-    except OnlYamlError, e:
++    except OnlYamlError as e:
+         sys.stderr.write("error: %s\n" % e.value)
+ 
+ 
+diff --git a/tools/sjson.py b/tools/sjson.py
+index 8f32d36dde30..d3e0cb710a40 100755
+--- a/tools/sjson.py
++++ b/tools/sjson.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ #
+ # Simple JSON Generator
+@@ -78,7 +78,7 @@ if ops.kl:
+ 
+ out=sys.stdout
+ if ops.out and ops.out not in ['-', 'stdout']:
+-    print ops.out
++    print(ops.out)
+     out = open(ops.out, "w")
+ 
+ json.dump(g_data, out, indent=ops.indent)
+diff --git a/tools/submodules.py b/tools/submodules.py
+index 1cca99b02cd7..d30e23766228 100755
+--- a/tools/submodules.py
++++ b/tools/submodules.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ ############################################################
+ # <bsn.cl fy=2013 v=none>
+ #
+@@ -60,7 +60,7 @@ class OnlSubmoduleManager(object):
+     def get_status(self):
+         self.status = {}
+         try:
+-            for entry in check_output(['git', 'submodule', 'status'], cwd=self.root).split("\n"):
++            for entry in check_output(['git', 'submodule', 'status'], cwd=self.root, text=True).split("\n"):
+                 data = entry.split()
+                 if len(data) >= 2:
+                     self.status[data[1]] = data[0]
+@@ -79,7 +79,7 @@ class OnlSubmoduleManager(object):
+             logger.debug("shallow clone depth=%d", int(depth))
+             # Shallow clone first
+             url = check_output(['git', 'config', '-f', '.gitmodules', '--get',
+-                                'submodule.' + path + '.url' ], cwd=self.root)
++                                'submodule.' + path + '.url' ], cwd=self.root, text=True)
+             url = url.rstrip('\n')
+             args = [ 'git', 'clone', '--depth', depth, url, path ]
+             try:
+@@ -104,7 +104,7 @@ class OnlSubmoduleManager(object):
+         for script in os.getenv("ONL_SUBMODULE_UPDATED_SCRIPTS", "").split(':'):
+             if os.path.exists(script):
+                 try:
+-                    print "Calling %s..." % script
++                    print("Calling %s..." % script)
+                     check_call([script, path], cwd=self.root)
+                 except subprocess.CalledProcessError:
+                     raise OnlSubmoduleError("The repository post-init script %s failed." % script)
+@@ -131,6 +131,6 @@ if __name__ == '__main__':
+     try:
+         sm = OnlSubmoduleManager(ops.root)
+         sm.require(ops.path)
+-    except OnlSubmoduleError, e:
++    except OnlSubmoduleError as e:
+         logger.error("%s" % e.value)
+ 
+-- 
+2.36.1
+

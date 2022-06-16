@@ -1,0 +1,62 @@
+Upstream-Status: untested
+
+From e8b7529419348ab84e1aa01a48a67234d4089ac5 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 16 Jun 2022 11:16:15 +0200
+Subject: [PATCH 2/2] dynamically determine location of python3
+
+To allow running the scripts within a distro context with custom python
+search paths, replace the hardcoded location of the python3 binary with
+an env call.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ modules/PPE/module/auto/autopost.py | 2 +-
+ modules/uCli/utest/handlers.py      | 2 +-
+ submodules/init.py                  | 2 +-
+ targets/vpi/pyvpi/vpi/vpi.py        | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/modules/PPE/module/auto/autopost.py b/modules/PPE/module/auto/autopost.py
+index 630fc36c9b5d..4ea452f17e0c 100755
+--- a/modules/PPE/module/auto/autopost.py
++++ b/modules/PPE/module/auto/autopost.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ #################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/modules/uCli/utest/handlers.py b/modules/uCli/utest/handlers.py
+index 2d3560ddb009..31c63491dc42 100644
+--- a/modules/uCli/utest/handlers.py
++++ b/modules/uCli/utest/handlers.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ 
+ print("/* -*- C -*- */")
+ 
+diff --git a/submodules/init.py b/submodules/init.py
+index b166c243e792..60cd89aec351 100755
+--- a/submodules/init.py
++++ b/submodules/init.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/targets/vpi/pyvpi/vpi/vpi.py b/targets/vpi/pyvpi/vpi/vpi.py
+index 389f6ae95668..04dadf0ce7ee 100755
+--- a/targets/vpi/pyvpi/vpi/vpi.py
++++ b/targets/vpi/pyvpi/vpi/vpi.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+-- 
+2.36.1
+

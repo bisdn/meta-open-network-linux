@@ -1,0 +1,382 @@
+Upstream-Status: incomplete,untested
+
+From 8801e165a30514a95cf0ad4f8bdbc276498209e4 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 16 Jun 2022 10:58:51 +0200
+Subject: [PATCH 1/2] WIP: convert to python3
+
+Convert python scripts from python2 to python3:
+
+* ran 2to3 on all files
+* s/python(2)/python3/
+* added text=True to all check_output() invocations
+
+Only tested in so far the build scripts are used within bisdn-linux, so
+most parts are untested.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ init.mk                                |  2 +-
+ modules/PPE/module/auto/autopost.py    |  2 +-
+ modules/sff/module/python/sff/enums.py |  2 +-
+ modules/uCli/utest/handlers.py         | 34 ++++++++++----------
+ submodules/init.py                     | 18 +++++------
+ targets/vpi/pyvpi/vpi/vpi.py           | 10 +++---
+ tools/infra.py                         |  2 +-
+ tools/newmodule.py                     |  2 +-
+ tools/ucliblocks.py                    | 44 +++++++++++++-------------
+ tools/uclihandlers.py                  |  4 +--
+ tools/uclihandlers2.py                 | 18 +++++------
+ tools/uclimod.py                       |  2 +-
+ 12 files changed, 70 insertions(+), 70 deletions(-)
+
+diff --git a/init.mk b/init.mk
+index 7e5778f991d9..1b59dc2c9984 100644
+--- a/init.mk
++++ b/init.mk
+@@ -35,7 +35,7 @@ ifndef SUBMODULE_INFRA
+ endif
+ 
+ ifdef SUBMODULES_LOCAL
+-  SUBMODULES_LOCAL_UPDATE := $(shell python $(ROOT)/submodules/init.py --update $(SUBMODULES_LOCAL))
++  SUBMODULES_LOCAL_UPDATE := $(shell python3 $(ROOT)/submodules/init.py --update $(SUBMODULES_LOCAL))
+   ifneq ($(lastword $(SUBMODULES_LOCAL_UPDATE)),submodules:ok.)
+     $(info Local submodule update failed.)
+     $(info Result:)
+diff --git a/modules/PPE/module/auto/autopost.py b/modules/PPE/module/auto/autopost.py
+index 89a2aa576f3f..630fc36c9b5d 100755
+--- a/modules/PPE/module/auto/autopost.py
++++ b/modules/PPE/module/auto/autopost.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ #################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/modules/sff/module/python/sff/enums.py b/modules/sff/module/python/sff/enums.py
+index 559347c7bb01..23a5502b92f0 100644
+--- a/modules/sff/module/python/sff/enums.py
++++ b/modules/sff/module/python/sff/enums.py
+@@ -6,7 +6,7 @@ Enumerations from the SFF auto.yml.
+ class Enumeration(object):
+     @classmethod
+     def name(klass, value):
+-        for (k, v) in klass.__dict__.iteritems():
++        for (k, v) in klass.__dict__.items():
+             if v == value:
+                 return k
+         return None
+diff --git a/modules/uCli/utest/handlers.py b/modules/uCli/utest/handlers.py
+index 6e24d12cc1a1..2d3560ddb009 100644
+--- a/modules/uCli/utest/handlers.py
++++ b/modules/uCli/utest/handlers.py
+@@ -1,6 +1,6 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ 
+-print "/* -*- C -*- */"
++print("/* -*- C -*- */")
+ 
+ handlers = { 'first' :  [ 'alpha', 'bravo', 'charlie' ], 
+              'second':  [ 'delta','echo', 'foxtrot', 'golf' ], 
+@@ -13,26 +13,26 @@ order = ['first', 'second', 'third', 'fourth', 'fifth' ]
+ 
+ for m in order:
+     for e in handlers[m]:
+-        print """static ucli_status_t utest_ucli_%s_%s(ucli_context_t* uc)""" % (m, e)
+-        print """{"""
+-        print """    UCLI_COMMAND_INFO(uc, "%(e)s", 0, "%(e)s"); """ % dict(e=e)
+-        print """    return __echo__("%s::%s", uc); """ % (m, e)
+-        print """}"""
++        print("""static ucli_status_t utest_ucli_%s_%s(ucli_context_t* uc)""" % (m, e))
++        print("""{""")
++        print("""    UCLI_COMMAND_INFO(uc, "%(e)s", 0, "%(e)s"); """ % dict(e=e))
++        print("""    return __echo__("%s::%s", uc); """ % (m, e))
++        print("""}""")
+ 
+-print "/* <auto.ucli.handlers.start> */"
+-print "/* <auto.ucli.handlers.end> */"
++print("/* <auto.ucli.handlers.start> */")
++print("/* <auto.ucli.handlers.end> */")
+ 
+ for m in order:
+-    print """ucli_module_t %s_module = { "%s", NULL, utest_ucli_%s_handlers__ };""" % (m, m, m)
++    print("""ucli_module_t %s_module = { "%s", NULL, utest_ucli_%s_handlers__ };""" % (m, m, m))
+ 
+-print
+-print
+-print """ucli_module_t* modules[] = """
+-print """{"""
++print()
++print()
++print("""ucli_module_t* modules[] = """)
++print("""{""")
+ for m in order:
+-    print """    &%s_module, """ % m
+-print """    NULL"""
+-print """};"""
++    print("""    &%s_module, """ % m)
++print("""    NULL""")
++print("""};""")
+ 
+ 
+ 
+diff --git a/submodules/init.py b/submodules/init.py
+index c25a438a00b2..b166c243e792 100755
+--- a/submodules/init.py
++++ b/submodules/init.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+@@ -60,25 +60,25 @@ try:
+         if len(data) >= 2:
+             submodule_status[data[1].replace("submodules/", "")] = data[0]
+ except Exception as e:
+-    print repr(e)
++    print(repr(e))
+     raise
+ 
+ if ops.list:
+-    for (module, status) in submodule_status.iteritems():
+-        print module
++    for (module, status) in submodule_status.items():
++        print(module)
+ 
+ if ops.update:
+-    for (module, status) in submodule_status.iteritems():
++    for (module, status) in submodule_status.items():
+         if module in ops.update or "all" in ops.update:
+             if status[0] == '-':
+                 # This submodule has not yet been updated
+-                print "Updating submodule %s" % module
++                print("Updating submodule %s" % module)
+                 if subprocess.check_call(['git', 'submodule', 'update', '--init', 'submodules/%s' % module]) != 0:
+-                    print "git error updating module '%s'." % (module, switchlight_root, module)
++                    print("git error updating module '%s'." % (module, switchlight_root, module))
+                     sys.exit(1)
+             else:
+-                print "Submodule %s is already checked out." % module
+-    print "submodules:ok."
++                print("Submodule %s is already checked out." % module)
++    print("submodules:ok.")
+ 
+ 
+ 
+diff --git a/targets/vpi/pyvpi/vpi/vpi.py b/targets/vpi/pyvpi/vpi/vpi.py
+index a8318f05b0d0..389f6ae95668 100755
+--- a/targets/vpi/pyvpi/vpi/vpi.py
++++ b/targets/vpi/pyvpi/vpi/vpi.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+@@ -149,8 +149,8 @@ class VpiBridge(object):
+         else:
+             self.v2 = Vpi(v2In)
+ 
+-        print self.v1.NameGet()
+-        print self.v2.NameGet()
++        print(self.v1.NameGet())
++        print(self.v2.NameGet())
+ 
+         self.bridge = pyvpi.BridgeCreate(self.v1.v, self.v2.v);
+ 
+@@ -177,8 +177,8 @@ class VpiTool(object):
+         count = 0;
+         while(True):
+             data = v.Recv(True);
+-            print "[%.3d]" % count
+-            print data
++            print("[%.3d]" % count)
++            print(data)
+             count = count+1;
+ 
+     def Send(self, v1, data):
+diff --git a/tools/infra.py b/tools/infra.py
+index 9f1522b745f9..586392b2b51f 100644
+--- a/tools/infra.py
++++ b/tools/infra.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/tools/newmodule.py b/tools/newmodule.py
+index 72c72a6dec3e..4c9a1c2d3c33 100755
+--- a/tools/newmodule.py
++++ b/tools/newmodule.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+diff --git a/tools/ucliblocks.py b/tools/ucliblocks.py
+index dfa6ee4b3c71..2ea9ab747a4f 100644
+--- a/tools/ucliblocks.py
++++ b/tools/ucliblocks.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+@@ -39,33 +39,33 @@ datafile.close()
+ array_name = sys.argv[2]
+ 
+ 
+-print "/******************************************************************************"
+-print " *"
+-print " * This file autogenerated from %s on %s." % (datafilename, datetime.datetime.now())
+-print " *"
+-print " * DO NOT EDIT. Changes to this file will be discarded upon regeneration."
+-print " * "
+-print "******************************************************************************/"
+-print "#include <uCli/ucli.h>"
++print("/******************************************************************************")
++print(" *")
++print(" * This file autogenerated from %s on %s." % (datafilename, datetime.datetime.now()))
++print(" *")
++print(" * DO NOT EDIT. Changes to this file will be discarded upon regeneration.")
++print(" * ")
++print("******************************************************************************/")
++print("#include <uCli/ucli.h>")
+ 
+-print "ucli_block_t %s[] = " % array_name
+-print "{"
++print("ucli_block_t %s[] = " % array_name)
++print("{")
+ 
+ for block in data:
+-    for (name, commands) in block.iteritems():
+-        print "  {"
+-        print "    \"%s\", " % name
+-        print "    {"
++    for (name, commands) in block.items():
++        print("  {")
++        print("    \"%s\", " % name)
++        print("    {")
+         for command in commands:
+-            print "      \"%s\", " % command;
+-        print "    },"
+-        print "  },"
++            print("      \"%s\", " % command);
++        print("    },")
++        print("  },")
+ 
+-print "  { (void*)0 }"
+-print "};"
++print("  { (void*)0 }")
++print("};")
+ 
+-print "int %s_count = sizeof(%s)/sizeof(%s[0]); " % (array_name, array_name, array_name)
+-print
++print("int %s_count = sizeof(%s)/sizeof(%s[0]); " % (array_name, array_name, array_name))
++print()
+ 
+ 
+ 
+diff --git a/tools/uclihandlers.py b/tools/uclihandlers.py
+index ad96bb2d109b..3c633c59a042 100755
+--- a/tools/uclihandlers.py
++++ b/tools/uclihandlers.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+@@ -80,7 +80,7 @@ s += """
+ """
+ 
+ 
+-for ((p,m), lst) in modules.iteritems():
++for ((p,m), lst) in modules.items():
+     s += "static ucli_command_handler_f %s_ucli_%s_handlers__[] = \n" % (p,m)
+     s += "{\n"
+     for h in lst:
+diff --git a/tools/uclihandlers2.py b/tools/uclihandlers2.py
+index 2dbd033fa60e..6b5f79d716c8 100755
+--- a/tools/uclihandlers2.py
++++ b/tools/uclihandlers2.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+@@ -152,7 +152,7 @@ class UcliGenerator(object):
+                 name = "%s__%s" % (parent, key)
+ 
+             s += 'ucli_node_t* %s__node__ = NULL;\n' % (name)
+-            for(k, v) in value.iteritems():
++            for(k, v) in list(value.items()):
+                 s += self.__emit_definitions(k, v, name)
+         else:
+             raise Exception(type(value))
+@@ -171,7 +171,7 @@ class UcliGenerator(object):
+             else:
+                 name = "%s__%s" % (parent, key)
+             s += '    if(%s__node__ == NULL) %s__node__ = ucli_node_create("%s", NULL, NULL);\n' % (name, name, key.replace("_ucli", ""))
+-            for(k, v) in value.iteritems():
++            for(k, v) in list(value.items()):
+                 s += self.__emit_inits(k, v, name)
+ 
+         return s
+@@ -189,7 +189,7 @@ class UcliGenerator(object):
+                 name = "%s__%s" % (parent, key)
+             if parent:
+                 s += "    ucli_node_subnode_add(%s__node__, %s__%s__node__);\n" % (parent, parent, key)
+-            for(k, v) in value.iteritems():
++            for(k, v) in list(value.items()):
+                 s += self.__emit_tree(k, v, name)
+         else:
+             raise Exception(type(value))
+@@ -198,15 +198,15 @@ class UcliGenerator(object):
+ 
+     def generate_str(self):
+         s = ""
+-        for(k, v) in self.nodes.iteritems():
++        for(k, v) in list(self.nodes.items()):
+             s += self.__emit_definitions(k, v, None)
+         s += "static ucli_node_t* __ucli_auto_init__(void)\n"
+         s += "{\n"
+-        for(k, v) in self.nodes.iteritems():
++        for(k, v) in list(self.nodes.items()):
+             s += self.__emit_inits(k, v, None)
+-        for(k, v) in self.nodes.iteritems():
++        for(k, v) in list(self.nodes.items()):
+             s += self.__emit_tree(k, v, None)
+-        s += "    return %s__node__;\n" % self.nodes.keys()[0]
++        s += "    return %s__node__;\n" % list(self.nodes.keys())[0]
+         s += "}\n"
+         return s
+ 
+@@ -236,7 +236,7 @@ class UcliGenerator(object):
+         source = re.sub(expr, s, source, flags=re.DOTALL)
+ 
+         if stdout:
+-            print source
++            print(source)
+         else:
+             wod.write_on_diff(src, source, msg=False)
+ 
+diff --git a/tools/uclimod.py b/tools/uclimod.py
+index 39eb20b7cecb..2ddd7cf90612 100644
+--- a/tools/uclimod.py
++++ b/tools/uclimod.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ ################################################################
+ #
+ #        Copyright 2013, Big Switch Networks, Inc.
+-- 
+2.36.1
+

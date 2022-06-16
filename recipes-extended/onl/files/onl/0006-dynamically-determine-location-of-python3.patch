@@ -1,0 +1,172 @@
+Upstream-Status: untested
+
+From 080972cf6aa93ba071c27e1b35e592b805ecd9c4 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 16 Jun 2022 10:32:16 +0200
+Subject: [PATCH 2/2] dynamically determine location of python3
+
+To allow running the scripts within a distro context with custom python
+search paths, replace the hardcoded location of the python3 binary with
+an env call.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ tools/cpiomod.py           | 2 +-
+ tools/filenamer.py         | 2 +-
+ tools/flat-image-tree.py   | 2 +-
+ tools/make-versions.py     | 2 +-
+ tools/mkinstaller.py       | 2 +-
+ tools/onl-init-pkgs.py     | 2 +-
+ tools/onl-platform-pkgs.py | 2 +-
+ tools/onlplatform.py       | 2 +-
+ tools/onlpm.py             | 2 +-
+ tools/onlrfs.py            | 2 +-
+ tools/onlu.py              | 2 +-
+ tools/onlyaml.py           | 2 +-
+ tools/sjson.py             | 2 +-
+ tools/submodules.py        | 2 +-
+ 14 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/tools/cpiomod.py b/tools/cpiomod.py
+index ee3fbfbac03f..5f0ca99f9f43 100755
+--- a/tools/cpiomod.py
++++ b/tools/cpiomod.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ import sys
+ import os
+ import argparse
+diff --git a/tools/filenamer.py b/tools/filenamer.py
+index b316543ff907..5f673e8ee1b5 100755
+--- a/tools/filenamer.py
++++ b/tools/filenamer.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # This script provides the file naming scheme for
+diff --git a/tools/flat-image-tree.py b/tools/flat-image-tree.py
+index 85d29974c944..b91dcbe5077d 100755
+--- a/tools/flat-image-tree.py
++++ b/tools/flat-image-tree.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # Flat Image Tree Generator
+diff --git a/tools/make-versions.py b/tools/make-versions.py
+index be779c4a7cdc..88699ce021f5 100755
+--- a/tools/make-versions.py
++++ b/tools/make-versions.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ import os
+ import sys
+diff --git a/tools/mkinstaller.py b/tools/mkinstaller.py
+index df8e400b9e4f..610444dc0380 100755
+--- a/tools/mkinstaller.py
++++ b/tools/mkinstaller.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # Build an ONL Installer
+diff --git a/tools/onl-init-pkgs.py b/tools/onl-init-pkgs.py
+index ad752a53ec8a..89ec615c62a0 100755
+--- a/tools/onl-init-pkgs.py
++++ b/tools/onl-init-pkgs.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # This script produces a YAML list on stdout of all
+diff --git a/tools/onl-platform-pkgs.py b/tools/onl-platform-pkgs.py
+index 7a990e460ae0..e2e124573336 100755
+--- a/tools/onl-platform-pkgs.py
++++ b/tools/onl-platform-pkgs.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # This script expects a yaml file containing the list
+diff --git a/tools/onlplatform.py b/tools/onlplatform.py
+index 4ac5670a6c45..3fca94e52f17 100755
+--- a/tools/onlplatform.py
++++ b/tools/onlplatform.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ 
+ """onlplatform.py
+ 
+diff --git a/tools/onlpm.py b/tools/onlpm.py
+index db4625da53c7..a46a77711582 100755
+--- a/tools/onlpm.py
++++ b/tools/onlpm.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # ONL Package Management
+diff --git a/tools/onlrfs.py b/tools/onlrfs.py
+index 18aca0f62f1f..18d89ad250b5 100755
+--- a/tools/onlrfs.py
++++ b/tools/onlrfs.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # ONL Root Filesystem Generator
+diff --git a/tools/onlu.py b/tools/onlu.py
+index 438aa3061b6f..9e147d875399 100644
+--- a/tools/onlu.py
++++ b/tools/onlu.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # Common utilities for the ONL python tools.
+diff --git a/tools/onlyaml.py b/tools/onlyaml.py
+index d80cff2f019d..95a8ef3a0e24 100755
+--- a/tools/onlyaml.py
++++ b/tools/onlyaml.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # Extended YAML Support
+diff --git a/tools/sjson.py b/tools/sjson.py
+index d3e0cb710a40..3385e821df39 100755
+--- a/tools/sjson.py
++++ b/tools/sjson.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ #
+ # Simple JSON Generator
+diff --git a/tools/submodules.py b/tools/submodules.py
+index d30e23766228..21e058900dc3 100755
+--- a/tools/submodules.py
++++ b/tools/submodules.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ ############################################################
+ # <bsn.cl fy=2013 v=none>
+ #
+-- 
+2.36.1
+

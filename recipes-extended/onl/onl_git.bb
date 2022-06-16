@@ -18,6 +18,12 @@ SRC_URI += " \
            file://onl/0002-platform_manager-do-not-ignore-write-return-value.patch \
            file://onl/0003-file-check-unix-socket-path-is-short-enough.patch \
            file://onl/0004-ym2651y-fix-update-when-MFR_MODEL_OPTION-is-uninmple.patch \
+           file://onl/0005-WIP-tools-convert-to-python3.patch \
+           file://onl/0006-dynamically-determine-location-of-python3.patch \
+           file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
+           file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
+           file://infra/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_INFRA} \
+           file://infra/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_INFRA} \
            file://accton-as4610/0001-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
            file://accton-as4610/0002-accton-as4610-fix-value-truncation-when-accessing-le.patch \
            file://accton-as4610/0003-accton-as4610-do-not-try-to-read-out-PSU-values-for-.patch \
