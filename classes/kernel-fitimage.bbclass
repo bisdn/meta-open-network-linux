@@ -451,12 +451,14 @@ fitimage_assemble() {
 
 	fitimage_emit_section_maint ${1} fitend
 
+	bbwarn "RLX log 3"
 	#
 	# Step 6: Assemble the image
 	#
 	uboot-mkimage \
 		${@'-D "${UBOOT_MKIMAGE_DTCOPTS}"' if len('${UBOOT_MKIMAGE_DTCOPTS}') else ''} \
 		-f ${1} \
+		-B 512 \
 		arch/${ARCH}/boot/${2}
 
 	#
