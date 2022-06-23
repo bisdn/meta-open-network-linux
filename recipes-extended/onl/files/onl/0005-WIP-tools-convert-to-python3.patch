@@ -1,6 +1,6 @@
 Upstream-Status: incomplete,untested
 
-From 66cf99b318f5d6a2500fb3698468bfa0ace94451 Mon Sep 17 00:00:00 2001
+From 0d70a9c03a4744de032b1958b9d6b872d21c5aa1 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 16 Jun 2022 10:30:25 +0200
 Subject: [PATCH 1/2] WIP: tools: convert to python3
@@ -19,8 +19,8 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  tools/cpiomod.py           |  2 +-
  tools/filenamer.py         |  6 ++--
  tools/flat-image-tree.py   | 12 +++----
- tools/make-versions.py     | 10 +++---
- tools/mkinstaller.py       | 14 ++++----
+ tools/make-versions.py     |  6 ++--
+ tools/mkinstaller.py       | 12 +++----
  tools/onl-init-pkgs.py     |  8 ++---
  tools/onl-nos-create.py    |  2 +-
  tools/onl-platform-pkgs.py |  4 +--
@@ -29,10 +29,10 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  tools/onlrfs.py            | 38 ++++++++++----------
  tools/onlu.py              | 16 ++++-----
  tools/onlvi.py             |  2 +-
- tools/onlyaml.py           | 16 +++++----
+ tools/onlyaml.py           | 14 ++++----
  tools/sjson.py             |  4 +--
  tools/submodules.py        | 10 +++---
- 16 files changed, 115 insertions(+), 108 deletions(-)
+ 16 files changed, 110 insertions(+), 105 deletions(-)
 
 diff --git a/tools/cpiomod.py b/tools/cpiomod.py
 index dc20fb136461..ee3fbfbac03f 100755
@@ -112,7 +112,7 @@ index c4290dafb4b7..85d29974c944 100755
              f.write("""            description = "%s";\n""" % name)
              f.write("""            kernel = "%s";\n""" % (KernelImage(kernel, ops.arch).name))
 diff --git a/tools/make-versions.py b/tools/make-versions.py
-index adda82f3ebda..be779c4a7cdc 100755
+index adda82f3ebda..4086425fd8c5 100755
 --- a/tools/make-versions.py
 +++ b/tools/make-versions.py
 @@ -1,4 +1,4 @@
@@ -121,12 +121,8 @@ index adda82f3ebda..be779c4a7cdc 100755
  ############################################################
  import os
  import sys
-@@ -23,10 +23,10 @@ class OnlVersionsGenerator(object):
-         self.ops = ops
- 
-         if ops.sha1:
--            self.build_sha1 = ops.sha1
-+            self.build_sha1 = ops.sha1.decode('utf8')
+@@ -26,7 +26,7 @@ class OnlVersionsGenerator(object):
+             self.build_sha1 = ops.sha1
          else:
              cmd = ('git', 'rev-list', 'HEAD', '-1',)
 -            self.build_sha1 = subprocess.check_output(cmd).strip()
@@ -134,15 +130,6 @@ index adda82f3ebda..be779c4a7cdc 100755
  
          if ops.timestamp:
              self.build_timestamp = ops.timestamp
-@@ -40,7 +40,7 @@ class OnlVersionsGenerator(object):
-                 data = {}
-                 data['product'] = product
-                 data['build_timestamp'] = self.build_timestamp
--                data['build_sha1'] = self.build_sha1
-+                data['build_sha1'] = self.build_sha1.decode('utf8')
-                 if config is not None:
-                     data['build_config'] = config
-                 self.generate(data)
 @@ -51,7 +51,7 @@ class OnlVersionsGenerator(object):
          for attribute in directory:
              if attribute.startswith("V_"):
@@ -153,7 +140,7 @@ index adda82f3ebda..be779c4a7cdc 100755
  
          if not os.path.isdir(self.ops.output_dir):
 diff --git a/tools/mkinstaller.py b/tools/mkinstaller.py
-index d54c805f4a21..df8e400b9e4f 100755
+index d54c805f4a21..5893d5809ea5 100755
 --- a/tools/mkinstaller.py
 +++ b/tools/mkinstaller.py
 @@ -1,4 +1,4 @@
@@ -162,15 +149,6 @@ index d54c805f4a21..df8e400b9e4f 100755
  ############################################################
  #
  # Build an ONL Installer
-@@ -67,7 +67,7 @@ class InstallerShar(object):
-         sys.exit(1)
- 
-     def find_file(self, package, filename):
--        return subprocess.check_output("onlpm --find-file %s %s" % (package, filename), shell=True).strip()
-+        return subprocess.check_output("onlpm --find-file %s %s" % (package, filename), shell=True).decode('utf-8').strip()
- 
-     def setvar(self, name, value):
-         self.template = self.template.replace("@%s@" % name, value)
 @@ -76,12 +76,12 @@ class InstallerShar(object):
          self.initrd = self.find_file(package, filename)
          self.add_file(self.initrd)
@@ -791,7 +769,7 @@ index e1331c607758..04fcc5bc25ea 100644
  
      def V_OS_NAME(self, data):
 diff --git a/tools/onlyaml.py b/tools/onlyaml.py
-index 92c9ce5922ee..d80cff2f019d 100755
+index 92c9ce5922ee..2a9c0e935563 100755
 --- a/tools/onlyaml.py
 +++ b/tools/onlyaml.py
 @@ -1,4 +1,4 @@
@@ -800,16 +778,7 @@ index 92c9ce5922ee..d80cff2f019d 100755
  ############################################################
  #
  # Extended YAML Support
-@@ -39,6 +39,8 @@ def loadf(fname, vard={}):
-     def interpolate(s, d):
- 
-         error_string = "Yaml variable substitution error: '%s' could not be resolved."
-+        # if type(s) is not str:
-+        #    s = s.decode('utf-8')
- 
-         try:
-             template = Template(s)
-@@ -103,14 +105,14 @@ def loadf(fname, vard={}):
+@@ -103,14 +103,14 @@ def loadf(fname, vard={}):
      string = open(fname).read()
      try:
          data = yaml.load(string)
@@ -826,7 +795,7 @@ index 92c9ce5922ee..d80cff2f019d 100755
              k = interpolate(k, variables)
              v = interpolate(v, variables)
              variables[k] = v
-@@ -126,9 +128,9 @@ def loadf(fname, vard={}):
+@@ -126,9 +126,9 @@ def loadf(fname, vard={}):
  
      try:
          data = yaml.load(string)
@@ -838,7 +807,7 @@ index 92c9ce5922ee..d80cff2f019d 100755
          raise OnlYamlError("Interpolation produced invalid results:\n%s\n" %  string)
  
      return data
-@@ -138,10 +140,10 @@ if __name__ == '__main__':
+@@ -138,10 +138,10 @@ if __name__ == '__main__':
      import sys
      try:
          if len(sys.argv) == 2:
