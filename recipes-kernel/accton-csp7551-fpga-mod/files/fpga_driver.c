@@ -72,6 +72,7 @@
 #include <linux/delay.h>
 #include <linux/i2c.h>
 #include <linux/kernel.h>
+#include <linux/version.h>
 
 #define I2C_DEBUG(...)
 //#define I2C_DEBUG(...) printk(KERN_ALERT __VA_ARGS__)
@@ -768,8 +769,11 @@ static const struct i2c_algorithm smbus_algorithm = {
 	.functionality	= fpga_smbus_func,
 };
 
-
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
 static pci_ers_result_t fpga_error_detected(struct pci_dev *pdev, enum pci_channel_state error)
+#else
+static pci_ers_result_t fpga_error_detected(struct pci_dev *pdev, pci_channel_state_t error)
+#endif
 {
     I2C_DEBUG( "[%s]\n", __func__);
     return PCI_ERS_RESULT_CAN_RECOVER;
@@ -920,7 +924,11 @@ long fpga_ioctl(struct file *filp, unsigned int cmd, unsigned long user_addr)
         I2C_DEBUG( "[%s] READ\n", __func__);
         fpga_pci_dev = (struct fpga_pci_device *) filp->private_data;
 
-        if (!access_ok(VERIFY_READ, user_addr, _IOC_SIZE(cmd)))
+        if (!access_ok(
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
+		VERIFY_READ,
+#endif
+		user_addr, _IOC_SIZE(cmd)))
         {
           //I2C_DEBUG( "[%s] Access NOT OK\n", __func__);
           return(-EINVAL);
@@ -955,7 +963,11 @@ long fpga_ioctl(struct file *filp, unsigned int cmd, unsigned long user_addr)
     {
         fpga_pci_dev = (struct fpga_pci_device *) filp->private_data;
 
-        if (!access_ok(VERIFY_WRITE, user_addr, _IOC_SIZE(cmd)))
+        if (!access_ok(
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
+		VERIFY_WRITE,
+#endif
+        user_addr, _IOC_SIZE(cmd)))
         {
             //I2C_DEBUG( "[%s] Access NOT OK\n", __func__);
             return(-EINVAL);
@@ -992,7 +1004,11 @@ long fpga_ioctl(struct file *filp, unsigned int cmd, unsigned long user_addr)
     {
         fpga_pci_dev = (struct fpga_pci_device *) filp->private_data;
 
-        if (!access_ok(VERIFY_WRITE, user_addr, _IOC_SIZE(cmd)))
+        if (!access_ok(
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
+		VERIFY_WRITE,
+#endif
+        user_addr, _IOC_SIZE(cmd)))
         {
             //I2C_DEBUG( "[%s] Access NOT OK\n", __func__);
             return(-EINVAL);
