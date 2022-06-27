@@ -25,7 +25,7 @@
 #include <linux/acpi.h>
 #include <linux/i2c.h>
 #include <linux/nvmem-provider.h>
-#include <linux/platform_data/at24.h>
+#include "at24.h"
 #include <linux/printk.h>
 #include <asm/uaccess.h>
 /*
