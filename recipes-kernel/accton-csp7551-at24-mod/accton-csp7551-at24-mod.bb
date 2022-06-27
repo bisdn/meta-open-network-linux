@@ -7,6 +7,7 @@ inherit module
 SRC_URI = " \
 	  file://Makefile \
           file://at24_csp7551.c \
+          file://at24.h \
 	  file://COPYING \
           "
 
