@@ -12,4 +12,4 @@ inherit module
 SRC_URI =   "file://ice-1.6.7.tar.gz"
 SRC_URI[md5sum] = "37d46b3cc4c9bef7bd80f2fc36879905"
 
-#S = "${WORKDIR}"
+S = "${WORKDIR}/ice-1.6.7"
