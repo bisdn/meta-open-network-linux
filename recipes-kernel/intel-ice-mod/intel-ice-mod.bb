@@ -7,14 +7,15 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://${S}/../COPYING;md5=a216b4192dc6b777b6f0db560e9a8417"
 PR = "r0"
 
-ICE_VERSION="1.6.7"
+#ICE_VERSION="1.6.7"
+ICE_VERSION="1.8.9"
 
 inherit module
 
-SRC_URI =   "file://ice-1.6.7.tar.gz"
-SRC_URI[md5sum] = "37d46b3cc4c9bef7bd80f2fc36879905"
-#SRC_URI =   "file://ice-${ICE_VERSION}.tar.gz"
+#SRC_URI =   "file://ice-1.6.7.tar.gz"
 #SRC_URI[md5sum] = "37d46b3cc4c9bef7bd80f2fc36879905"
+SRC_URI =   "file://ice-${ICE_VERSION}.tar.gz"
+SRC_URI[md5sum] = "fbb148b503ebe09c55dffeaf90e393ea"
 
 # Allow the Intel Makefile to find the kernel headers
 EXTRA_OEMAKE='KSRC="${STAGING_KERNEL_BUILDDIR}" KVER="${KERNEL_VERSION}" INSTALL_MOD_PATH="${D}"'
