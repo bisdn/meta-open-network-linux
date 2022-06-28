@@ -20,4 +20,9 @@ EXTRA_OEMAKE='KSRC="${STAGING_KERNEL_BUILDDIR}" KVER="${KERNEL_VERSION}" INSTALL
 
 FILES_${PN} += "/lib/firmware/updates"
 
+do_install_append() {
+    rm -rf ${D}/tmp
+    rm -rf ${D}/lib/modules/*/extern-symvers/
+}
+
 S = "${WORKDIR}/ice-${ICE_VERSION}/src"
