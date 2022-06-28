@@ -15,7 +15,7 @@ inherit module
 #SRC_URI =   "file://ice-1.6.7.tar.gz"
 #SRC_URI[md5sum] = "37d46b3cc4c9bef7bd80f2fc36879905"
 SRC_URI =   "file://ice-${ICE_VERSION}.tar.gz"
-SRC_URI[md5sum] = "fbb148b503ebe09c55dffeaf90e393ea"
+SRC_URI[md5sum] = "37d46b3cc4c9bef7bd80f2fc36879905"
 
 # Allow the Intel Makefile to find the kernel headers
 EXTRA_OEMAKE='KSRC="${STAGING_KERNEL_BUILDDIR}" KVER="${KERNEL_VERSION}" INSTALL_MOD_PATH="${D}"'
