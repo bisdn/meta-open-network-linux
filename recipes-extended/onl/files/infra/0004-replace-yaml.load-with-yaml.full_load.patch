@@ -1,0 +1,74 @@
+From 0b51ff365a2b2a06d7fc20d4514be2121a35d735 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 28 Jun 2022 12:07:38 +0200
+Subject: [PATCH] replace yaml.load with yaml.full_load
+
+yaml.load without loader is deprecated and unsafe [1], and was removed
+with PyYAML 6.0.
+
+The default loader used by yaml.load was the FullLoader, so replace all
+instances of yaml.load with the shortcut function yaml.full_load:
+
+ sed -i 's/yaml\.load/yaml\.full_load/' builder/unix/tools/*.py
+ sed -i 's/yaml\.load/yaml\.full_load/' sourcegen/cm.py
+
+[1] https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ builder/unix/tools/mmg.py     | 4 ++--
+ builder/unix/tools/modtool.py | 2 +-
+ sourcegen/cm.py               | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/builder/unix/tools/mmg.py b/builder/unix/tools/mmg.py
+index 4aeefb132523..1ab5f306c6bb 100755
+--- a/builder/unix/tools/mmg.py
++++ b/builder/unix/tools/mmg.py
+@@ -64,7 +64,7 @@ def generate_manifest_data(dirs=["."],
+                                         f.write(yaml.dump(dict(name=moduleName), default_flow_style=False))
+ 
+                     if include_yamls and file_ == ".module":
+-                        data = yaml.load(open(fname))
++                        data = yaml.full_load(open(fname))
+                         moduleName = data['name']
+ 
+                     if moduleName:
+@@ -160,7 +160,7 @@ if __name__ == "__main__":
+     ap.add_argument("root", help="Relative root directory.")
+     ap.add_argument("--only-if-missing", action='store_true')
+     ops = ap.parse_args()
+-    config = yaml.load(open(ops.config))
++    config = yaml.full_load(open(ops.config))
+     dirs = [ os.path.join(ops.root, d) for d in config['directories'] ]
+     target = os.path.join(ops.root, config['manifest'])
+     if not os.path.exists(target) or ops.only_if_missing is False:
+diff --git a/builder/unix/tools/modtool.py b/builder/unix/tools/modtool.py
+index 5e6dea634013..6605eaaa7253 100755
+--- a/builder/unix/tools/modtool.py
++++ b/builder/unix/tools/modtool.py
+@@ -18,7 +18,7 @@ class ModuleTool(object):
+ 
+     def __load_module(self, fname):
+         try:
+-            d = yaml.load(open(fname))
++            d = yaml.full_load(open(fname))
+         except:
+             self.logger.exception()
+ 
+diff --git a/sourcegen/cm.py b/sourcegen/cm.py
+index c197b683946f..8cb7dfa04410 100755
+--- a/sourcegen/cm.py
++++ b/sourcegen/cm.py
+@@ -43,7 +43,7 @@ class ConfigManager:
+     def ImportYModule(self, filename):
+         """Import a YAML definition file"""
+         fp = open(filename);
+-        self.configs.append(DotDict(yaml.load(fp)))
++        self.configs.append(DotDict(yaml.full_load(fp)))
+         fp.close()
+ 
+     def ImportDict(self, d):
+-- 
+2.36.1
+

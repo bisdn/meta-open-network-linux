@@ -1,0 +1,99 @@
+From f894f605bc0785620a55cfb3b1661646de593dc6 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 28 Jun 2022 11:00:16 +0200
+Subject: [PATCH] tools: replace yaml.load with yaml.full_load
+
+yaml.load without loader is deprecated and unsafe [1], and was removed
+with PyYAML 6.0.
+
+The default loader used by yaml.load was the FullLoader, so replace all
+instances of yaml.load with the shortcut function yaml.full_load:
+
+ sed -i 's/ yaml\.load/ yaml\.full_load/' *.py
+
+[1] https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ tools/flat-image-tree.py | 2 +-
+ tools/onlrfs.py          | 2 +-
+ tools/onlyaml.py         | 4 ++--
+ tools/sjson.py           | 6 +++---
+ 4 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/tools/flat-image-tree.py b/tools/flat-image-tree.py
+index b91dcbe5077d..ba787671966a 100755
+--- a/tools/flat-image-tree.py
++++ b/tools/flat-image-tree.py
+@@ -208,7 +208,7 @@ class FlatImageTree(object):
+             d = onl.YamlUtils.merge(defaults, fname)
+         else:
+             with open(fname) as fd:
+-                d = yaml.load(fd)
++                d = yaml.full_load(fd)
+         self.add_dict(name, d)
+ 
+     def add_platform_package(self, package):
+diff --git a/tools/onlrfs.py b/tools/onlrfs.py
+index 18d89ad250b5..d7cb62a3efee 100755
+--- a/tools/onlrfs.py
++++ b/tools/onlrfs.py
+@@ -567,7 +567,7 @@ rm -f /usr/sbin/policy-rc.d
+                     md['os-release'] = os_release_dict
+ 
+                     if os.path.exists(fields['platforms']):
+-                        md['platforms'] = yaml.load(open(fields['platforms']))
++                        md['platforms'] = yaml.full_load(open(fields['platforms']))
+                     else:
+                         md['platforms'] = fields['platforms'].split(',')
+ 
+diff --git a/tools/onlyaml.py b/tools/onlyaml.py
+index bfb00336de76..883447794d90 100755
+--- a/tools/onlyaml.py
++++ b/tools/onlyaml.py
+@@ -102,7 +102,7 @@ def loadf(fname, vard={}):
+     # First load: grab the variables dict
+     string = open(fname).read()
+     try:
+-        data = yaml.load(string)
++        data = yaml.full_load(string)
+     except Exception as e:
+         raise OnlYamlError("%s\n(filename: %s)" % (e, fname))
+ 
+@@ -125,7 +125,7 @@ def loadf(fname, vard={}):
+     string = interpolate(string, variables)
+ 
+     try:
+-        data = yaml.load(string)
++        data = yaml.full_load(string)
+     except OnlYamlError as e:
+         raise e
+     except Exception as e:
+diff --git a/tools/sjson.py b/tools/sjson.py
+index 3385e821df39..a3aecfc02e07 100755
+--- a/tools/sjson.py
++++ b/tools/sjson.py
+@@ -49,7 +49,7 @@ g_data={}
+ 
+ if ops._in:
+     try:
+-        g_data = yaml.load(open(ops._in))
++        g_data = yaml.full_load(open(ops._in))
+     except:
+         g_data = json.load(open(ops._in))
+ 
+@@ -64,9 +64,9 @@ if ops.kj:
+ if ops.ky:
+     (k, y) = ops.ky
+     if os.path.exists(y):
+-        v = yaml.load(open(y))
++        v = yaml.full_load(open(y))
+     else:
+-        v = yaml.load(y)
++        v = yaml.full_load(y)
+     setkeypath(g_data, (k, v))
+ 
+ if ops.kv:
+-- 
+2.36.1
+
