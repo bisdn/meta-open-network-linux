@@ -6,3 +6,4 @@ include cfg/net/bridge.scc
 
 # in recipes-kernel/linux/linux-yocto-onl-linux-*/bisdn-kmeta/cfg/
 include docker-extra.scc
+include csp7551.scc
