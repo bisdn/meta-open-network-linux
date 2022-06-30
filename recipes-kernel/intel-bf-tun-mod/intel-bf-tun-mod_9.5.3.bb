@@ -13,6 +13,8 @@ inherit module
 SRC_URI = " \
           file://Makefile \
           file://bf_tun.c \
+          file://bf_tun_3.c \
+          file://bf_tun_v4.19.67.c \
 "
 
 S = "${WORKDIR}"
