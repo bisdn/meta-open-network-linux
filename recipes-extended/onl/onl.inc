@@ -174,10 +174,6 @@ do_install() {
   mv ${D}${libdir}/libonlp-platform-defaults.so ${D}${libdir}/libonlp-platform-defaults.so.1
   ln -r -s ${D}${libdir}/libonlp-platform-defaults.so.1 ${D}${libdir}/libonlp-platform-defaults.so
 
-  # platform file
-  install -d ${D}${sysconfdir}/onl
-  echo "${ONL_PLATFORM}-r${ONIE_MACHINE_REV}" > ${D}${sysconfdir}/onl/platform
-
   # service file
   install -d ${D}${systemd_unitdir}/system
   install -m 0644 ${WORKDIR}/onlpd.service ${D}${systemd_unitdir}/system
