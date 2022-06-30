@@ -41,25 +41,3 @@ create_i2c_dev() {
 	i2cset -y -f 0 0x30 0x2a 0
 }
 create_i2c_dev
-
-wait_for_file /sys/bus/i2c/drivers/as4610_54_cpld/0-0030/product_id || exit 1
-
-[ -f "/sys/bus/i2c/drivers/as4610_54_cpld/0-0030/product_id" ] || exit 0
-
-product_id="$(cat /sys/bus/i2c/drivers/as4610_54_cpld/0-0030/product_id)"
-
-case "$product_id" in
-	0|1)
-		platform="arm-accton-as4610/arm-accton-as4610-30-r0"
-		;;
-	2|3|5)
-		platform="arm-accton-as4610/arm-accton-as4610-54-r0"
-		;;
-	*)
-		platform="unknown"
-		exit 1
-		;;
-esac
-
-mkdir -p /etc/onl
-echo "$platform" > /etc/onl/platform
