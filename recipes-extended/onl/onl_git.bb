@@ -43,6 +43,7 @@ SRC_URI += " \
            file://accton-as5835-54x/0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
            file://accton-as7726-32x/0001-as7726-32x-silence-ignored-return-value-warnings.patch \
            file://cel-questone-2a/0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
+           file://cel-questone-2a/0002-cel-questone-2a-delete-unused-global-variables.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
 "
