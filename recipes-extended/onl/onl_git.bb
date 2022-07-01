@@ -44,6 +44,7 @@ SRC_URI += " \
            file://accton-as7726-32x/0001-as7726-32x-silence-ignored-return-value-warnings.patch \
            file://cel-questone-2a/0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
            file://cel-questone-2a/0002-cel-questone-2a-delete-unused-global-variables.patch \
+           file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
 "
