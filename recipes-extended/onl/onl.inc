@@ -162,8 +162,6 @@ do_install() {
       ln -r -s ${D}${libdir}/libonlp-${baseplatform}.so.1 ${D}${libdir}/libonlp-${baseplatform}.so
   done
 
-  ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-platform.so.1
-
   # install libonlp shared library
   install -m 0755 packages/base/any/onlp/builds/onlp/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp.so ${D}${libdir}
   mv ${D}${libdir}/libonlp.so ${D}${libdir}/libonlp.so.1
@@ -173,6 +171,11 @@ do_install() {
   install -m 0755 packages/base/any/onlp/builds/onlp-platform-defaults/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-platform-defaults.so ${D}${libdir}
   mv ${D}${libdir}/libonlp-platform-defaults.so ${D}${libdir}/libonlp-platform-defaults.so.1
   ln -r -s ${D}${libdir}/libonlp-platform-defaults.so.1 ${D}${libdir}/libonlp-platform-defaults.so
+
+  # install libonlp-platform shared library
+  install -m 0755 packages/base/any/onlp/builds/onlp-platform/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-platform.so ${D}${libdir}
+  mv ${D}${libdir}/libonlp-platform.so ${D}${libdir}/libonlp-platform.so.1
+  ln -r -s ${D}${libdir}/libonlp-platform.so.1 ${D}${libdir}/libonlp-platform.so
 
   # service file
   install -d ${D}${systemd_unitdir}/system
