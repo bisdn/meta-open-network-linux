@@ -118,11 +118,12 @@ do_compile() {
   V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds alltargets
   V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds/onlpd alltargets
 
-  # get the path to the platform
-  ONLP_PLATFORM="${ONL_PLATFORM}-r${ONIE_MACHINE_REV}"
-  ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${ONLP_PLATFORM}:${ONL_BUILD_ARCH})
+  for platform in ${ONL_PLATFORM_SUPPORT}; do
+      # get the path to the platform
+      ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${platform}:${ONL_BUILD_ARCH})
 
-  V=1 VERBOSE=1 oe_runmake -C ${ONLP_DIR}/builds/lib alltargets
+      V=1 VERBOSE=1 oe_runmake -C ${ONLP_DIR}/builds/lib alltargets
+  done
 }
 
 do_install() {
@@ -137,9 +138,6 @@ do_install() {
     ${D}${includedir}/onlplib \
     ${D}${libdir}
 
-  # get the path to the platform
-  ONLP_PLATFORM="${ONL_PLATFORM}-r${ONIE_MACHINE_REV}"
-  ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${ONLP_PLATFORM}:${ONL_BUILD_ARCH})
 
   # install onlpdump
   install -m 0755 packages/base/any/onlp/builds/onlpd/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlpd ${D}${bindir}
@@ -153,10 +151,17 @@ do_install() {
   install -m 0644 sm/bigcode/modules/cjson/module/inc/cjson/*.h ${D}${includedir}/cjson/
   install -m 0644 sm/infra/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
 
-  # install libonlp-<platform> shared library
-  install -m 0755 ${ONLP_DIR}/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${ONL_PLATFORM}.so ${D}${libdir}
-  mv ${D}${libdir}/libonlp-${ONL_PLATFORM}.so ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1
-  ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-${ONL_PLATFORM}.so
+  for platform in ${ONL_PLATFORM_SUPPORT}; do
+      # get the path to the platform
+      ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${platform}:${ONL_BUILD_ARCH})
+
+      # install libonlp-<baseplatform> shared library
+      baseplatform=${platform%-r*}
+      install -m 0755 ${ONLP_DIR}/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${baseplatform}.so ${D}${libdir}
+      mv ${D}${libdir}/libonlp-${baseplatform}.so ${D}${libdir}/libonlp-${baseplatform}.so.1
+      ln -r -s ${D}${libdir}/libonlp-${baseplatform}.so.1 ${D}${libdir}/libonlp-${baseplatform}.so
+  done
+
   ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-platform.so.1
 
   # install libonlp shared library
