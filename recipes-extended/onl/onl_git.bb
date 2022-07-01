@@ -48,3 +48,17 @@ SRC_URI += " \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
 "
+
+ONL_PLATFORM_SUPPORT:arm = " \
+    arm-accton-as4610-30-r0 \
+    arm-accton-as4610-54-r0 \
+"
+
+ONL_PLATFORM_SUPPORT:x86-64 = " \
+    x86-64-accton-as4630-54pe-r0 \
+    x86-64-accton-as5835-54x-r0 \
+    x86-64-accton-as7726-32x-r0 \
+    x86-64-cel-questone-2a-r0 \
+    x86-64-delta-ag5648-r0 \
+    x86-64-delta-ag7648-r0 \
+"
