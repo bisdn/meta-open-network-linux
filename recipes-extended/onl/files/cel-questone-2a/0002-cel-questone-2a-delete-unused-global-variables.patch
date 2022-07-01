@@ -1,0 +1,36 @@
+Upstream-Status: inappropriate [platform not upstream]
+
+From 3cb8c084ef56c3724842b87b115e8dab20de0d57 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 1 Jul 2022 16:01:24 +0200
+Subject: [PATCH] cel-questone-2a: delete unused global variables
+
+Delete unused global variables to avoid the following build error:
+
+     LinkingShared[release]: libonlp-x86-64-cel-questone-2a::libonlp-x86-64-cel-questone-2a.so
+| /tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/x86_64-poky-linux/../../libexec/x86_64-poky-linux/gcc/x86_64-poky-linux/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c:35: multiple definition of `fp'; BUILD/buster/gcc-local/obj/tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:24: first defined here
+| /tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/x86_64-poky-linux/../../libexec/x86_64-poky-linux/gcc/x86_64-poky-linux/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c:33: multiple definition of `command'; BUILD/buster/gcc-local/obj/tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:23: first defined here
+| collect2: error: ld returned 1 exit status
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c       | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c b/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
+index 1aaebbbe5b80..b54ada96ce8e 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
+@@ -30,9 +30,6 @@ static int qsfp_count__ = 8;
+ static int sfp_count__ = 48;
+ static int sfp_bus_offset = 1;
+ static char node_path[PREFIX_PATH_LEN] = {0};
+-char command[256];
+-char buf[256];
+-FILE *fp;
+ 
+ static int cel_questone_2a_qsfp_sfp_node_read_int(char *path, int *value, int data_len)
+ {
+-- 
+2.36.1
+
