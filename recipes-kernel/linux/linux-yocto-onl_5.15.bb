@@ -2,6 +2,8 @@ KBRANCH ?= "linux-5.15.y"
 
 require linux-yocto-onl.inc
 
+KCONF_BSP_AUDIT_LEVEL = "1"
+
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 LINUX_VERSION ?= "5.15.44"
