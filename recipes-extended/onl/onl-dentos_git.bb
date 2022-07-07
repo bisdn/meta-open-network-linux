@@ -12,8 +12,8 @@ SRCREV_onl ?= "fa38697b85485ba909b0c9c4f8e5e48bfddbd8fd"
 URI_ONL ?= "git://github.com/dentproject/dentOS.git;protocol=https;branch=main"
 
 SRC_URI += " \
-           file://0001-file_uds-silence-unused-result-warnings.patch \
-           file://0002-platform_manager-do-not-ignore-write-return-value.patch \
-           file://0003-file-check-unix-socket-path-is-short-enough.patch \
-           file://0001-tn48m-fix-ignoring-unused-results-warnings.patch \
+           file://onl/0001-file_uds-silence-unused-result-warnings.patch \
+           file://onl/0002-platform_manager-do-not-ignore-write-return-value.patch \
+           file://onl/0003-file-check-unix-socket-path-is-short-enough.patch \
+           file://delta-tn48m/0001-tn48m-fix-ignoring-unused-results-warnings.patch \
 "
