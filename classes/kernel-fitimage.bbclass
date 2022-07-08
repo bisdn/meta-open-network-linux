@@ -1,4 +1,5 @@
-inherit kernel-uboot kernel-artifact-names uboot-sign
+iherit kernel-uboot kernel-artifact-names uboot-sign
+
 
 python __anonymous () {
     kerneltypes = d.getVar('KERNEL_IMAGETYPES') or ""
@@ -458,7 +459,7 @@ fitimage_assemble() {
 	uboot-mkimage \
 		${@'-D "${UBOOT_MKIMAGE_DTCOPTS}"' if len('${UBOOT_MKIMAGE_DTCOPTS}') else ''} \
 		-f ${1} \
-		-B 512 \
+		-B 8192 --rlx \
 		arch/${ARCH}/boot/${2}
 
 	#
