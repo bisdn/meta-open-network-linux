@@ -2,8 +2,8 @@ KBRANCH ?= "dent-linux-5.15.y"
 
 require linux-yocto-onl.inc
 
-# Override FILESEXTRAPATHS_prepend set in linux-yocto-onl.inc
-FILESEXTRAPATHS_prepend := "${THISDIR}/linux-yocto-switchdev-${KBRANCH}:"
+# Override FILESEXTRAPATHS:prepend set in linux-yocto-onl.inc
+FILESEXTRAPATHS:prepend := "${THISDIR}/linux-yocto-switchdev-${KBRANCH}:"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
@@ -32,7 +32,7 @@ SRC_URI += "\
     file://kernel-meta;type=kmeta;name=kernel-meta;destsuffix=kernel-meta \
 "
 
-SRC_URI_append_arm = "\
+SRC_URI:append:arm = "\
     file://arch/arm/boot/dts;subdir=git \
 "
 
