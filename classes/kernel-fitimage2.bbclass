@@ -1,4 +1,4 @@
-iherit kernel-uboot kernel-artifact-names uboot-sign
+inherit kernel-uboot kernel-artifact-names uboot-sign
 
 
 python __anonymous () {
