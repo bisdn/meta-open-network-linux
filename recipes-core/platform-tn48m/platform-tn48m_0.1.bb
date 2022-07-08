@@ -2,9 +2,9 @@ SUMMARY = ""
 LICENSE = "MPL-2.0"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/MPL-2.0;md5=815ca599c9df247a0c7f619bab123dad"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-RPROVIDES_${PN} += " u-boot-default-env"
+RPROVIDES:${PN} += " u-boot-default-env"
 
 inherit systemd
 
@@ -16,7 +16,7 @@ SRC_URI += " \
     file://10-switchdev-net.rules \
 "
 
-FILES_${PN} = " \
+FILES:${PN} = " \
     ${systemd_system_unitdir}/platform-tn48m-init.service \
     ${bindir}/platform-tn48m-init.sh \
     ${sysconfdir}/systemd/network/90-enp.link \
@@ -41,4 +41,4 @@ do_install() {
         install -m 0644 ${WORKDIR}/10-switchdev-net.rules ${D}/etc/udev/rules.d/
 }
 
-SYSTEMD_SERVICE_${PN}_append = "platform-tn48m-init.service"
+SYSTEMD_SERVICE:${PN}:append = "platform-tn48m-init.service"
