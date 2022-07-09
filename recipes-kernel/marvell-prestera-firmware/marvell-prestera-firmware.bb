@@ -11,12 +11,12 @@ LICENSE = "CLOSED"
 # It may take a long time for the artifacts to turn up in the master branch,
 # but the update branches are named predictably and seem to stay long after
 # being merged into master.
-PV = "3.2.1"
+PV = "3.2.2"
 
 PR = "r0"
 
 SRC_URI = "https://github.com/Marvell-switching/dent-artifacts/raw/update-mrvl-fw-${PV}/REPO/stretch/packages/binary-arm64/mrvl-fw-image_${PV}_arm64.deb;subdir=${BP}"
-SRC_URI[sha256sum] = "2959ad8088ee4ef0b8a20820c14ad3e5481bf698a7c348eeb5934307128a1e66"
+SRC_URI[sha256sum] = "3b52c8a32fcf399d68e9909d4df8d8ef254ac999fa6cf4e76f76eb54450e11ab"
 
 inherit bin_package
 
