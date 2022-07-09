@@ -11,7 +11,7 @@ LINUX_VERSION ?= "5.15.11"
 
 # Linux kernel repo
 # Override SRC_URI set in linux-yocto-onl.inc
-SRC_URI = "git://github.com/dentproject/linux.git;protocol=git;branch=${KBRANCH};nocheckout=1;name=machine"
+SRC_URI = "git://github.com/dentproject/linux.git;protocol=https;branch=${KBRANCH};nocheckout=1;name=machine"
 SRCREV_machine ?= "9daada80dd204d5ae25cc9538a68dba2e4cc9764"
 
 # Use commit for kver matching (or close to) LINUX_VERSION
