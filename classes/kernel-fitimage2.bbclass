@@ -628,13 +628,16 @@ fitimage_assemble() {
 
 	fitimage_emit_section_maint $1 fitend
 
+	bbwarn "RLX log 3"
 	#
 	# Step 7: Assemble the image
 	#
 	${UBOOT_MKIMAGE} \
 		${@'-D "${UBOOT_MKIMAGE_DTCOPTS}"' if len('${UBOOT_MKIMAGE_DTCOPTS}') else ''} \
 		-f $1 \
+		-B 8192 --rlx \
 		arch/${ARCH}/boot/$2
+	bbwarn "RLX alignment done"
 
 	#
 	# Step 8: Sign the image and add public key to U-Boot dtb
