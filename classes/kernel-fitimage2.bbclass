@@ -635,7 +635,7 @@ fitimage_assemble() {
 	${UBOOT_MKIMAGE} \
 		${@'-D "${UBOOT_MKIMAGE_DTCOPTS}"' if len('${UBOOT_MKIMAGE_DTCOPTS}') else ''} \
 		-f $1 \
-		-B 8192 --rlx \
+		-B 8192 \
 		arch/${ARCH}/boot/$2
 	bbwarn "RLX alignment done"
 
