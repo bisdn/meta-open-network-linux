@@ -19,9 +19,9 @@ S = "${WORKDIR}/ice-${PV}/src"
 EXTRA_OEMAKE='KSRC="${STAGING_KERNEL_BUILDDIR}" KVER="${KERNEL_VERSION}" INSTALL_MOD_PATH="${D}"'
 
 # Add firmware files that are not included by default
-FILES_${PN} += "/lib/firmware/updates"
+FILES:${PN} += "/lib/firmware/updates"
 
-do_install_append() {
+do_install:append() {
     # Delete files we don't want in the package
     rm -rf ${D}/tmp
     rm -rf ${D}/lib/modules/*/extern-symvers/
