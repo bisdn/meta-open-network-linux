@@ -153,18 +153,18 @@ do_install() {
   install -m 0644 sm/bigcode/modules/cjson/module/inc/cjson/*.h ${D}${includedir}/cjson/
   install -m 0644 sm/infra/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
 
-  # install libonlp-platform shared library (includes AIM.a  AIM_posix.a  BigList.a  cjson.a  cjson_util.a  IOF.a  onlplib.a  x86_64_delta_ag7648.a)
+  # install libonlp-<platform> shared library
   install -m 0755 ${ONLP_DIR}/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${ONL_PLATFORM}.so ${D}${libdir}
   mv ${D}${libdir}/libonlp-${ONL_PLATFORM}.so ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1
   ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-${ONL_PLATFORM}.so
   ln -r -s ${D}${libdir}/libonlp-${ONL_PLATFORM}.so.1 ${D}${libdir}/libonlp-platform.so.1
 
-  # install libonlp shared library (includes TODO)
+  # install libonlp shared library
   install -m 0755 packages/base/any/onlp/builds/onlp/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp.so ${D}${libdir}
   mv ${D}${libdir}/libonlp.so ${D}${libdir}/libonlp.so.1
   ln -r -s ${D}${libdir}/libonlp.so.1 ${D}${libdir}/libonlp.so
 
-  # install libonlp shared library (includes TODO)
+  # install libonlp-platform-defaults shared library
   install -m 0755 packages/base/any/onlp/builds/onlp-platform-defaults/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-platform-defaults.so ${D}${libdir}
   mv ${D}${libdir}/libonlp-platform-defaults.so ${D}${libdir}/libonlp-platform-defaults.so.1
   ln -r -s ${D}${libdir}/libonlp-platform-defaults.so.1 ${D}${libdir}/libonlp-platform-defaults.so
