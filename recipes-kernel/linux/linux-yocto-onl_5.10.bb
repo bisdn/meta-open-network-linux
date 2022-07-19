@@ -1,0 +1,37 @@
+KBRANCH ?= "linux-5.10.y"
+
+require linux-yocto-onl.inc
+
+KCONF_BSP_AUDIT_LEVEL = "1"
+
+LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
+
+LINUX_VERSION ?= "5.10.44"
+# https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.10.y
+SRCREV_machine ?= "2c85ebc57b3e1817b6ce1a6b703928e113a90442"
+
+# Use commit for kver matching (or close to) LINUX_VERSION
+# https://git.yoctoproject.org/yocto-kernel-cache/log/kver?h=yocto-5.10
+SRCREV_meta ?= "764a62c422ceba8cc4acec6a55e5881022b5f5e9"
+
+SRC_URI += "\
+    git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-5.10;destsuffix=kernel-meta \
+    file://bisdn-kmeta;type=kmeta;name=bisdn-kmeta;destsuffix=bisdn-kmeta \
+"
+
+# "Revert" 917043019b46 ("virtio: Add prereqs for tiny") from yocto-kernel-cache
+# as it forces several subsystems like DRM on, which we do not need since none
+# of our devices have a GPU.
+# We cannot use patches for that since patches are applied after parsing meta,
+# so the next best thing is copying a pre-commit version of the file.
+SRC_URI += "\
+    file://kernel-meta;type=kmeta;name=kernel-meta;destsuffix=kernel-meta \
+"
+
+SRC_URI:append:arm = "\
+    file://arch/arm/boot/dts;subdir=git \
+"
+
+DEPENDS += "${@bb.utils.contains('ARCH', 'x86', 'elfutils-native', '', d)}"
+DEPENDS += "openssl-native util-linux-native"
+DEPENDS += "gmp-native libmpc-native"
