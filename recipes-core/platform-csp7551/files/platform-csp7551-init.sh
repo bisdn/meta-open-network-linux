@@ -43,7 +43,6 @@ modprobe -r i2c-i801 || true
 modprobe fpga_driver
 modprobe accton_i2c_cpld
 modprobe x86-64-accton-csp7551-sfp
-modprobe at24_csp7551
 
 echo cpld_csp7551 0x62 > /sys/bus/i2c/devices/i2c-33/new_device
 echo cpld_csp7551 0x64 > /sys/bus/i2c/devices/i2c-34/new_device
