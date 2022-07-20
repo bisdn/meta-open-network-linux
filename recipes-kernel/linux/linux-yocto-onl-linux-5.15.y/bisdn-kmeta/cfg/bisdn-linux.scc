@@ -2,6 +2,7 @@
 
 patch 0001-net-rtnetlink-send-BONDING_INFO-events-down-to-users.patch
 patch 0001-net-ipv6-apply-IFLA_INET6_ADDR_GEN_MODE-immediately.patch
+patch 0001-tun-allow-setting-hwaddr-on-tap-interface-creation.patch
 
 # https://git.yoctoproject.org/yocto-kernel-cache/tree/
 include features/bpf/bpf.scc
