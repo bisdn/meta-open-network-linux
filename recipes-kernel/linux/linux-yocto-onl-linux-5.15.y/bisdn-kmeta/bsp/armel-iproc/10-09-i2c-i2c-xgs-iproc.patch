@@ -1,5 +1,5 @@
 diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index e17790fe35a7..602e25b7ccda 100644
+index fea403431f22..6127e3617868 100644
 --- a/drivers/i2c/busses/Kconfig
 +++ b/drivers/i2c/busses/Kconfig
 @@ -465,6 +465,26 @@ config I2C_BCM_IPROC
@@ -2007,5 +2007,5 @@ index 000000000000..8043bf488c77
 +MODULE_DESCRIPTION("IPROC SMBus Bus Driver");
 +MODULE_LICENSE("GPL");
 -- 
-2.33.0
+2.37.1
 

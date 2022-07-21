@@ -735,5 +735,5 @@ index 000000000000..8fb378ba2907
 +MODULE_DESCRIPTION("Broadcom USB phy driver");
 +MODULE_LICENSE("GPL");
 -- 
-2.33.0
+2.37.1
 

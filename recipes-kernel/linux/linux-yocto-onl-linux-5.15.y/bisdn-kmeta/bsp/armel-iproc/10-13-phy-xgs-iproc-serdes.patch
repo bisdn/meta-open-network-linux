@@ -1,5 +1,5 @@
 diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
-index 902495afcb38..bc3add436d0a 100644
+index 902495afcb38..c6053364aad9 100644
 --- a/drivers/net/phy/Kconfig
 +++ b/drivers/net/phy/Kconfig
 @@ -153,6 +153,19 @@ config BCM_CYGNUS_PHY
@@ -15,7 +15,7 @@ index 902495afcb38..bc3add436d0a 100644
 +
 +config XGS_IPROC_SERDES
 +	tristate "Broadcom XGS iProc SERDES"
-+	depends on MDIO_XGS_IPROC
++	depends on MDIO_BCM_IPROC
 +	help
 +	  Supports HX4/KT2/GH2 SERDES.
 +
@@ -1063,5 +1063,5 @@ index 000000000000..e7258ee107fd
 +#endif /* _XGS_IPROC_SERDES_H_ */
 +
 -- 
-2.33.0
+2.37.1
 

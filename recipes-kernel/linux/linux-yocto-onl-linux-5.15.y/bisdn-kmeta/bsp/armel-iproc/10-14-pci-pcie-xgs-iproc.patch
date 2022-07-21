@@ -573,5 +573,5 @@ index 000000000000..0168f24fbb19
 +MODULE_DESCRIPTION("Broadcom XGS iProc PCIe driver");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.33.0
+2.37.1
 
