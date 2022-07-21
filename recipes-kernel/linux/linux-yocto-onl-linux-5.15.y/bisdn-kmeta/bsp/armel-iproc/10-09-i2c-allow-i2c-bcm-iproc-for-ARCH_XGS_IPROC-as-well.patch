@@ -1,0 +1,28 @@
+From e16adcb671e9a9a437b115cf76180e872d22b4a9 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 21 Jul 2022 13:28:03 +0200
+Subject: [PATCH 09/22] i2c: allow i2c-bcm-iproc for ARCH_XGS_IPROC as well
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ drivers/i2c/busses/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index fea403431f22..813e9fe82a95 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -456,8 +456,8 @@ config I2C_BCM2835
+ 
+ config I2C_BCM_IPROC
+ 	tristate "Broadcom iProc I2C controller"
+-	depends on ARCH_BCM_IPROC || COMPILE_TEST
+-	default ARCH_BCM_IPROC
++	depends on ARCH_BCM_IPROC || ARCH_XGS_IPROC || COMPILE_TEST
++	default ARCH_BCM_IPROC || ARCH_XGS_IPROC
+ 	select I2C_SLAVE
+ 	help
+ 	  If you say yes to this option, support will be included for the
+-- 
+2.37.1
+
