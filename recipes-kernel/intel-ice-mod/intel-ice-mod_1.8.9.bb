@@ -10,8 +10,8 @@ PR = "r0"
 
 inherit module
 
-SRC_URI =   "https://downloads.sourceforge.net/project/e1000/ice%20stable/${PV}/ice-${PV}.tar.gz"
-SRC_URI[md5sum] = "f13f8894329c4be389181f7ff72de58c"
+SRC_URI =   "https://sourceforge.net/projects/e1000/files/ice%20stable/${PV}/ice-${PV}.tar.gz"
+SRC_URI[md5sum] = "fbb148b503ebe09c55dffeaf90e393ea"
 
 S = "${WORKDIR}/ice-${PV}/src"
 
