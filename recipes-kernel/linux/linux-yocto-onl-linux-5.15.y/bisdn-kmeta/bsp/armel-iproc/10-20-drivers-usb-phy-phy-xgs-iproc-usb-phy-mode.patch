@@ -26,5 +26,5 @@ index 8fb378ba2907..bbaae8e05612 100644
  		gpio_pin = of_get_named_gpio(dev->of_node, "usbdev-gpio", 0);
  
 -- 
-2.33.0
+2.37.1
 

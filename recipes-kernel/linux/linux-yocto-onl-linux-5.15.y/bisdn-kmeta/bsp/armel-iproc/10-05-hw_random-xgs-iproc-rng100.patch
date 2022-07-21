@@ -1,5 +1,5 @@
 diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
-index 239eca4d6805..7b273e5283da 100644
+index 650c7d918080..dd30a57df985 100644
 --- a/drivers/char/hw_random/Kconfig
 +++ b/drivers/char/hw_random/Kconfig
 @@ -111,6 +111,18 @@ config HW_RANDOM_IPROC_RNG200
@@ -251,5 +251,5 @@ index 000000000000..5a37f3285a4c
 +MODULE_DESCRIPTION("iProc RNG100 Random Number Generator driver");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.33.0
+2.37.1
 

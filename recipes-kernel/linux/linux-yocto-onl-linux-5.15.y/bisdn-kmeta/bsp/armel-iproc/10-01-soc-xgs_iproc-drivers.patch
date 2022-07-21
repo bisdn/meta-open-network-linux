@@ -945,10 +945,10 @@ index 000000000000..ea4e2bb80aeb
 +}
 diff --git a/drivers/soc/bcm/xgs_iproc/xgs-iproc-misc-setup.c b/drivers/soc/bcm/xgs_iproc/xgs-iproc-misc-setup.c
 new file mode 100644
-index 000000000000..1fee0241ee0a
+index 000000000000..23c5142b69e1
 --- /dev/null
 +++ b/drivers/soc/bcm/xgs_iproc/xgs-iproc-misc-setup.c
-@@ -0,0 +1,88 @@
+@@ -0,0 +1,73 @@
 +/*
 + * Copyright (C) 2016 Broadcom Corporation
 + *
@@ -1019,21 +1019,6 @@ index 000000000000..1fee0241ee0a
 +	iproc_wrap_ctrl_base = of_iomap(np, 0);
 +	if (!iproc_wrap_ctrl_base)
 +		return -ENOMEM;
-+
-+	/* Enable AMAC SERDES MDIO SEL/CTRL for HX4/KT2 */
-+	if (!of_property_read_u32_index(np, "amac-serdes-mdio-ctrl-sel", 0,
-+		&wrap_misc_offset)) {
-+		of_property_read_u32_index(np, "amac-serdes-mdio-ctrl-sel", 1,
-+					&serdes_ctrl_sel);
-+		of_property_read_u32_index(np, "amac-serdes-mdio-ctrl-sel", 2,
-+					&serdes_mdio_sel);
-+
-+		wrap_misc_reg = (void __iomem *)(iproc_wrap_ctrl_base +
-+						wrap_misc_offset);
-+		tmp = readl(wrap_misc_reg);
-+		tmp |= (1 << serdes_ctrl_sel) | (1 << serdes_mdio_sel);
-+		writel(tmp, wrap_misc_reg);
-+	}
 +
 +	return 1;
 +}
@@ -1243,5 +1228,5 @@ index 000000000000..7d38a51c2221
 +
 +#endif /* XGS_IPROC_MISC_SETUP_H */
 -- 
-2.33.0
+2.37.1
 

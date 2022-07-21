@@ -20,5 +20,5 @@ index 6162a070a410..a1847c83c9ff 100644
  			if (s->mm)
  				set_section_perms(perms, n, true, s->mm);
 -- 
-2.33.0
+2.37.1
 

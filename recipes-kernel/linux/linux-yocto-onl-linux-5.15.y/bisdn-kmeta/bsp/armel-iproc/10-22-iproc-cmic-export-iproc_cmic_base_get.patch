@@ -1,7 +1,7 @@
-From 7753e43eea4908446efe9f7635ebaff652bdc8af Mon Sep 17 00:00:00 2001
+From b36f396ed1cbafe54c57b16552ff4c31250cc227 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 9 Oct 2019 12:33:40 +0000
-Subject: [PATCH 1/2] iproc-cmic: export iproc_cmic_base_get
+Subject: [PATCH 22/23] iproc-cmic: export iproc_cmic_base_get
 
 To allow the OF-DPA switch driver to use it, export the function so it
 becomes available to drivers built as module.
@@ -53,5 +53,5 @@ index 59a4f7277238..66eb2fb1ab29 100644
  
  #endif /* _IPROC_CMIC_H */
 -- 
-2.33.0
+2.37.1
 

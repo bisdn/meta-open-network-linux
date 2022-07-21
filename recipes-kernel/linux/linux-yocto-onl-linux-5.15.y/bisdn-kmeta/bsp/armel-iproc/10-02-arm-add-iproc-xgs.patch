@@ -1,5 +1,5 @@
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index dcf2df6da98f..c502700c81fc 100644
+index 4ebd512043be..a7b3b0004633 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
 @@ -621,6 +621,8 @@ source "arch/arm/mach-integrator/Kconfig"
@@ -12,7 +12,7 @@ index dcf2df6da98f..c502700c81fc 100644
  
  source "arch/arm/mach-keystone/Kconfig"
 diff --git a/arch/arm/Makefile b/arch/arm/Makefile
-index 847c31e7c368..7cd20e7d4245 100644
+index fa45837b8065..294acd981598 100644
 --- a/arch/arm/Makefile
 +++ b/arch/arm/Makefile
 @@ -218,6 +218,7 @@ machine-$(CONFIG_ARCH_U8500)		+= ux500
@@ -24,10 +24,10 @@ index 847c31e7c368..7cd20e7d4245 100644
  machine-$(CONFIG_PLAT_SPEAR)		+= spear
  
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 7e0934180724..a55ebc4346f4 100644
+index 27ca1ca6e827..c102ae82f1a3 100644
 --- a/arch/arm/boot/dts/Makefile
 +++ b/arch/arm/boot/dts/Makefile
-@@ -1498,3 +1498,21 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+@@ -1499,3 +1499,21 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
  	aspeed-bmc-portwell-neptune.dtb \
  	aspeed-bmc-quanta-q71l.dtb \
  	aspeed-bmc-supermicro-x11spi.dtb
@@ -900,10 +900,10 @@ index 000000000000..35cd1896a318
 +};
 diff --git a/arch/arm/boot/dts/bcm-helix4.dtsi b/arch/arm/boot/dts/bcm-helix4.dtsi
 new file mode 100644
-index 000000000000..ee347c923744
+index 000000000000..fdc1a3567376
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-helix4.dtsi
-@@ -0,0 +1,483 @@
+@@ -0,0 +1,512 @@
 +/*
 + *  BSD LICENSE
 + *
@@ -1202,30 +1202,36 @@ index 000000000000..ee347c923744
 +			status = "disabled";
 +		};
 +
-+		mdio_int: mdio_int@18032000 {
-+			compatible = "brcm,iproc-ccb-mdio";
-+			reg = <0x18032000 0x1000>,
-+				<0x1803fc3c 0x4>;
-+			reg-names = "mdio-base", "iproc-mdio-enable";
-+			iproc-mdio-sel-bit = <4>;
++		mdio: mdio@18032000 {
++			compatible = "brcm,iproc-mdio";
++			reg = <0x18032000 0x8>;
 +			#address-cells = <1>;
 +			#size-cells = <0>;
-+			bus-type = "internal";
 +			clocks = <&iproc_apb_clk>;
-+			status = "disabled";
 +		};
 +
-+		mdio_ext: mdio_ext@18032000 {
-+			compatible = "brcm,iproc-ccb-mdio";
-+			reg = <0x18032000 0x1000>,
-+				<0x1803fc3c 0x4>;
-+			reg-names = "mdio-base", "iproc-mdio-enable";
-+			iproc-mdio-sel-bit = <4>;
++		mdio-mux@18032000 {
++			compatible = "mdio-mux-mmioreg", "mdio-mux";
++			reg = <0x18032000 0x4>;
++			mux-mask = <0x200>;
 +			#address-cells = <1>;
 +			#size-cells = <0>;
-+			bus-type = "external";
-+			clocks = <&iproc_apb_clk>;
-+			status = "disabled";
++			mdio-parent-bus = <&mdio>;
++
++			pinctrl-names = "default";
++			pinctrl-0 = <&iproc_mdio_sel_pins>;
++
++			mdio_int: mdio@0 {
++				reg = <0x0>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++			};
++
++			mdio_ext: mdio@200 {
++				reg = <0x200>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++			};
 +		};
 +
 +		hwrng: hwrng@18033000 {
@@ -1354,9 +1360,32 @@ index 000000000000..ee347c923744
 +		compatible = "brcm,iproc-wrap-ctrl";
 +		#address-cells = <1>;
 +		#size-cells = <1>;
-+		reg = <0x1803fc00 0x100>;
-+		/* offset to 0x1803fc00, ctrl bit, mdio bit */
-+		amac-serdes-mdio-ctrl-sel = <0x3c>, <0x2>, <0x3>;
++		reg = <0x1803fc00 0x38>;
++	};
++
++	wrap_misc_control: pinmux@1803fc3c {
++		compatible = "pinctrl-single";
++		reg = <0x1803fc3c 4>;   /* Single register */
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-single,bit-per-mux;
++		pinctrl-single,register-width = <32>;
++		pinctrl-single,function-mask = <0x1c>;
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&quad_serdes_ctrl_sel_pins>, <&quad_serdes_mdio_sel_pins>;
++
++		quad_serdes_ctrl_sel_pins: pinmux_quad_serdes_ctrl_sel_pins {
++			pinctrl-single,bits = <0x00 0x04 0x04>;
++		};
++
++		quad_serdes_mdio_sel_pins: pinmux_quad_serdes_mdio_sel_pins {
++			pinctrl-single,bits = <0x00 0x08 0x08>;
++		};
++
++		iproc_mdio_sel_pins: pinmux_iproc_mdio_sel_pins {
++			pinctrl-single,bits = <0x00 0x10 0x10>;
++		};
 +	};
 +
 +	iproc_idm: iproc_idm@18100000 {
@@ -6329,5 +6358,5 @@ index 000000000000..4f1527fe46bd
 +#endif
 \ No newline at end of file
 -- 
-2.33.0
+2.37.1
 

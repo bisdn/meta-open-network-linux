@@ -27,5 +27,5 @@ index d7d628214b85..f143abb9f714 100644
  	pr_debug("%s: ARM PLL rate: %lu. parent rate: %lu\n", __func__,
  		 pll->rate, parent_rate);
 -- 
-2.33.0
+2.37.1
 

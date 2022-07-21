@@ -17,7 +17,7 @@ index 56e0fb07aec7..5bf230e1889d 100644
  	  Say Y here if you want to use the Broadcom iProc Gigabit Ethernet
  	  controller through the generic platform interface
 diff --git a/drivers/net/ethernet/broadcom/bgmac-platform.c b/drivers/net/ethernet/broadcom/bgmac-platform.c
-index df8ff839cc62..78b6eb0676a9 100644
+index 94eb3a42158e..f86bb6b803b1 100644
 --- a/drivers/net/ethernet/broadcom/bgmac-platform.c
 +++ b/drivers/net/ethernet/broadcom/bgmac-platform.c
 @@ -19,6 +19,12 @@
@@ -176,7 +176,7 @@ index df8ff839cc62..78b6eb0676a9 100644
  	if (!phy_dev) {
  		dev_err(bgmac->dev, "PHY connection failed\n");
  		return -ENODEV;
-@@ -274,6 +392,8 @@ static const struct dev_pm_ops bgmac_pm_ops = {
+@@ -283,6 +401,8 @@ static const struct dev_pm_ops bgmac_pm_ops = {
  static const struct of_device_id bgmac_of_enet_match[] = {
  	{.compatible = "brcm,amac",},
  	{.compatible = "brcm,nsp-amac",},
@@ -189,14 +189,13 @@ diff --git a/drivers/net/ethernet/broadcom/bgmac.c b/drivers/net/ethernet/broadc
 index fe4d99abd548..f779338eb60b 100644
 --- a/drivers/net/ethernet/broadcom/bgmac.c
 +++ b/drivers/net/ethernet/broadcom/bgmac.c
-@@ -18,6 +18,13 @@
+@@ -18,6 +18,12 @@
  #include <net/dsa.h>
  #include "bgmac.h"
  
 +#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
 +#include <linux/of_mdio.h>
 +#include <linux/phy/xgs_iproc_serdes.h>
-+extern bool xgs_mdio_bus_release(void);
 +extern void amac_serdes_init(struct bgmac *, struct phy_device *);
 +#endif
 +
@@ -211,24 +210,7 @@ index fe4d99abd548..f779338eb60b 100644
  	bgmac_chip_intrs_on(bgmac);
  
  	bgmac_enable(bgmac);
-@@ -1195,10 +1203,33 @@ static int bgmac_open(struct net_device *net_dev)
- 	}
- 	napi_enable(&bgmac->napi);
- 
-+	if (IS_ENABLED(CONFIG_ARCH_XGS_IPROC)) {
-+		/* Reset emulated MIB statistics to zero */
-+		memset(&bgmac->estats, 0, sizeof(struct bgmac_ethtool_stats));
-+
-+		/*
-+		 * phy_state_machine reschedule could be stopped due to the code
-+		 * change in phy.c to handle MDIO bus sharing between iProc and
-+		 * CIMCd of HX4/KT2.
-+		 */
-+		if (xgs_mdio_bus_release())
-+			phy_start_machine(net_dev->phydev);
-+	}
-+
- 	phy_start(net_dev->phydev);
+@@ -1195,6 +1203,16 @@ static int bgmac_open(struct net_device *net_dev)
  
  	netif_start_queue(net_dev);
  
@@ -490,5 +472,5 @@ index 110088e662ea..f1de44b5a7b9 100644
  	void (*write)(struct bgmac *bgmac, u16 offset, u32 value);
  	u32 (*idm_read)(struct bgmac *bgmac, u16 offset);
 -- 
-2.33.0
+2.37.1
 

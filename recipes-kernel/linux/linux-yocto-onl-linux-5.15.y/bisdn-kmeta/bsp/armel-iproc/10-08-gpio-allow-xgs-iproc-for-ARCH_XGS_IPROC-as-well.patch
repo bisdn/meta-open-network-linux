@@ -1,5 +1,5 @@
 diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index fae5141251e5..eab60bcae96e 100644
+index 947474f6abb4..c5cb83cbf93f 100644
 --- a/drivers/gpio/Kconfig
 +++ b/drivers/gpio/Kconfig
 @@ -187,10 +187,10 @@ config GPIO_BCM_KONA
@@ -16,5 +16,5 @@ index fae5141251e5..eab60bcae96e 100644
  	  Say yes here to enable GPIO support for Broadcom XGS iProc SoCs.
  
 -- 
-2.33.0
+2.37.1
 
