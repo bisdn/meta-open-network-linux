@@ -1,7 +1,7 @@
-From 35e9f9a52a3c961285bf8c8c2cf705ca40cda241 Mon Sep 17 00:00:00 2001
+From 7f7061725723354d27d0fb766dc0270f8e5eabe9 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 9 Oct 2019 12:38:47 +0000
-Subject: [PATCH 23/23] iproc-cmic: get and export irq
+Subject: [PATCH 22/22] iproc-cmic: get and export irq
 
 To allow the OF-DPA driver to use the irq, get and export it.
 

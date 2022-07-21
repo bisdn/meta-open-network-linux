@@ -14,7 +14,7 @@ patch 10-05-hw_random-xgs-iproc-rng100.patch
 patch 10-06-clk-clk-iproc-armpll-avoid-overflow.patch
 patch 10-07-clk-clk-xgs-iproc.patch
 patch 10-08-gpio-allow-xgs-iproc-for-ARCH_XGS_IPROC-as-well.patch
-patch 10-09-i2c-i2c-xgs-iproc.patch
+patch 10-09-i2c-allow-i2c-bcm-iproc-for-ARCH_XGS_IPROC-as-well.patch
 patch 10-10-mtd-brcmnand-ignore-warning.patch
 patch 10-11-bgmac-xgs-iproc-changes.patch
 patch 10-12-mdio-allow-mdio-bcm-iproc-for-ARCH_XGS_IPROC-as-well.patch
@@ -26,9 +26,8 @@ patch 10-17-usb-udc-xgs-iproc-udc.patch
 patch 10-18-usb-phy-phy-xgs-iproc.patch
 patch 10-19-watchdog-sp805_wdt-clear-bootstatus.patch
 patch 10-20-drivers-usb-phy-phy-xgs-iproc-usb-phy-mode.patch
-patch 10-21-drivers-i2c-busses-xgs_iproc_smbus-clk-freq.patch
-patch 10-22-iproc-cmic-export-iproc_cmic_base_get.patch
-patch 10-23-iproc-cmic-get-and-export-irq.patch
+patch 10-21-iproc-cmic-export-iproc_cmic_base_get.patch
+patch 10-22-iproc-cmic-get-and-export-irq.patch
 
 include cfg/bisdn-linux.scc
 
