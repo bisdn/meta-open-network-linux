@@ -39,6 +39,7 @@ typedef uint64_t phys_addr_t;
 
 #define BF_IOC_MAGIC 'b'
 #define BF_TBUS_MSIX_INDICES_MAX   3
+#define BF_TBUS_MSIX_INDICES_MIN   1  
 
 typedef struct bf_dma_bus_map_s
 {
