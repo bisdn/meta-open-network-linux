@@ -16,7 +16,6 @@ FILES:${PN} = " \
     ${bindir}/platform-csp7551-init.sh \
 "
 
-
 do_install() {
         install -d ${D}${systemd_system_unitdir}
         install -m 0644 ${WORKDIR}/platform-csp7551-init.service ${D}${systemd_system_unitdir}
