@@ -6,13 +6,13 @@ KCONF_BSP_AUDIT_LEVEL = "1"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-LINUX_VERSION ?= "5.15.46"
+LINUX_VERSION ?= "5.15.48"
 # https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-5.15.y
-SRCREV_machine ?= "aed23654e8ed2cc776ae26a87ef773ff38b48d7f"
+SRCREV_machine ?= "e1dd58c995daf8b632344b61df9d3cbed26454dc"
 
 # Use commit for kver matching (or close to) LINUX_VERSION
 # https://git.yoctoproject.org/yocto-kernel-cache/log/kver?h=yocto-5.15
-SRCREV_meta ?= "6b9da9c15f1c04c1b22ef4b10d68303df2d4a470"
+SRCREV_meta ?= "8828a8e63fc50647e3f714a8a87a95c6d3e5b391"
 
 SRC_URI += "\
     git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-5.15;destsuffix=kernel-meta \
