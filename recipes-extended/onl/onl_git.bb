@@ -24,6 +24,7 @@ SRC_URI += " \
            file://onl/0008-onlpm-add-an-argument-for-just-printing-the-builddir.patch \
            file://onl/0009-onlpm-allow-overriding-the-dist-codename-from-enviro.patch \
            file://onl/0010-tools-replace-yaml.load-with-yaml.full_load.patch \
+           file://onl/0011-optoe-allow-compilation-with-linux-5.5-and-newer.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
@@ -47,6 +48,12 @@ SRC_URI += " \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
+"
+
+FILES:${PN} = " \
+  ${bindir}/onlpd \
+  ${bindir}/onlpdump \
+  ${libdir}/libonlp*.so.1 \
 "
 
 ONL_PLATFORM_SUPPORT:arm = " \

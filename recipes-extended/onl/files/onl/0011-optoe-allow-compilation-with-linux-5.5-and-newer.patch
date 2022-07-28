@@ -1,0 +1,67 @@
+From 062e0d9119d029deb5aedc0fd54bba63f6e89fa9 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 20 May 2022 10:44:58 +0200
+Subject: [PATCH] optoe: allow compilation with linux 5.5 and newer
+
+i2c_new_dummy was dropped in linux in favour of i2c_new_dummy_device,
+which was introduced in 5.3.
+
+The main difference is that i2c_new_dummy_device returns a proper error
+code as ERR_PTR, instead of just NULL, if it fails.
+
+To keep the code simple, just check for both, and set optoe[1]->client
+to NULL in the error case, even if it is redundant for older kernels.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ packages/base/any/kernels/modules/optoe.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/packages/base/any/kernels/modules/optoe.c b/packages/base/any/kernels/modules/optoe.c
+index 16287fdc5114..464a69326be1 100644
+--- a/packages/base/any/kernels/modules/optoe.c
++++ b/packages/base/any/kernels/modules/optoe.c
+@@ -125,6 +125,7 @@
+ #include <linux/sysfs.h>
+ #include <linux/jiffies.h>
+ #include <linux/i2c.h>
++#include <linux/version.h>
+ 
+ #ifdef EEPROM_CLASS
+ #include <linux/eeprom_class.h>
+@@ -860,10 +861,15 @@ static ssize_t set_dev_class(struct device *dev,
+ 		/* SFP family */
+ 		/* if it doesn't exist, create 0x51 i2c address */
+ 		if (!optoe->client[1]) {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,3,0)
++			optoe->client[1] = i2c_new_dummy_device(client->adapter, 0x51);
++#else
+ 			optoe->client[1] = i2c_new_dummy(client->adapter, 0x51);
+-			if (!optoe->client[1]) {
++#endif
++			if (IS_ERR_OR_NULL(optoe->client[1])) {
+ 				dev_err(&client->dev,
+ 					"address 0x51 unavailable\n");
++				optoe->client[1] = NULL;
+ 				mutex_unlock(&optoe->lock);
+ 				return -EADDRINUSE;
+ 			}
+@@ -1095,9 +1101,14 @@ static int optoe_probe(struct i2c_client *client,
+ 
+ 	/* SFF-8472 spec requires that the second I2C address be 0x51 */
+ 	if (num_addresses == 2) {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,3,0)
++		optoe->client[1] = i2c_new_dummy_device(client->adapter, 0x51);
++#else
+ 		optoe->client[1] = i2c_new_dummy(client->adapter, 0x51);
+-		if (!optoe->client[1]) {
++#endif
++		if (IS_ERR_OR_NULL(optoe->client[1])) {
+ 			dev_err(&client->dev, "address 0x51 unavailable\n");
++			optoe->client[1] = NULL;
+ 			err = -EADDRINUSE;
+ 			goto err_struct;
+ 		}
+-- 
+2.36.1
+

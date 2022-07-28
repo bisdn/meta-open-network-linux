@@ -22,7 +22,7 @@ SRC_URI = "${URI_ONL};name=onl \
            file://onlpd.service \
 "
 
-inherit systemd python3native
+inherit systemd python3native module-base kernel-module-split
 
 SYSTEMD_SERVICE:${PN} = "onlpd.service"
 SYSTEMD_AUTO_ENABLE = "enable"
@@ -118,6 +118,19 @@ do_compile() {
   V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds alltargets
   V=1 VERBOSE=1 oe_runmake -C packages/base/any/onlp/builds/onlpd alltargets
 
+  # there is no package for the generic modules, so call kmodbuild.sh directly.
+  # It will create the modules in `pwd`, so let's call it in its own directory
+  mkdir -p ${S}/onl-modules
+  cd ${S}/onl-modules
+
+  # emerson700 requires extensive changes to build on newer kernels, so skip it
+  mods="$(find ${S}/packages/base/any/kernels/modules -iname '*.c' -a ! -iname emerson700.c)"
+
+  # "onl/onl/common" is the target path that ONL uses when building the modules
+  # in the context of the kernel build
+  ARCH=${TARGET_ARCH} ${S}/tools/scripts/kmodbuild.sh "${STAGING_KERNEL_BUILDDIR}" "$mods" "onl/onl/common"
+  cd -
+
   for platform in ${ONL_PLATFORM_SUPPORT}; do
       # get the path to the platform
       ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${platform}:${ONL_BUILD_ARCH})
@@ -136,7 +149,8 @@ do_install() {
     ${D}${includedir}/cjson \
     ${D}${includedir}/onlp \
     ${D}${includedir}/onlplib \
-    ${D}${libdir}
+    ${D}${libdir} \
+    ${D}${nonarch_base_libdir}/modules
 
 
   # install onlpdump
@@ -150,6 +164,10 @@ do_install() {
   install -m 0644 sm/bigcode/modules/IOF/module/inc/IOF/*.h ${D}${includedir}/IOF/
   install -m 0644 sm/bigcode/modules/cjson/module/inc/cjson/*.h ${D}${includedir}/cjson/
   install -m 0644 sm/infra/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
+
+  # install base kernel modules
+  mkdir -p ${D}${nonarch_base_libdir}/modules
+  cp -r onl-modules/lib/modules ${D}${nonarch_base_libdir}
 
   for platform in ${ONL_PLATFORM_SUPPORT}; do
       # get the path to the platform
