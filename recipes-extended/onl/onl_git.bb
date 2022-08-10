@@ -25,6 +25,7 @@ SRC_URI += " \
            file://onl/0009-onlpm-allow-overriding-the-dist-codename-from-enviro.patch \
            file://onl/0010-tools-replace-yaml.load-with-yaml.full_load.patch \
            file://onl/0011-optoe-allow-compilation-with-linux-5.5-and-newer.patch \
+           file://onl/0012-kmodbuild.sh-don-t-treat-undefined-symbols-as-errors.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
