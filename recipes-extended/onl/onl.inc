@@ -137,6 +137,13 @@ do_compile() {
 
       V=1 VERBOSE=1 oe_runmake -C ${ONLP_DIR}/builds/lib alltargets
   done
+
+  if [ "${ONL_BUILD_PLATFORM_MODULES}" != "0" ]; then
+      for vendor in ${ONL_MODULE_VENDORS}; do
+          MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-vendor-${vendor}-modules:${ONL_BUILD_ARCH})
+          V=1 VERBOSE=1 oe_runmake -C ${MODULES_DIR}/builds modules ARCH=${TARGET_ARCH} KERNELS=${STAGING_KERNEL_BUILDDIR}
+      done
+  fi
 }
 
 do_install() {
@@ -179,6 +186,14 @@ do_install() {
       mv ${D}${libdir}/libonlp-${baseplatform}.so ${D}${libdir}/libonlp-${baseplatform}.so.1
       ln -r -s ${D}${libdir}/libonlp-${baseplatform}.so.1 ${D}${libdir}/libonlp-${baseplatform}.so
   done
+
+  # install vendor modules
+  if [ "${ONL_BUILD_PLATFORM_MODULES}" != "0" ]; then
+      for vendor in ${ONL_MODULE_VENDORS}; do
+          MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-vendor-${vendor}-modules:${ONL_BUILD_ARCH})
+          cp -r ${MODULES_DIR}/builds/${nonarch_base_libdir}/modules ${D}${nonarch_base_libdir}
+      done
+  fi
 
   # install libonlp shared library
   install -m 0755 packages/base/any/onlp/builds/onlp/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp.so ${D}${libdir}

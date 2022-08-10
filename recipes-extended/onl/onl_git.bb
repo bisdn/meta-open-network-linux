@@ -80,3 +80,10 @@ ONL_PLATFORM_SUPPORT:x86-64 = " \
     x86-64-delta-ag5648-r0 \
     x86-64-delta-ag7648-r0 \
 "
+
+# vendors for which we build common vendor modules
+ONL_MODULE_VENDORS:arm = " \
+"
+
+ONL_MODULE_VENDORS:x86-64 = " \
+"
