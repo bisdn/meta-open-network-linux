@@ -136,6 +136,14 @@ do_compile() {
       ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${platform}:${ONL_BUILD_ARCH})
 
       V=1 VERBOSE=1 oe_runmake -C ${ONLP_DIR}/builds/lib alltargets
+
+      if [ "${ONL_BUILD_PLATFORM_MODULES}" != "0" ]; then
+          # get the path to the platform modules
+          baseplatform=${platform%-r*}
+
+          MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-platform-modules-${baseplatform}:${ONL_BUILD_ARCH})
+          V=1 VERBOSE=1 oe_runmake -C ${MODULES_DIR}/builds modules ARCH=${TARGET_ARCH} KERNELS=${STAGING_KERNEL_BUILDDIR}
+      fi
   done
 
   if [ "${ONL_BUILD_PLATFORM_MODULES}" != "0" ]; then
@@ -185,6 +193,12 @@ do_install() {
       install -m 0755 ${ONLP_DIR}/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${baseplatform}.so ${D}${libdir}
       mv ${D}${libdir}/libonlp-${baseplatform}.so ${D}${libdir}/libonlp-${baseplatform}.so.1
       ln -r -s ${D}${libdir}/libonlp-${baseplatform}.so.1 ${D}${libdir}/libonlp-${baseplatform}.so
+
+      if [ "${ONL_BUILD_PLATFORM_MODULES}" != "0" ]; then
+          # install platform modules
+          MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-platform-modules-${baseplatform}:${ONL_BUILD_ARCH})
+          cp -r ${MODULES_DIR}/builds/${nonarch_base_libdir}/modules ${D}${nonarch_base_libdir}
+      fi
   done
 
   # install vendor modules
