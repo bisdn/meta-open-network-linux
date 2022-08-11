@@ -1,0 +1,41 @@
+Upstream-Status: Inappropriate [code not upstream]
+
+From c58359a82a476ff378ce2bca6248d074a03d4d3e Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 7 Nov 2019 16:19:13 +0100
+Subject: [PATCH 5/8] i2c-mux-setting-mod: add match for newer coreboot
+
+Newer(?) coreboot identifies itself as DNI/AG7648, which isn't matched
+by the current code, causing no i2c devices being created.
+
+Add a new match to make it work again.
+
+Fixes Basebox #229.
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c          | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+index ac0427abffff..b4fc055d20d9 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -397,6 +397,15 @@ static const struct dmi_system_id delta_switch_dmi_table[] __initconst = {
+ 			},
+ 		.driver_data = (void *)&delta_ag7648,
+ 	},
++	{
++		.ident = "Delta AG7648 (DNI)",
++		.matches =
++			{
++				DMI_MATCH(DMI_SYS_VENDOR, "DNI"),
++				DMI_MATCH(DMI_PRODUCT_NAME, "AG7648"),
++			},
++		.driver_data = (void *)&delta_ag7648,
++	},
+ 	{
+ 		.ident = "Delta AG7648 (OEM)",
+ 		.matches =
+-- 
+2.37.1
+

@@ -1,0 +1,37 @@
+Upstream-Status: Inappropriate [code not upstream]
+
+From 8207ae9769d63f198e234be44673af7f97793cdb Mon Sep 17 00:00:00 2001
+From: Tobias Jungel <tobias.jungel@bisdn.de>
+Date: Wed, 10 Oct 2018 13:37:07 +0200
+Subject: [PATCH 2/8] x86-64-delta-ag7648-i2c-mux-setting.ko: added additional
+ vendor
+
+Delta seems to have different settings for this. Added OEM vendor
+as well
+---
+ .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c          | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+index 36f03af55458..3fe38522dd8d 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -379,6 +379,15 @@ static const struct dmi_system_id delta_switch_dmi_table[] __initconst = {
+ 			},
+ 		.driver_data = (void *)&delta_ag7648,
+ 	},
++	{
++		.ident = "Delta AG7648 (OEM)",
++		.matches =
++			{
++				DMI_MATCH(DMI_SYS_VENDOR, "OEM"),
++				DMI_MATCH(DMI_PRODUCT_NAME, "AG-7648PL"),
++			},
++		.driver_data = (void *)&delta_ag7648,
++	},
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(dmi, delta_switch_dmi_table);
+-- 
+2.37.1
+

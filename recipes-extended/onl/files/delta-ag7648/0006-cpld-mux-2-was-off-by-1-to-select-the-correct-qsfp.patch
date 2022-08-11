@@ -1,0 +1,29 @@
+Upstream-Status: Inappropriate [code not upstream]
+
+From 281f0a5d92de6283c5b3c438d3a04095c67328f0 Mon Sep 17 00:00:00 2001
+From: Tobias Jungel <tobias.jungel@bisdn.de>
+Date: Wed, 19 Dec 2018 22:43:23 +0100
+Subject: [PATCH 4/8] cpld mux 2 was off by 1 to select the correct qsfp
+
+---
+ .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c               | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+index 48a7d0e44a3d..ac0427abffff 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -267,8 +267,8 @@ static struct i2c_mux_cpld_platform_data delta_switch_ag7648_cpld1 = {
+ };
+ 
+ // TODO mark as __initdata and copy like peripherials
+-static const u8 delta_switch_ag7648_cpld2_values[] = { 0x01, 0x02, 0x03,
+-						       0x04, 0x05, 0x06 };
++static const u8 delta_switch_ag7648_cpld2_values[] = { 0x00, 0x01, 0x02,
++						       0x03, 0x04, 0x05 };
+ 
+ // TODO mark as __initdata and copy like peripherials
+ static struct i2c_mux_cpld_platform_data delta_switch_ag7648_cpld2 = {
+-- 
+2.37.1
+

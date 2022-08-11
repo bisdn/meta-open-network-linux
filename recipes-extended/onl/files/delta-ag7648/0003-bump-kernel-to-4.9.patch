@@ -1,0 +1,1434 @@
+Upstream-Status: Unsubmitted [needs cleanup, split, explanation]
+
+From 0a6a1ebe1393378a70970e799f8991166b079107 Mon Sep 17 00:00:00 2001
+From: Tobias Jungel <tobias.jungel@bisdn.de>
+Date: Tue, 18 Sep 2018 13:57:36 +0200
+Subject: [PATCH 1/8] bump kernel to 4.9
+
+* add x86-64-delta-ag7648-i2c-mux-setting module to initiate all i2c bus
+devices
+* port modules to kernel 4.9
+---
+ .../ag7648/x86-64-delta-ag7648-cpld-mux-1.c    | 289 +++++-----
+ .../ag7648/x86-64-delta-ag7648-cpld-mux-2.c    | 417 +++++++-------
+ .../x86-64-delta-ag7648-i2c-mux-setting.c      | 516 ++++++++++++++++++
+ 3 files changed, 836 insertions(+), 386 deletions(-)
+ create mode 100644 packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
+index 2f5be1588f1e..2b4911ad9b0d 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
+@@ -1,96 +1,67 @@
+ /*
+- * An I2C multiplexer dirver for delta ag7648 CPLD
+  *
+- * Copyright (C) 2015 Delta Technology Corporation.
+- * Brandon Chuang <brandon_chuang@delta.com.tw>
++ * Copyright (C) 2017 Delta Networks, Inc.
+  *
+- * This module supports the delta cpld that hold the channel select
+- * mechanism for other i2c slave devices, such as SFP.
+- * This includes the:
+- *	 Delta ag7648c CPLD1/CPLD2/CPLD3
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
+  *
+- * Based on:
+- *	pca954x.c from Kumar Gala <galak@kernel.crashing.org>
+- * Copyright (C) 2006
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
+  *
+- * Based on:
+- *	pca954x.c from Ken Harrenstien
+- * Copyright (C) 2004 Google, Inc. (Ken Harrenstien)
+- *
+- * Based on:
+- *	i2c-virtual_cb.c from Brian Kuschak <bkuschak@yahoo.com>
+- * and
+- *	pca9540.c from Jean Delvare <khali@linux-fr.org>.
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2. This program is licensed "as is" without any
+- * warranty of any kind, whether express or implied.
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/device.h>
++#include <linux/version.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-mux.h>
+-#include <linux/version.h>
+-
+-#define CTRL_CPLD_BUS			0x2
+-#define CTRL_CPLD_I2C_ADDR		0x32
+-#define PARENT_CHAN			0x4
+-#define NUM_OF_CPLD_CHANS		0x30
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
+ 
+-#define CPLD_CHANNEL_SELECT_REG		0x11
+-#define CPLD_CHANNEL_SELECT_MASK	0x3f
+-#define CPLD_CHANNEL_SELECT_OFFSET	0x0
++struct i2c_mux_cpld_platform_data {
++	u8 cpld_bus;
++	u8 cpld_addr;
++	u8 cpld_reg;
+ 
+-#define CPLD_DESELECT_CHANNEL		0xff
++	u8 parent_bus;
+ 
+-#define CPLD_MUX_MAX_NCHANS		0x30
+-enum cpld_mux_type {
+-    delta_cpld_mux
+-};
++	u8 base_nr;
+ 
+-struct delta_i2c_cpld_mux {
+-    enum cpld_mux_type type;
+-    struct i2c_adapter *virt_adaps[CPLD_MUX_MAX_NCHANS];
+-    u8 last_chan;  /* last register value */
+-};
++	const u8 *values;
++	int n_values;
++	bool idle_in_use;
++	u8 idle;
+ 
+-struct chip_desc {
+-    u8   nchans;
+-    u8   deselectChan;
++	void *ctrl_adap;
+ };
+ 
+-/* Provide specs for the PCA954x types we know about */
+-static const struct chip_desc chips[] = {
+-    [delta_cpld_mux] = {
+-    .nchans        = NUM_OF_CPLD_CHANS,
+-    .deselectChan  = CPLD_DESELECT_CHANNEL,
+-    }
++struct cpldmux {
++	struct i2c_mux_cpld_platform_data data;
++	u8 last_chan;
+ };
+ 
+-static struct delta_i2c_cpld_mux *cpld_mux_data;
+-
+-static struct device dump_dev;
+-
+-/* Write to mux register. Don't use i2c_transfer()/i2c_smbus_xfer()
+-   for this as they will try to lock adapter a second time */
+-static int delta_i2c_cpld_mux_reg_write(struct i2c_adapter *adap,
+-			     struct i2c_client *client, u8 val)
++static int i2c_mux_cpld_set(const struct cpldmux *mux, unsigned int chan_id)
+ {
+ 	unsigned long orig_jiffies;
+ 	unsigned short flags;
+ 	union i2c_smbus_data data;
+ 	struct i2c_adapter *ctrl_adap;
+-	int try;
++	int try
++		;
+ 	s32 res = -EIO;
+-	u8  reg_val = 0;
+ 
+-	data.byte = val;
++	data.byte = chan_id;
+ 	flags = 0;
+ 
+-	ctrl_adap = i2c_get_adapter(CTRL_CPLD_BUS);
++	ctrl_adap = mux->data.ctrl_adap;
+ 	if (!ctrl_adap)
+ 		return res;
+ 
+@@ -98,148 +69,136 @@ static int delta_i2c_cpld_mux_reg_write(struct i2c_adapter *adap,
+ 	if (ctrl_adap->algo->smbus_xfer) {
+ 		/* Retry automatically on arbitration loss */
+ 		orig_jiffies = jiffies;
+-		for (res = 0, try = 0; try <= ctrl_adap->retries; try++) {
+-			// read first
+-			res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                             I2C_SMBUS_READ, CPLD_CHANNEL_SELECT_REG,
+-                             I2C_SMBUS_BYTE_DATA, &data);
+-			if (res && res != -EAGAIN)
+-				break;
+-
+-			// modify the field we wanted
+-			data.byte &= ~(CPLD_CHANNEL_SELECT_MASK << CPLD_CHANNEL_SELECT_OFFSET);
+-			reg_val   |=  (((val + 1)& CPLD_CHANNEL_SELECT_MASK) << CPLD_CHANNEL_SELECT_OFFSET);
+-			data.byte |= reg_val;
+-
++		for (res = 0, try = 0; try <= ctrl_adap->retries; try ++) {
+ 			// modify the register
+-			res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                             I2C_SMBUS_WRITE, CPLD_CHANNEL_SELECT_REG,
+-                             I2C_SMBUS_BYTE_DATA, &data);
++			res = ctrl_adap->algo->smbus_xfer(
++				ctrl_adap, mux->data.cpld_addr, flags,
++				I2C_SMBUS_WRITE, mux->data.cpld_reg,
++				I2C_SMBUS_BYTE_DATA, &data);
+ 			if (res && res != -EAGAIN)
+ 				break;
+ 			if (time_after(jiffies,
+-			    orig_jiffies + ctrl_adap->timeout))
++				       orig_jiffies + ctrl_adap->timeout))
+ 				break;
+ 		}
+ 	}
+ 
+-    return res;
++	return res;
+ }
+ 
+-static int delta_i2c_cpld_mux_select_chan(struct i2c_adapter *adap,
+-			       void *client, u32 chan)
++static int i2c_mux_cpld_select(struct i2c_mux_core *muxc, u32 chan)
+ {
+-	u8 regval;
+ 	int ret = 0;
+-	regval = chan;
++	struct cpldmux *mux = i2c_mux_priv(muxc);
+ 
+-	/* Only select the channel if its different from the last channel */
+-	if (cpld_mux_data->last_chan != regval) {
+-		ret = delta_i2c_cpld_mux_reg_write(NULL, NULL, regval);
+-		cpld_mux_data->last_chan = regval;
++	if (mux->last_chan != chan) {
++		ret = i2c_mux_cpld_set(mux, chan);
++		mux->last_chan = ret < 0 ? mux->data.idle : chan;
+ 	}
+ 
+ 	return ret;
+ }
+ 
+-static int delta_i2c_cpld_mux_deselect_mux(struct i2c_adapter *adap,
+-				void *client, u32 chan)
++static int i2c_mux_cpld_deselect(struct i2c_mux_core *muxc, u32 chan)
+ {
+-	/* Deselect active channel */
+-	cpld_mux_data->last_chan = chips[cpld_mux_data->type].deselectChan;
++	int ret = 0;
++	struct cpldmux *mux = i2c_mux_priv(muxc);
+ 
+-	return delta_i2c_cpld_mux_reg_write(NULL, NULL, cpld_mux_data->last_chan);
++	if (mux->data.idle_in_use) {
++		ret = i2c_mux_cpld_set(mux, mux->data.idle);
++		mux->last_chan = mux->data.idle;
++	}
++
++	return ret;
+ }
+ 
+-/*
+- * I2C init/probing/exit functions
+- */
+-static int __delta_i2c_cpld_mux_init(void)
++static int i2c_mux_cpld_probe(struct platform_device *pdev)
+ {
+-	struct i2c_adapter *adap = i2c_get_adapter(PARENT_CHAN);
+-	int chan=0;
+-	int ret = -ENODEV;
++	struct i2c_mux_core *muxc;
++	struct cpldmux *mux;
++	struct i2c_adapter *parent;
++	struct i2c_adapter *ctrl;
++	int i, ret, nr;
++
++	mux = devm_kzalloc(&pdev->dev, sizeof(*mux), GFP_KERNEL);
++	if (!mux)
++		return -ENOMEM;
++
++	ctrl = NULL;
++	parent = NULL;
++	if (dev_get_platdata(&pdev->dev)) {
++		memcpy(&mux->data, dev_get_platdata(&pdev->dev),
++		       sizeof(mux->data));
++
++		parent = i2c_get_adapter(mux->data.parent_bus);
++		if (!parent)
++			return -EPROBE_DEFER;
++		ctrl = i2c_get_adapter(mux->data.cpld_bus);
++		if (!ctrl) {
++			i2c_put_adapter(parent);
++			return -EPROBE_DEFER;
++		}
++	}
+ 
+-	memset (&dump_dev, 0, sizeof(dump_dev));
++	muxc = i2c_mux_alloc(parent, &pdev->dev, mux->data.n_values, 0, 0,
++			     i2c_mux_cpld_select, i2c_mux_cpld_deselect);
+ 
+-	if (!i2c_check_functionality(adap, I2C_FUNC_SMBUS_BYTE))
+-		goto err;
++	if (!muxc)
++		return -ENOMEM;
++	muxc->priv = mux;
++	mux->data.ctrl_adap = ctrl;
+ 
+-	if (!adap)
+-		goto err;
++	platform_set_drvdata(pdev, muxc);
+ 
+-	cpld_mux_data = kzalloc(sizeof(struct delta_i2c_cpld_mux), GFP_KERNEL);
+-	if (!cpld_mux_data) {
+-		ret = -ENOMEM;
+-		goto err;
+-	}
++	for (i = 0; i < mux->data.n_values; i++) {
++		nr = mux->data.base_nr ? (mux->data.base_nr + i) : 0;
+ 
+-	cpld_mux_data->type = delta_cpld_mux;
+-	cpld_mux_data->last_chan = chips[cpld_mux_data->type].deselectChan; /* force the first selection */
+-
+-	/* Now create an adapter for each channel */
+-	for (chan = 0; chan < NUM_OF_CPLD_CHANS; chan++) {
+-		cpld_mux_data->virt_adaps[chan] = i2c_add_mux_adapter(adap, &dump_dev, NULL, 0,
+-					chan,
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
+-                    0,
+-#endif
+-					delta_i2c_cpld_mux_select_chan,
+-					delta_i2c_cpld_mux_deselect_mux);
+-
+-		if (cpld_mux_data->virt_adaps[chan] == NULL) {
+-			ret = -ENODEV;
+-			printk("failed to register multiplexed adapter %d, parent %d\n", chan, PARENT_CHAN);
+-			goto virt_reg_failed;
++		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i], 0);
++		if (ret) {
++			dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
++			goto add_adapter_failed;
+ 		}
+ 	}
+ 
+-	printk("registered %d multiplexed busses for I2C mux bus %d\n",
+-		chan, PARENT_CHAN);
++	dev_dbg(&pdev->dev, "%d port mux on %s adapter\n", mux->data.n_values,
++		parent->name);
+ 
+ 	return 0;
+ 
+-virt_reg_failed:
+-	for (chan--; chan >= 0; chan--) {
+-		i2c_del_mux_adapter(cpld_mux_data->virt_adaps[chan]);
+-	}
++add_adapter_failed:
++
++	i2c_put_adapter(ctrl);
++	i2c_put_adapter(parent);
++	i2c_mux_del_adapters(muxc);
+ 
+-	kfree(cpld_mux_data);
+-err:
+ 	return ret;
+ }
+ 
+-static int __delta_i2c_cpld_mux_remove(void)
++static int i2c_mux_cpld_remove(struct platform_device *pdev)
+ {
+-    const struct chip_desc *chip = &chips[cpld_mux_data->type];
+-    int chan;
++	struct i2c_mux_core *muxc = platform_get_drvdata(pdev);
++	struct cpldmux *mux = i2c_mux_priv(muxc);
+ 
+-    for (chan = 0; chan < chip->nchans; ++chan) {
+-	if (cpld_mux_data->virt_adaps[chan]) {
+-		i2c_del_mux_adapter(cpld_mux_data->virt_adaps[chan]);
+-		cpld_mux_data->virt_adaps[chan] = NULL;
+-	}
+-    }
+-
+-    kfree(cpld_mux_data);
++	i2c_mux_del_adapters(muxc);
++	i2c_put_adapter(mux->data.ctrl_adap);
++	i2c_put_adapter(muxc->parent);
+ 
+-    return 0;
++	return 0;
+ }
+ 
+-static int __init delta_i2c_cpld_mux_init(void)
+-{
+-	return __delta_i2c_cpld_mux_init ();
+-}
++static struct platform_driver i2c_mux_cpld_driver = {
++	.probe = i2c_mux_cpld_probe,
++	.remove = i2c_mux_cpld_remove,
++	.driver =
++		{
++			.name = "i2c-mux-cpld",
++		},
++};
+ 
+-static void __exit delta_i2c_cpld_mux_exit(void)
+-{
+-	__delta_i2c_cpld_mux_remove ();
+-}
++module_platform_driver(i2c_mux_cpld_driver);
+ 
+-MODULE_AUTHOR("Dave Hu <dave.hu@deltasystems.com>");
+-MODULE_DESCRIPTION("Delta I2C CPLD mux driver");
++MODULE_AUTHOR("Dave Hu <dave.hu@deltaww.com>");
++MODULE_AUTHOR("Tobias Jungel <tobias.jungel@bisdn.de>");
++MODULE_DESCRIPTION("I2C CPLD mux driver");
+ MODULE_LICENSE("GPL");
+-
+-module_init(delta_i2c_cpld_mux_init);
+-module_exit(delta_i2c_cpld_mux_exit);
+-
++MODULE_ALIAS("platform:i2c-mux-cpld");
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+index d80cfbe2b712..d42daee20770 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+@@ -1,317 +1,292 @@
+ /*
+- * An I2C multiplexer dirver for delta ag7648 CPLD
+  *
+- * Copyright (C) 2015 Delta Technology Corporation.
+- * Brandon Chuang <brandon_chuang@delta.com.tw>
++ * Copyright (C) 2017 Delta Networks, Inc.
+  *
+- * This module supports the delta cpld that hold the channel select
+- * mechanism for other i2c slave devices, such as SFP.
+- * This includes the:
+- *	 Delta ag7648c CPLD1/CPLD2/CPLD3
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
+  *
+- * Based on:
+- *	pca954x.c from Kumar Gala <galak@kernel.crashing.org>
+- * Copyright (C) 2006
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
+  *
+- * Based on:
+- *	pca954x.c from Ken Harrenstien
+- * Copyright (C) 2004 Google, Inc. (Ken Harrenstien)
+- *
+- * Based on:
+- *	i2c-virtual_cb.c from Brian Kuschak <bkuschak@yahoo.com>
+- * and
+- *	pca9540.c from Jean Delvare <khali@linux-fr.org>.
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2. This program is licensed "as is" without any
+- * warranty of any kind, whether express or implied.
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/device.h>
++#include <linux/version.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-mux.h>
+-#include <linux/version.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
+ #include <linux/delay.h>
+ 
+-#define CTRL_CPLD_BUS			0x2
+-#define CTRL_CPLD_I2C_ADDR		0x32
+-#define PARENT_CHAN			0x5
+-#define NUM_OF_CPLD_CHANS		0x6
++#define CPLD_QSFP_INTR_STATUS_REG 0xe
++#define CPLD_QSFP_RESET_CTRL_REG 0xd
+ 
+-#define CPLD_CHANNEL_SELECT_REG		0xa
+-#define CPLD_CHANNEL_SELECT_MASK	0x3f
+-#define CPLD_CHANNEL_SELECT_OFFSET	0x0
+-#define CPLD_QSFP_INTR_STATUS_REG   0xe
+-#define CPLD_QSFP_INTR_STATUS_OFFSET 0x0
+-#define CPLD_QSFP_RESET_CTRL_REG    0xd
+-#define CPLD_QSFL_RESET_CTRL_OFFSET 0x0
++#define CPLD_DESELECT_CHANNEL 0xff
+ 
+-#define CPLD_DESELECT_CHANNEL		0xff
++enum cpld_mux_type { delta_cpld_mux };
+ 
+-#define CPLD_MUX_MAX_NCHANS		0x6
+-enum cpld_mux_type {
+-    delta_cpld_mux
+-};
++#if 0
++#include "x86-64-delta-ag8032-i2c-mux-cpld.h"
++#else
++struct i2c_mux_cpld_platform_data {
++	u8 cpld_bus;
++	u8 cpld_addr;
++	u8 cpld_reg;
+ 
+-struct delta_i2c_cpld_mux {
+-    enum cpld_mux_type type;
+-    struct i2c_adapter *virt_adaps[CPLD_MUX_MAX_NCHANS];
+-    u8 last_chan;  /* last register value */
+-};
++	u8 parent_bus;
+ 
+-struct chip_desc {
+-    u8   nchans;
+-    u8   deselectChan;
+-};
++	u8 base_nr;
++
++	const u8 *values;
++	int n_values;
++	bool idle_in_use;
++	u8 idle;
+ 
+-/* Provide specs for the PCA954x types we know about */
+-static const struct chip_desc chips[] = {
+-    [delta_cpld_mux] = {
+-    .nchans        = NUM_OF_CPLD_CHANS,
+-    .deselectChan  = CPLD_DESELECT_CHANNEL,
+-    }
++	void *ctrl_adap;
+ };
+ 
+-static struct delta_i2c_cpld_mux *cpld_mux_data;
++#endif
++
++//static DEFINE_MUTEX(locker);
+ 
+-static struct device dump_dev;
++struct cpldmux {
++	struct i2c_mux_cpld_platform_data data;
++};
+ 
+-/* Write to mux register. Don't use i2c_transfer()/i2c_smbus_xfer()
+-   for this as they will try to lock adapter a second time */
+-static int delta_i2c_cpld_mux_reg_write(struct i2c_adapter *adap,
+-			     struct i2c_client *client, u8 val)
++static int i2c_mux_cpld_set(const struct cpldmux *mux, unsigned int chan_id)
+ {
+ 	unsigned long orig_jiffies;
+ 	unsigned short flags;
+ 	union i2c_smbus_data data;
+ 	struct i2c_adapter *ctrl_adap;
+-	int try,change=0;
++	int try
++		, change = 0;
+ 	s32 res = -EIO;
+-	u8  reg_val = 0;
+-    int intr, reset_ctrl;
+-    int i;
++	int intr, reset_ctrl;
++	int i;
+ 
+-	data.byte = val;
++	data.byte = chan_id;
+ 	flags = 0;
+ 
+-	ctrl_adap = i2c_get_adapter(CTRL_CPLD_BUS);
++	ctrl_adap = mux->data.ctrl_adap;
+ 	if (!ctrl_adap)
+ 		return res;
+ 
+-
+ 	// try to lock it
+ 	if (ctrl_adap->algo->smbus_xfer) {
+ 		/* Retry automatically on arbitration loss */
+ 		orig_jiffies = jiffies;
+-		for (res = 0, try = 0; try <= ctrl_adap->retries; try++) {
+-			// workaround 
+-            data.byte = 0;
+-			res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                             I2C_SMBUS_WRITE, CPLD_CHANNEL_SELECT_REG,
+-                             I2C_SMBUS_BYTE_DATA, &data);
++		for (res = 0, try = 0; try <= ctrl_adap->retries; try ++) {
++			// workaround
++			data.byte = 0;
++			res = ctrl_adap->algo->smbus_xfer(
++				ctrl_adap, mux->data.cpld_addr, flags,
++				I2C_SMBUS_WRITE, mux->data.cpld_reg,
++				I2C_SMBUS_BYTE_DATA, &data);
+ 			if (res == -EAGAIN)
+ 				continue;
+-            //read the interrupt status
+-			res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                             I2C_SMBUS_READ, CPLD_QSFP_INTR_STATUS_REG,
+-                             I2C_SMBUS_BYTE_DATA, &data);
+-			if ( res == -EAGAIN)
++			//read the interrupt status
++			res = ctrl_adap->algo->smbus_xfer(
++				ctrl_adap, mux->data.cpld_addr, flags,
++				I2C_SMBUS_READ, CPLD_QSFP_INTR_STATUS_REG,
++				I2C_SMBUS_BYTE_DATA, &data);
++			if (res == -EAGAIN)
+ 				continue;
+ 
+-            intr = data.byte;
++			intr = data.byte;
+ 
+-            //read the reset control
+-            res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                             I2C_SMBUS_READ, CPLD_QSFP_RESET_CTRL_REG,
+-                             I2C_SMBUS_BYTE_DATA, &data);
+-			if ( res == -EAGAIN)
++			//read the reset control
++			res = ctrl_adap->algo->smbus_xfer(
++				ctrl_adap, mux->data.cpld_addr, flags,
++				I2C_SMBUS_READ, CPLD_QSFP_RESET_CTRL_REG,
++				I2C_SMBUS_BYTE_DATA, &data);
++			if (res == -EAGAIN)
+ 				continue;
+ 
+-            reset_ctrl = data.byte;
+-            
+-            /* there is an interrupt for QSFP port, including failure/plugin/un-plugin
++			reset_ctrl = data.byte;
++
++			/* there is an interrupt for QSFP port, including failure/plugin/un-plugin
+             *  try to reset it.
+             *
+             */
+-            for (i = 0 ; i < NUM_OF_CPLD_CHANS; i ++)
+-            {
+-                if((reset_ctrl & ( 1 << i )) == 0){
+-                    change=1;
+-                }
+-                if ((intr & ( 1 << i )) == 0 )
+-                {   
+-
+-                    res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                            I2C_SMBUS_READ, CPLD_QSFP_RESET_CTRL_REG,
+-                            I2C_SMBUS_BYTE_DATA, &data);
+-                    if (res == -EAGAIN)
+-                        continue;
+-                    data.byte &= ~(1 << i);
+-                    
+-                    res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                            I2C_SMBUS_WRITE, CPLD_QSFP_RESET_CTRL_REG,
+-                            I2C_SMBUS_BYTE_DATA, &data);
+-                    if (res == -EAGAIN)
+-                        continue;
+-                    change=1;
+-                }
+-            }
+-            if(change){
+-                msleep(10); 
+-                data.byte=CPLD_DESELECT_CHANNEL;
+-                res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                             I2C_SMBUS_WRITE, CPLD_QSFP_RESET_CTRL_REG,
+-                             I2C_SMBUS_BYTE_DATA, &data);
+-                if (res == -EAGAIN)
+-                    continue;
+-                msleep(200);
+-            }
+-
+-            
++			for (i = 0; i < mux->data.n_values; i++) {
++				if ((reset_ctrl & (1 << i)) == 0) {
++					change = 1;
++				}
++				if ((intr & (1 << i)) == 0) {
++					res = ctrl_adap->algo->smbus_xfer(
++						ctrl_adap, mux->data.cpld_addr,
++						flags, I2C_SMBUS_READ,
++						CPLD_QSFP_RESET_CTRL_REG,
++						I2C_SMBUS_BYTE_DATA, &data);
++					if (res == -EAGAIN)
++						continue;
++					data.byte &= ~(1 << i);
++
++					res = ctrl_adap->algo->smbus_xfer(
++						ctrl_adap, mux->data.cpld_addr,
++						flags, I2C_SMBUS_WRITE,
++						CPLD_QSFP_RESET_CTRL_REG,
++						I2C_SMBUS_BYTE_DATA, &data);
++					if (res == -EAGAIN)
++						continue;
++					change = 1;
++				}
++			}
++			if (change) {
++				msleep(10);
++				data.byte = CPLD_DESELECT_CHANNEL;
++				res = ctrl_adap->algo->smbus_xfer(
++					ctrl_adap, mux->data.cpld_addr, flags,
++					I2C_SMBUS_WRITE,
++					CPLD_QSFP_RESET_CTRL_REG,
++					I2C_SMBUS_BYTE_DATA, &data);
++				if (res == -EAGAIN)
++					continue;
++				msleep(200);
++			}
++
+ 			// read first
+-			//res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-            //                I2C_SMBUS_READ, CPLD_CHANNEL_SELECT_REG,
+-            //                 I2C_SMBUS_BYTE_DATA, &data);
++			//res = ctrl_adap->algo->smbus_xfer(ctrl_adap, mux->data.cpld_addr, flags,
++			//                I2C_SMBUS_READ, mux->data.cpld_reg,
++			//                 I2C_SMBUS_BYTE_DATA, &data);
+ 			//if (res && res != -EAGAIN)
+ 			//	break;
+ 
+ 			// modify the field we wanted
+ 			//data.byte &= ~(CPLD_CHANNEL_SELECT_MASK << CPLD_CHANNEL_SELECT_OFFSET);
+ 			//reg_val   |=  (((~(1 << val)) & CPLD_CHANNEL_SELECT_MASK) << CPLD_CHANNEL_SELECT_OFFSET);
+-			data.byte = (~(1 << val)) & 0xff;
++			data.byte = (~(1 << chan_id)) & 0xff;
+ 
+ 			// modify the register
+-			res = ctrl_adap->algo->smbus_xfer(ctrl_adap, CTRL_CPLD_I2C_ADDR, flags,
+-                             I2C_SMBUS_WRITE, CPLD_CHANNEL_SELECT_REG,
+-                             I2C_SMBUS_BYTE_DATA, &data);
+-			if (res != -EAGAIN)
++			res = ctrl_adap->algo->smbus_xfer(
++				ctrl_adap, mux->data.cpld_addr, flags,
++				I2C_SMBUS_WRITE, mux->data.cpld_reg,
++				I2C_SMBUS_BYTE_DATA, &data);
++			if (res && res != -EAGAIN)
+ 				break;
+ 			if (time_after(jiffies,
+-			    orig_jiffies + ctrl_adap->timeout))
++				       orig_jiffies + ctrl_adap->timeout))
+ 				break;
+ 		}
+ 	}
+ 
+-    return res;
++	return 0;
+ }
+ 
+-static int delta_i2c_cpld_mux_select_chan(struct i2c_adapter *adap,
+-			       void *client, u32 chan)
++static int i2c_mux_cpld_select(struct i2c_mux_core *muxc, u32 chan)
+ {
+-	u8 regval;
+-	int ret = 0;
+-	regval = chan;
+-
+-	/* Only select the channel if its different from the last channel */
+-	if (cpld_mux_data->last_chan != regval) {
+-		ret = delta_i2c_cpld_mux_reg_write(NULL, NULL, regval);
+-		cpld_mux_data->last_chan = regval;
+-	}
++	struct cpldmux *mux = i2c_mux_priv(muxc);
+ 
+-	return ret;
++	return i2c_mux_cpld_set(mux, chan);
+ }
+ 
+-static int delta_i2c_cpld_mux_deselect_mux(struct i2c_adapter *adap,
+-				void *client, u32 chan)
++static int i2c_mux_cpld_deselect(struct i2c_mux_core *muxc, u32 chan)
+ {
+-	/* Deselect active channel */
+-	cpld_mux_data->last_chan = chips[cpld_mux_data->type].deselectChan;
++	struct cpldmux *mux = i2c_mux_priv(muxc);
++
++	if (mux->data.idle_in_use)
++		return i2c_mux_cpld_set(mux, mux->data.idle);
+ 
+-	return delta_i2c_cpld_mux_reg_write(NULL, NULL, cpld_mux_data->last_chan);
++	return 0;
+ }
+ 
+-/*
+- * I2C init/probing/exit functions
+- */
+-static int __delta_i2c_cpld_mux_init(void)
++static int i2c_mux_cpld_probe(struct platform_device *pdev)
+ {
+-	struct i2c_adapter *adap = i2c_get_adapter(PARENT_CHAN);
+-	int chan=0;
+-	int ret = -ENODEV;
+-
+-	memset (&dump_dev, 0, sizeof(dump_dev));
+-
+-	if (!i2c_check_functionality(adap, I2C_FUNC_SMBUS_BYTE))
+-		goto err;
++	struct i2c_mux_core *muxc;
++	struct cpldmux *mux;
++	struct i2c_adapter *parent;
++	struct i2c_adapter *ctrl;
++	int i, ret, nr;
++
++	mux = devm_kzalloc(&pdev->dev, sizeof(*mux), GFP_KERNEL);
++	if (!mux)
++		return -ENOMEM;
++
++	ctrl = NULL;
++	parent = NULL;
++	if (dev_get_platdata(&pdev->dev)) {
++		memcpy(&mux->data, dev_get_platdata(&pdev->dev),
++		       sizeof(mux->data));
++
++		parent = i2c_get_adapter(mux->data.parent_bus);
++		if (!parent)
++			return -EPROBE_DEFER;
++		ctrl = i2c_get_adapter(mux->data.cpld_bus);
++		if (!ctrl) {
++			i2c_put_adapter(parent);
++			return -EPROBE_DEFER;
++		}
++	}
+ 
+-	if (!adap)
+-		goto err;
++	muxc = i2c_mux_alloc(parent, &pdev->dev, mux->data.n_values, 0, 0,
++			     i2c_mux_cpld_select, i2c_mux_cpld_deselect);
+ 
+-	cpld_mux_data = kzalloc(sizeof(struct delta_i2c_cpld_mux), GFP_KERNEL);
+-	if (!cpld_mux_data) {
+-		ret = -ENOMEM;
+-		goto err;
+-	}
++	if (!muxc)
++		return -ENOMEM;
++	muxc->priv = mux;
++	mux->data.ctrl_adap = ctrl;
+ 
+-	cpld_mux_data->type = delta_cpld_mux;
+-	cpld_mux_data->last_chan = chips[cpld_mux_data->type].deselectChan; /* force the first selection */
++	platform_set_drvdata(pdev, muxc);
+ 
+-	/* Now create an adapter for each channel */
+-	for (chan = 0; chan < NUM_OF_CPLD_CHANS; chan++) {
+-		cpld_mux_data->virt_adaps[chan] = i2c_add_mux_adapter(adap, &dump_dev, NULL, 0,
+-					chan, 
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
+-                    0,
+-#endif
+-					delta_i2c_cpld_mux_select_chan,
+-					delta_i2c_cpld_mux_deselect_mux);
++	for (i = 0; i < mux->data.n_values; i++) {
++		nr = mux->data.base_nr ? (mux->data.base_nr + i) : 0;
+ 
+-		if (cpld_mux_data->virt_adaps[chan] == NULL) {
+-			ret = -ENODEV;
+-			printk("failed to register multiplexed adapter %d, parent %d\n", chan, PARENT_CHAN);
+-			goto virt_reg_failed;
++		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i], 0);
++		if (ret) {
++			dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
++			goto add_adapter_failed;
+ 		}
+ 	}
+ 
+-	printk("registered %d multiplexed busses for I2C mux bus %d\n",
+-		chan, PARENT_CHAN);
++	dev_dbg(&pdev->dev, "%d port mux on %s adapter\n", mux->data.n_values,
++		parent->name);
+ 
+ 	return 0;
+ 
+-virt_reg_failed:
+-	for (chan--; chan >= 0; chan--) {
+-		i2c_del_mux_adapter(cpld_mux_data->virt_adaps[chan]);
+-	}
++add_adapter_failed:
++
++	i2c_put_adapter(ctrl);
++	i2c_put_adapter(parent);
++	i2c_mux_del_adapters(muxc);
+ 
+-	kfree(cpld_mux_data);
+-err:
+ 	return ret;
+ }
+ 
+-static int __delta_i2c_cpld_mux_remove(void)
++static int i2c_mux_cpld_remove(struct platform_device *pdev)
+ {
+-    const struct chip_desc *chip = &chips[cpld_mux_data->type];
+-    int chan;
+-
+-    for (chan = 0; chan < chip->nchans; ++chan) {
+-	if (cpld_mux_data->virt_adaps[chan]) {
+-		i2c_del_mux_adapter(cpld_mux_data->virt_adaps[chan]);
+-		cpld_mux_data->virt_adaps[chan] = NULL;
+-	}
+-    }
++	struct i2c_mux_core *muxc = platform_get_drvdata(pdev);
++	struct cpldmux *mux = i2c_mux_priv(muxc);
+ 
+-    kfree(cpld_mux_data);
++	i2c_mux_del_adapters(muxc);
++	i2c_put_adapter(mux->data.ctrl_adap);
++	i2c_put_adapter(muxc->parent);
+ 
+-    return 0;
++	return 0;
+ }
+ 
+-static int __init delta_i2c_cpld_mux_init(void)
+-{
+-	return __delta_i2c_cpld_mux_init ();
+-}
++static struct platform_driver i2c_mux_cpld_driver = {
++	.probe = i2c_mux_cpld_probe,
++	.remove = i2c_mux_cpld_remove,
++	.driver =
++		{
++			.name = "i2c-mux-cpld-2",
++		},
++};
+ 
+-static void __exit delta_i2c_cpld_mux_exit(void)
+-{
+-	__delta_i2c_cpld_mux_remove ();
+-}
++module_platform_driver(i2c_mux_cpld_driver);
+ 
+-MODULE_AUTHOR("Dave Hu <dave.hu@deltasystems.com>");
+-MODULE_DESCRIPTION("Delta I2C CPLD mux driver");
++MODULE_AUTHOR("Dave Hu <dave.hu@deltaww.com>");
++MODULE_AUTHOR("Tobias Jungel <tobias.jungel@bisdn.de>");
++MODULE_DESCRIPTION("I2C CPLD mux driver");
+ MODULE_LICENSE("GPL");
+-
+-module_init(delta_i2c_cpld_mux_init);
+-module_exit(delta_i2c_cpld_mux_exit);
+-
++MODULE_ALIAS("platform:i2c-mux-cpld-2");
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+new file mode 100644
+index 000000000000..36f03af55458
+--- /dev/null
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -0,0 +1,516 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Driver to instantiate Delta switch i2c/smbus devices.
++//
++// Copyright (C) 2018 BISDN GmbH
++// Author: Tobias Jungel <tobias.jungel@bisdn.de>
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/dmi.h>
++#include <linux/i2c.h>
++#include <linux/input.h>
++#include <linux/interrupt.h>
++#include <linux/ioport.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/platform_device.h>
++#include <linux/property.h>
++
++static const char *i2c_adapter_names[] = {
++	"undefined",
++	"SMBus I801 adapter",
++	"SMBus iSMT adapter",
++	"i2c-%d-mux",
++};
++
++/* Keep this enum consistent with i2c_adapter_names */
++enum i2c_adapter_type {
++	I2C_ADAPTER_UNDEF = 0,
++	I2C_ADAPTER_SMBUS_I801,
++	I2C_ADAPTER_SMBUS_ISMT,
++	I2C_ADAPTER_MUX,
++};
++
++struct i2c_peripheral {
++	struct i2c_board_info board_info;
++	unsigned short alt_addr;
++
++	const char *dmi_name;
++	unsigned long irqflags;
++	struct resource irq_resource;
++
++	enum i2c_adapter_type type;
++	enum i2c_adapter_type parent;
++	int nr;
++
++	u32 pci_devid;
++
++	struct i2c_client *client;
++};
++
++struct delta_switch {
++	/*
++	 * Note that we can't mark this pointer as const because
++	 * i2c_new_probed_device() changes passed in I2C board info, so.
++	 */
++	struct i2c_peripheral *i2c_peripherals;
++	unsigned int num_i2c_peripherals;
++
++	void (*post_inst_cb)(void);
++};
++
++static const struct delta_switch *dta_switch;
++
++static struct i2c_client *
++delta_switch_instantiate_i2c_device(struct i2c_adapter *adapter,
++				    struct i2c_board_info *info,
++				    unsigned short alt_addr)
++{
++	const unsigned short addr_list[] = { info->addr, I2C_CLIENT_END };
++	struct i2c_client *client;
++
++	/*
++	 * Add the i2c device. If we can't detect it at the primary
++	 * address we scan secondary addresses. In any case the client
++	 * structure gets assigned primary address.
++	 */
++	client = i2c_new_probed_device(adapter, info, addr_list, NULL);
++	if (!client && alt_addr) {
++		struct i2c_board_info dummy_info = {
++			I2C_BOARD_INFO("dummy", info->addr),
++		};
++		const unsigned short alt_addr_list[] = { alt_addr,
++							 I2C_CLIENT_END };
++		struct i2c_client *dummy;
++
++		dummy = i2c_new_probed_device(adapter, &dummy_info,
++					      alt_addr_list, NULL);
++		if (dummy) {
++			pr_debug("%d-%02x is probed at %02x\n", adapter->nr,
++				 info->addr, dummy->addr);
++			i2c_unregister_device(dummy);
++			client = i2c_new_device(adapter, info);
++		}
++	}
++
++	if (!client)
++		pr_debug("failed to register device %d-%02x\n", adapter->nr,
++			 info->addr);
++	else
++		pr_debug("added i2c device %d-%02x\n", adapter->nr, info->addr);
++
++	return client;
++}
++
++static bool delta_switch_match_adapter_devid(struct device *dev, u32 devid)
++{
++	struct pci_dev *pdev;
++
++	if (!dev_is_pci(dev))
++		return false;
++
++	pdev = to_pci_dev(dev);
++
++	return devid == PCI_DEVID(pdev->bus->number, pdev->devfn);
++}
++
++static const char *
++delta_switch_get_adapter_name(const struct i2c_peripheral *i2c_dev,
++			      struct i2c_adapter *adapter)
++{
++	struct i2c_adapter *parent;
++	static char buf[20];
++
++	if (i2c_dev->type != I2C_ADAPTER_MUX)
++		return i2c_adapter_names[i2c_dev->type];
++
++	if (i2c_dev->parent == I2C_ADAPTER_UNDEF)
++		return NULL;
++
++	parent = i2c_parent_is_i2c_adapter(adapter);
++	if (!parent)
++		return NULL;
++
++	if (strncmp(parent->name, i2c_adapter_names[i2c_dev->parent],
++		    strlen(i2c_adapter_names[i2c_dev->parent])))
++		return NULL;
++
++	snprintf(buf, sizeof(buf), i2c_adapter_names[i2c_dev->type],
++		 i2c_adapter_id(parent));
++
++	if (strncmp(parent->name, i2c_adapter_names[i2c_dev->parent],
++		    strlen(i2c_adapter_names[i2c_dev->parent])))
++		return NULL;
++
++	return buf;
++}
++
++static void delta_switch_check_adapter(struct i2c_adapter *adapter)
++{
++	struct i2c_peripheral *i2c_dev;
++	int i;
++	const char *adapter_name;
++	int all_initialized = 1;
++
++	for (i = 0; i < dta_switch->num_i2c_peripherals; i++) {
++		i2c_dev = &dta_switch->i2c_peripherals[i];
++
++		/* Skip devices already created */
++		if (i2c_dev->client)
++			continue;
++
++		if (i2c_dev->type == I2C_ADAPTER_MUX &&
++		    i2c_dev->nr != i2c_adapter_id(adapter))
++			continue;
++
++		adapter_name = delta_switch_get_adapter_name(i2c_dev, adapter);
++		if (!adapter_name)
++			continue;
++
++		if (strncmp(adapter->name, adapter_name, strlen(adapter_name)))
++			continue;
++
++		if (i2c_dev->pci_devid &&
++		    !delta_switch_match_adapter_devid(adapter->dev.parent,
++						      i2c_dev->pci_devid)) {
++			continue;
++		}
++
++		i2c_dev->client = delta_switch_instantiate_i2c_device(
++			adapter, &i2c_dev->board_info, i2c_dev->alt_addr);
++	}
++
++	/* check if all devices are initialized */
++	for (i = 0; i < dta_switch->num_i2c_peripherals; i++) {
++		i2c_dev = &dta_switch->i2c_peripherals[i];
++
++		if (i2c_dev->client)
++			continue;
++
++		pr_debug("found non initialized device %s\n",
++			 i2c_dev->board_info.type);
++		all_initialized = 0;
++		break;
++	}
++
++	if (all_initialized && dta_switch->post_inst_cb) {
++		dta_switch->post_inst_cb();
++	}
++}
++
++static int delta_switch_i2c_notifier_call(struct notifier_block *nb,
++					  unsigned long action, void *data)
++{
++	struct device *dev = data;
++
++	switch (action) {
++	case BUS_NOTIFY_ADD_DEVICE:
++		if (dev->type == &i2c_adapter_type)
++			delta_switch_check_adapter(to_i2c_adapter(dev));
++		break;
++		// TODO add test for client_type
++	}
++
++	return 0;
++}
++
++static struct notifier_block delta_switch_i2c_notifier = {
++	.notifier_call = delta_switch_i2c_notifier_call,
++};
++
++#define DECLARE_DELTA_SWITCH(_name)                                            \
++	static const struct delta_switch _name __initconst = {                 \
++		.i2c_peripherals = _name##_peripherals,                        \
++		.num_i2c_peripherals = ARRAY_SIZE(_name##_peripherals),        \
++		.post_inst_cb =                                                \
++			_name##_post_inst_cb ? _name##_post_inst_cb : NULL,    \
++	}
++
++struct i2c_mux_cpld_platform_data {
++	u8 cpld_bus; // control bus for mux
++	u8 cpld_addr; // control address
++	u8 cpld_reg; // control register
++
++	u8 parent_bus; // bus no. of mux
++
++	u8 base_nr; // force bus nr if set otherwise dynamice alloc
++
++	const u8 *values; // channel_ids
++	int n_values; // number of channels
++	bool idle_in_use; // deselect if enabled
++	u8 idle; // value to write in case idle_in_use is set
++
++	void *ctrl_adap;
++};
++
++// TODO mark as __initdata and copy like peripherials
++static const u8 delta_switch_ag7648_cpld1_values[] = {
++	0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
++	0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
++	0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24,
++	0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30,
++};
++
++// TODO mark as __initdata and copy like peripherials
++static struct i2c_mux_cpld_platform_data delta_switch_ag7648_cpld1 = {
++	.cpld_bus = 0x02,
++	.cpld_addr = 0x32,
++	.cpld_reg = 0x11,
++
++	.parent_bus = 0x04,
++
++	.values = delta_switch_ag7648_cpld1_values,
++	.n_values = 0x30,
++
++	.idle_in_use = true,
++	.idle = 0x3f,
++};
++
++// TODO mark as __initdata and copy like peripherials
++static const u8 delta_switch_ag7648_cpld2_values[] = { 0x01, 0x02, 0x03,
++						       0x04, 0x05, 0x06 };
++
++// TODO mark as __initdata and copy like peripherials
++static struct i2c_mux_cpld_platform_data delta_switch_ag7648_cpld2 = {
++	.cpld_bus = 0x02,
++	.cpld_addr = 0x32,
++	.cpld_reg = 0x0a,
++
++	.parent_bus = 0x05,
++
++	.values = delta_switch_ag7648_cpld2_values,
++	.n_values = 0x06,
++};
++
++static struct i2c_peripheral delta_ag7648_peripherals[] __initdata = {
++	/* pca9547. */
++	{
++		.board_info =
++			{
++				I2C_BOARD_INFO("pca9547", 0x70),
++			},
++		.type = I2C_ADAPTER_SMBUS_ISMT,
++	},
++	/* generic clock source */
++	{
++		.board_info =
++			{
++				I2C_BOARD_INFO("clock_gen", 0x69),
++			},
++		.type = I2C_ADAPTER_SMBUS_I801,
++	},
++	/* temperature sensor tmp75 */
++	{
++		.board_info =
++			{
++				I2C_BOARD_INFO("tmp75", 0x4d),
++			},
++		.type = I2C_ADAPTER_MUX,
++		.parent = I2C_ADAPTER_SMBUS_ISMT,
++		.nr = 2,
++	},
++	/* temperature sensor tmp75 */
++	{
++		.board_info =
++			{
++				I2C_BOARD_INFO("tmp75", 0x4c),
++			},
++		.type = I2C_ADAPTER_MUX,
++		.parent = I2C_ADAPTER_SMBUS_ISMT,
++		.nr = 3,
++	},
++	/* temperature sensor tmp75 */
++	{
++		.board_info =
++			{
++				I2C_BOARD_INFO("tmp75", 0x4d),
++			},
++		.type = I2C_ADAPTER_MUX,
++		.parent = I2C_ADAPTER_SMBUS_ISMT,
++		.nr = 3,
++	},
++	/* temperature sensor tmp75 */
++	{
++		.board_info =
++			{
++				I2C_BOARD_INFO("tmp75", 0x4e),
++			},
++		.type = I2C_ADAPTER_MUX,
++		.parent = I2C_ADAPTER_SMBUS_ISMT,
++		.nr = 3,
++	},
++};
++static struct platform_device *cpld1;
++static struct platform_device *cpld2;
++static void delta_ag7648_post_inst_cb(void)
++{
++	// TODO maybe this should be integrated into the peripherals
++
++	if (!cpld1) {
++		// FIXME this could hurt, since data is added later
++		cpld1 = platform_device_register_simple("i2c-mux-cpld", 1, NULL,
++							0);
++		if (IS_ERR(cpld1))
++			return PTR_ERR(cpld1);
++		// FIXME well the data added includes a pointer so this is prone to fail
++		platform_device_add_data(cpld1, &delta_switch_ag7648_cpld1,
++					 sizeof(delta_switch_ag7648_cpld1));
++	}
++
++	if (!cpld2) {
++		cpld2 = platform_device_register_simple("i2c-mux-cpld-2", 2,
++							NULL, 0);
++		if (IS_ERR(cpld2))
++			return PTR_ERR(cpld2);
++		// FIXME well the data added includes a pointer so this is prone to fail
++		platform_device_add_data(cpld2, &delta_switch_ag7648_cpld2,
++					 sizeof(delta_switch_ag7648_cpld2));
++	}
++}
++DECLARE_DELTA_SWITCH(delta_ag7648);
++
++static const struct dmi_system_id delta_switch_dmi_table[] __initconst = {
++	{
++		.ident = "Delta AG7648",
++		.matches =
++			{
++				DMI_MATCH(DMI_SYS_VENDOR, "Delta"),
++				DMI_MATCH(DMI_PRODUCT_NAME, "AG7648"),
++			},
++		.driver_data = (void *)&delta_ag7648,
++	},
++	{}
++};
++MODULE_DEVICE_TABLE(dmi, delta_switch_dmi_table);
++
++static int __init delta_switch_scan_peripherals(struct device *dev, void *data)
++{
++	if (dev->type == &i2c_adapter_type) {
++		delta_switch_check_adapter(to_i2c_adapter(dev));
++	}
++
++	return 0;
++}
++
++static int __init delta_switch_prepare_i2c_peripherals(
++	struct delta_switch *dta_switch, const struct delta_switch *src)
++{
++	struct i2c_peripheral *i2c_dev;
++	struct i2c_board_info *info;
++	int i;
++
++	if (!src->num_i2c_peripherals)
++		return 0;
++
++	dta_switch->i2c_peripherals = kmemdup(
++		src->i2c_peripherals,
++		src->num_i2c_peripherals * sizeof(*src->i2c_peripherals),
++		GFP_KERNEL);
++	if (!dta_switch->i2c_peripherals)
++		return -ENOMEM;
++
++	dta_switch->num_i2c_peripherals = src->num_i2c_peripherals;
++	dta_switch->post_inst_cb = src->post_inst_cb;
++
++	for (i = 0; i < dta_switch->num_i2c_peripherals; i++) {
++		i2c_dev = &dta_switch->i2c_peripherals[i];
++		info = &i2c_dev->board_info;
++	}
++
++	return 0;
++}
++
++static void delta_switch_destroy(const struct delta_switch *dta_switch)
++{
++	struct i2c_peripheral *i2c_dev;
++	struct i2c_board_info *info;
++	int i;
++
++	for (i = dta_switch->num_i2c_peripherals - 1; i >= 0; i--) {
++		i2c_dev = &dta_switch->i2c_peripherals[i];
++		info = &i2c_dev->board_info;
++
++		if (i2c_dev->client)
++			i2c_unregister_device(i2c_dev->client);
++	}
++
++	kfree(dta_switch->i2c_peripherals);
++	kfree(dta_switch);
++}
++
++static struct delta_switch *__init
++delta_switch_prepare(const struct delta_switch *src)
++{
++	struct delta_switch *dta_switch;
++	int error;
++
++	dta_switch = kzalloc(sizeof(*dta_switch), GFP_KERNEL);
++	if (!dta_switch)
++		return ERR_PTR(-ENOMEM);
++
++	error = delta_switch_prepare_i2c_peripherals(dta_switch, src);
++
++	if (error) {
++		delta_switch_destroy(dta_switch);
++		return ERR_PTR(error);
++	}
++
++	return dta_switch;
++}
++
++static int __init delta_switch_init(void)
++{
++	const struct dmi_system_id *dmi_id;
++	int error;
++
++	dmi_id = dmi_first_match(delta_switch_dmi_table);
++	if (!dmi_id) {
++		pr_debug("unsupported system\n");
++		return -ENODEV;
++	}
++
++	pr_debug("DMI Matched %s\n", dmi_id->ident);
++
++	dta_switch = delta_switch_prepare((void *)dmi_id->driver_data);
++	if (IS_ERR(dta_switch))
++		return PTR_ERR(dta_switch);
++
++	if (!dta_switch->num_i2c_peripherals) {
++		pr_debug("no relevant devices detected\n");
++		error = -ENODEV;
++		goto err_destroy_dta_switch;
++	}
++
++	error = bus_register_notifier(&i2c_bus_type,
++				      &delta_switch_i2c_notifier);
++	if (error) {
++		pr_err("failed to register i2c bus notifier: %d\n", error);
++		goto err_destroy_dta_switch;
++	}
++
++	/*
++	 * Scan adapters that have been registered and clients that have
++	 * been created before we installed the notifier to make sure
++	 * we do not miss any devices.
++	 */
++	i2c_for_each_dev(NULL, delta_switch_scan_peripherals);
++
++	return 0;
++
++err_destroy_dta_switch:
++	delta_switch_destroy(dta_switch);
++	return error;
++}
++
++static void __exit delta_switch_exit(void)
++{
++	bus_unregister_notifier(&i2c_bus_type, &delta_switch_i2c_notifier);
++	delta_switch_destroy(dta_switch);
++}
++
++module_init(delta_switch_init);
++module_exit(delta_switch_exit);
++
++MODULE_DESCRIPTION("Delta switch driver");
++MODULE_AUTHOR("Tobias Jungel <tobias.jungel@bisdn.de>");
++MODULE_LICENSE("GPL");
+-- 
+2.37.1
+

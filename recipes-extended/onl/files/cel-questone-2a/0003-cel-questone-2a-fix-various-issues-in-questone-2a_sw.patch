@@ -1,0 +1,610 @@
+Upstream-Status: Inappropriate [Questone 2a support not upstream]
+
+From 50e366359ef435858895eedeacc318d45fbfcaf7 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 5 Aug 2022 10:43:37 +0000
+Subject: [PATCH] cel-questone-2a: fix various issues in
+ questone-2a_switchboard
+
+Update the code to compile against newer kernels and fix various issues:
+
+* do not mix code and declarations
+* do not try to set NULL to integer variables
+* replace custom strsep/strtok parsing with sscanf
+* i2c_new_device() => ic2_new_client_device()
+* kzfree() -> kfree()
+* add missing newline at end of file.
+
+Fixes the following errors on build:
+
+|   CC [M]  /tmp/tmp.ebnyy35djQ/questone2a_switchboard.o
+| In file included from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/uapi/linux/posix_types.h:5,
+|                  from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/uapi/linux/types.h:14,
+|                  from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/types.h:6,
+|                  from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/limits.h:6,
+|                  from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/kernel.h:7,
+|                  from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/interrupt.h:6,
+|                  from /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:33:
+| /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/stddef.h:8:14: warning: initialization of 'long long unsigned int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+|     8 | #define NULL ((void *)0)
+|       |              ^
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:418:24: note: in expansion of macro 'NULL'
+|   418 |     .data_mmio_start = NULL,
+|       |                        ^~~~
+| /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/stddef.h:8:14: note: (near initialization for 'fpga_dev.data_mmio_start')
+|     8 | #define NULL ((void *)0)
+|       |              ^
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:418:24: note: in expansion of macro 'NULL'
+|   418 |     .data_mmio_start = NULL,
+|       |                        ^~~~
+| /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/stddef.h:8:14: warning: initialization of 'long long unsigned int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+|     8 | #define NULL ((void *)0)
+|       |              ^
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:419:22: note: in expansion of macro 'NULL'
+|   419 |     .data_mmio_len = NULL,
+|       |                      ^~~~
+| /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/stddef.h:8:14: note: (near initialization for 'fpga_dev.data_mmio_len')
+|     8 | #define NULL ((void *)0)
+|       |              ^
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:419:22: note: in expansion of macro 'NULL'
+|   419 |     .data_mmio_len = NULL,
+|       |                      ^~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'get_fpga_reg_value':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:465:30: warning: passing argument 1 of 'ioread32' makes pointer from integer without a cast [-Wint-conversion]
+|   465 |     data = ioread32(fpga_data->fpga_read_addr);
+|       |                     ~~~~~~~~~^~~~~~~~~~~~~~~~
+|       |                              |
+|       |                              long unsigned int
+| In file included from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/arch/x86/include/asm/io.h:224,
+|                  from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/io.h:13,
+|                  from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/pci.h:39,
+|                  from /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:35:
+| /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/asm-generic/iomap.h:32:30: note: expected 'const void *' but argument is of type 'long unsigned int'
+|    32 | extern unsigned int ioread32(const void __iomem *);
+|       |                              ^~~~~~~~~~~~~~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'set_fpga_reg_address':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:486:31: warning: assignment to 'long unsigned int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+|   486 |     fpga_data->fpga_read_addr = fpga_dev.data_base_addr+addr;
+|       |                               ^
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'set_fpga_reg_value':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:536:5: warning: ISO C90 forbids variable length array 'clone' [-Wvla]
+|   536 |     char clone[count];
+|       |     ^~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'ready_show':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:626:29: warning: unused variable 'dev_data' [-Wunused-variable]
+|   626 |     struct sff_device_data *dev_data = dev_get_drvdata(dev);
+|       |                             ^~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'cpld1_setreg_store':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:713:5: warning: ISO C90 forbids variable length array 'clone' [-Wvla]
+|   713 |     char clone[size];
+|       |     ^~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:722:24: warning: passing argument 1 of 'sprintf' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+|   722 |         return sprintf(buf,"ERROR line %d",__LINE__);
+|       |                        ^~~
+| In file included from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/interrupt.h:6,
+|                  from /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:33:
+| /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/kernel.h:201:41: note: expected 'char *' but argument is of type 'const char *'
+|   201 | extern __printf(2, 3) int sprintf(char *buf, const char * fmt, ...);
+|       |                                   ~~~~~~^~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:730:24: warning: passing argument 1 of 'sprintf' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+|   730 |         return sprintf(buf,"ERROR line %d",__LINE__);
+|       |                        ^~~
+| In file included from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/interrupt.h:6,
+|                  from /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:33:
+| /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/kernel.h:201:41: note: expected 'char *' but argument is of type 'const char *'
+|   201 | extern __printf(2, 3) int sprintf(char *buf, const char * fmt, ...);
+|       |                                   ~~~~~~^~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:739:24: warning: passing argument 1 of 'sprintf' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+|   739 |         return sprintf(buf,"ERROR line %d",__LINE__);
+|       |                        ^~~
+| In file included from /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/interrupt.h:6,
+|                  from /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:33:
+| /home/ubuntu/yocto/master/work-shared/agema-ag7648/kernel-source/include/linux/kernel.h:201:41: note: expected 'char *' but argument is of type 'const char *'
+|   201 | extern __printf(2, 3) int sprintf(char *buf, const char * fmt, ...);
+|       |                                   ~~~~~~^~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'cpld2_setreg_store':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:809:5: warning: ISO C90 forbids variable length array 'clone' [-Wvla]
+|   809 |     char clone[size];
+|       |     ^~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'smbus_access':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1255:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1255 |         unsigned int  portid = dev_data->portid;
+|       |         ^~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1285:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1285 |         unsigned int REG_FDR0;
+|       |         ^~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1306:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1306 |         int cnt=0;
+|       |         ^~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1458:13: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1458 |             int bid = 0;
+|       |             ^~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1503:1: warning: label 'Stop' defined but not used [-Wunused-label]
+|  1503 | Stop:
+|       | ^~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'fpga_i2c_access':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1533:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1533 |     unsigned char master_bus = dev_data->pca9548.master_bus;
+|       |     ^~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1539:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1539 |     uint16_t prev_port = fpga_i2c_lasted_access_port[master_bus-1];
+|       |     ^~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'seastone2_i2c_init':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1624:9: error: implicit declaration of function 'kzfree'; did you mean 'kvfree'? [-Werror=implicit-function-declaration]
+|  1624 |         kzfree(new_adapter);
+|       |         ^~~~~~
+|       |         kvfree
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1637:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1637 |     void __iomem *i2c_freq_base_reg = fpga_dev.data_base_addr+I2C_MASTER_FREQ_1;
+|       |     ^~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'seastone2_drv_probe':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1702:31: warning: assignment to 'long unsigned int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+|  1702 |     fpga_data->fpga_read_addr = fpga_dev.data_base_addr+FPGA_VERSION;
+|       |                               ^
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1821:13: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1821 |             struct sff_device_data *sff_data = dev_get_drvdata(fpga_data->sff_devices[portid_count]);
+|       |             ^~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1824:60: error: implicit declaration of function 'i2c_new_device'; did you mean 'i2c_acpi_new_device'? [-Werror=implicit-function-declaration]
+|  1824 |                 fpga_data->sff_i2c_clients[portid_count] = i2c_new_device(i2c_adap, &sff8436_eeprom_info[0]);
+|       |                                                            ^~~~~~~~~~~~~~
+|       |                                                            i2c_acpi_new_device
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1824:58: warning: assignment to 'struct i2c_client *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+|  1824 |                 fpga_data->sff_i2c_clients[portid_count] = i2c_new_device(i2c_adap, &sff8436_eeprom_info[0]);
+|       |                                                          ^
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1826:58: warning: assignment to 'struct i2c_client *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+|  1826 |                 fpga_data->sff_i2c_clients[portid_count] = i2c_new_device(i2c_adap, &sff8436_eeprom_info[1]);
+|       |                                                          ^
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1854:8: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1854 |        unsigned char master_bus = dev_data->pca9548.master_bus;
+|       |        ^~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1856:22: warning: unused variable 'channel' [-Wunused-variable]
+|  1856 |        unsigned char channel = dev_data->pca9548.channel;
+|       |                      ^~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'fpga_pci_probe':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1958:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+|  1958 |     uint32_t buff = ioread32(fpga_dev.data_base_addr);
+|       |     ^~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1963:1: warning: label 'reg_release' defined but not used [-Wunused-label]
+|  1963 | reg_release:
+|       | ^~~~~~~~~~~
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c: In function 'seastone2_drv_probe':
+| /tmp/tmp.ebnyy35djQ/questone2a_switchboard.c:1829:13: warning: ignoring return value of 'sysfs_create_link' declared with attribute 'warn_unused_result' [-Wunused-result]
+|  1829 |             sysfs_create_link(&fpga_data->sff_devices[portid_count]->kobj,
+|       |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|  1830 |                 &fpga_data->sff_i2c_clients[portid_count]->dev.kobj,
+|       |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|  1831 |                 "i2c");
+|       |                 ~~~~~~
+| cc1: some warnings being treated as errors
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../builds/src/questone2a_switchboard.c       | 189 ++++++------------
+ 1 file changed, 64 insertions(+), 125 deletions(-)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
+index f10b5ba..cbe1dd0 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
+@@ -415,8 +415,8 @@ struct fpga_device{
+ 
+ static struct fpga_device fpga_dev = {
+     .data_base_addr = NULL,
+-    .data_mmio_start = NULL,
+-    .data_mmio_len = NULL,
++    .data_mmio_start = 0,
++    .data_mmio_len = 0,
+ };
+ 
+ struct seastone2_fpga_data {
+@@ -424,7 +424,7 @@ struct seastone2_fpga_data {
+     struct i2c_client *sff_i2c_clients[SFF_PORT_TOTAL];
+     struct i2c_adapter *i2c_adapter[VIRTUAL_I2C_PORT_LENGTH];
+     struct mutex fpga_lock;         // For FPGA internal lock
+-    unsigned long fpga_read_addr;
++    void __iomem *fpga_read_addr;
+     uint8_t cpld1_read_addr;
+     uint8_t cpld2_read_addr;
+ };
+@@ -532,44 +532,15 @@ static ssize_t set_fpga_reg_value(struct device *dev, struct device_attribute *d
+     uint32_t addr;
+     uint32_t value;
+     uint32_t mode = 8;
+-    char *tok;
+-    char clone[count];
+-    char *pclone = clone;
+-    char *last;
+-
+-    strcpy(clone, buf);
+-
+-    mutex_lock(&fpga_data->fpga_lock);
+-    tok = strsep((char**)&pclone, " ");
+-    if(tok == NULL){
+-        mutex_unlock(&fpga_data->fpga_lock);
++    int num;
++    
++    num = sscanf(buf, "%x %x %d", &addr, &value, &mode);
++    if (num < 2)
+         return -EINVAL;
+-    }
+-    addr = (uint32_t)strtoul(tok,&last,16);
+-    if(addr == 0 && tok == last){
+-        mutex_unlock(&fpga_data->fpga_lock);
+-        return -EINVAL;
+-    }
+-    tok = strsep((char**)&pclone, " ");
+-    if(tok == NULL){
+-        mutex_unlock(&fpga_data->fpga_lock);
+-        return -EINVAL;
+-    }
+-    value = (uint32_t)strtoul(tok,&last,16);
+-    if(value == 0 && tok == last){
+-        mutex_unlock(&fpga_data->fpga_lock);
+-        return -EINVAL;
+-    }
+-    tok = strsep((char**)&pclone, " ");
+-    if(tok == NULL){
++    if (num == 2)
+         mode = 32;
+-    }else{
+-        mode = (uint32_t)strtoul(tok,&last,10);
+-        if(mode == 0 && tok == last){
+-            mutex_unlock(&fpga_data->fpga_lock);
+-            return -EINVAL;
+-        }
+-    }
++
++    mutex_lock(&fpga_data->fpga_lock);
+     if(mode == 32){
+         iowrite32(value, fpga_dev.data_base_addr+addr);
+     }else if(mode == 8){
+@@ -709,34 +680,15 @@ static ssize_t cpld1_setreg_store(struct device *dev, struct device_attribute *a
+ {
+ 
+     uint8_t addr,value;
+-    char *tok;
+-    char clone[size];
+-    char *pclone = clone;
+     int err;
+-    char *last;
+-
+-    strcpy(clone, buf);
+ 
+-    tok = strsep((char**)&pclone, " ");
+-    if(tok == NULL){
+-        return sprintf(buf,"ERROR line %d",__LINE__);
+-    }
+-    addr = (uint8_t)strtoul(tok,&last,16);
+-    if(addr == 0 && tok == last){
++    err = sscanf(buf, "%hhux %hhux", &addr, &value);
++    if (err != 2)
+         return -EINVAL;
+-    }
+-    tok = strsep((char**)&pclone, " ");
+-    if(tok == NULL){
+-        return sprintf(buf,"ERROR line %d",__LINE__);
+-    }
+-    value = (uint8_t)strtoul(tok,&last,16);
+-    if(value == 0 && tok == last){
+-        return -EINVAL;
+-    }
+ 
+     err = fpga_i2c_access(fpga_data->i2c_adapter[VIRTUAL_I2C_CPLD_INDEX],CPLD1_SLAVE_ADDR,0x00,I2C_SMBUS_WRITE,addr,I2C_SMBUS_BYTE_DATA,(union i2c_smbus_data*)&value);
+     if(err < 0)
+-        return sprintf(buf,"ERROR line %d",__LINE__);
++        return err;
+ 
+     return size;
+ }
+@@ -805,30 +757,11 @@ struct device_attribute dev_attr_cpld2_scratch = __ATTR(scratch,0600,cpld2_scrat
+ static ssize_t cpld2_setreg_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+ {
+     uint8_t addr,value;
+-    char *tok;
+-    char clone[size];
+-    char *pclone = clone;
+     int err;
+-    char *last;
+-
+-    strcpy(clone, buf);
+ 
+-    tok = strsep((char**)&pclone, " ");
+-    if(tok == NULL){
+-        return -EINVAL;
+-    }
+-    addr = (uint8_t)strtoul(tok,&last,16);
+-    if(addr == 0 && tok == last){
++    err = sscanf(buf, "%hhux %hhux", &addr, &value);
++    if (err != 2)
+         return -EINVAL;
+-    }
+-    tok = strsep((char**)&pclone, " ");
+-    if(tok == NULL){
+-        return -EINVAL;
+-    }
+-    value = (uint8_t)strtoul(tok,&last,16);
+-    if(value == 0 && tok == last){
+-        return -EINVAL;
+-    }
+ 
+     err = fpga_i2c_access(fpga_data->i2c_adapter[VIRTUAL_I2C_CPLD_INDEX],CPLD2_SLAVE_ADDR,0x00,I2C_SMBUS_WRITE,addr,I2C_SMBUS_BYTE_DATA,(union i2c_smbus_data*)&value);
+     if(err < 0)
+@@ -1247,13 +1180,17 @@ static int smbus_access(struct i2c_adapter *adapter, u16 addr,
+               unsigned short flags, char rw, u8 cmd,
+               int size, union i2c_smbus_data *data)
+ {
+-        int error = 0;
+-        struct i2c_dev_data *dev_data;
+-        /* Write the command register */
+-        dev_data = i2c_get_adapdata(adapter);
+-
++        struct i2c_dev_data *dev_data = i2c_get_adapdata(adapter);
+         unsigned int  portid = dev_data->portid;
+         void __iomem *pci_bar = fpga_dev.data_base_addr;
++        unsigned int master_bus = dev_data->pca9548.master_bus;
++        unsigned int REG_FDR0;
++        unsigned int REG_CR0;
++        unsigned int REG_SR0;
++        unsigned int REG_DR0;
++        unsigned int REG_ID0;
++        int error = 0;
++        int cnt=0;
+ 
+ #ifdef DEBUG_KERN
+         printk(KERN_INFO "portid %2d|@ 0x%2.2X|f 0x%4.4X|(%d)%-5s| (%d)%-15s|CMD %2.2X "
+@@ -1282,14 +1219,6 @@ static int smbus_access(struct i2c_adapter *adapter, u16 addr,
+                 goto Done;
+         }
+ 
+-        unsigned int REG_FDR0;
+-        unsigned int REG_CR0;
+-        unsigned int REG_SR0;
+-        unsigned int REG_DR0;
+-        unsigned int REG_ID0;
+-
+-        unsigned int master_bus = dev_data->pca9548.master_bus;
+-
+         if(master_bus < I2C_MASTER_CH_1 || master_bus > I2C_MASTER_CH_TOTAL){
+             error = -ENXIO;
+             goto Done;
+@@ -1303,8 +1232,6 @@ static int smbus_access(struct i2c_adapter *adapter, u16 addr,
+ 
+         iowrite8(portid,pci_bar+REG_ID0);
+ 
+-        int cnt=0;
+-
+         ////[S][ADDR/R]
+         // Clear status register
+         iowrite8(0,pci_bar+REG_SR0);
+@@ -1439,6 +1366,7 @@ static int smbus_access(struct i2c_adapter *adapter, u16 addr,
+                 size == I2C_SMBUS_BLOCK_DATA ||
+                 size == I2C_SMBUS_I2C_BLOCK_DATA
+             )){
++            int bid = 0;
+ 
+             switch(size){
+                 case I2C_SMBUS_BYTE:
+@@ -1455,7 +1383,6 @@ static int smbus_access(struct i2c_adapter *adapter, u16 addr,
+                         cnt = 0;  break;
+             }
+ 
+-            int bid = 0;
+             info( "MS Receive");
+ 
+             //set to Receive mode
+@@ -1528,15 +1455,15 @@ static int fpga_i2c_access(struct i2c_adapter *adapter, u16 addr,
+               int size, union i2c_smbus_data *data)
+ {
+     int error = 0;
+-    struct i2c_dev_data *dev_data;
+-    dev_data = i2c_get_adapdata(adapter);
++    struct i2c_dev_data *dev_data = i2c_get_adapdata(adapter);
+     unsigned char master_bus = dev_data->pca9548.master_bus;
+     unsigned char switch_addr = dev_data->pca9548.switch_addr;
+     unsigned char channel = dev_data->pca9548.channel;
++    uint16_t prev_port;
+ 
+     // Acquire the master resource.
+     mutex_lock(&fpga_i2c_master_locks[master_bus-1]);
+-    uint16_t prev_port = fpga_i2c_lasted_access_port[master_bus-1];
++    prev_port = fpga_i2c_lasted_access_port[master_bus-1];
+ 
+     if(switch_addr != 0xFF){
+         // Check lasted access switch address on a master
+@@ -1598,7 +1525,7 @@ static const struct i2c_algorithm seastone2_i2c_algorithm = {
+ static struct i2c_adapter * seastone2_i2c_init(struct platform_device *pdev, int portid, int bus_number_offset)
+ {
+     int error;
+-
++    void __iomem *i2c_freq_base_reg;
+     struct i2c_adapter *new_adapter;
+     struct i2c_dev_data *new_data;
+ 
+@@ -1621,7 +1548,7 @@ static struct i2c_adapter * seastone2_i2c_init(struct platform_device *pdev, int
+     new_data = kzalloc(sizeof(*new_data), GFP_KERNEL);
+     if (!new_data){
+         printk(KERN_ALERT "Cannot alloc i2c data for %s", fpga_i2c_bus_dev[portid].calling_name);
+-        kzfree(new_adapter);
++        kfree(new_adapter);
+         return NULL;
+     }
+ 
+@@ -1634,14 +1561,14 @@ static struct i2c_adapter * seastone2_i2c_init(struct platform_device *pdev, int
+     snprintf(new_adapter->name, sizeof(new_adapter->name),
+         "SMBus I2C Adapter PortID: %s", new_data->pca9548.calling_name);
+ 
+-    void __iomem *i2c_freq_base_reg = fpga_dev.data_base_addr+I2C_MASTER_FREQ_1;
++    i2c_freq_base_reg = fpga_dev.data_base_addr+I2C_MASTER_FREQ_1;
+     iowrite8(0x07,i2c_freq_base_reg+(new_data->pca9548.master_bus-1)*0x100); // 0x07 400kHz
+     i2c_set_adapdata(new_adapter,new_data);
+     error = i2c_add_numbered_adapter(new_adapter);
+     if(error < 0){
+         printk(KERN_ALERT "Cannot add i2c adapter %s", new_data->pca9548.calling_name);
+-        kzfree(new_adapter);
+-        kzfree(new_data);
++        kfree(new_adapter);
++        kfree(new_data);
+         return NULL;
+     }
+ 
+@@ -1711,13 +1638,13 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+     res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+     if (unlikely(!res)) {
+         printk(KERN_ERR "Specified Resource Not Available...\n");
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return -1;
+     }
+ 
+     fpga = kobject_create_and_add("FPGA", &pdev->dev.kobj);
+     if (!fpga){
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return -ENOMEM;
+     }
+ 
+@@ -1725,7 +1652,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+     if (ret != 0) {
+         printk(KERN_ERR "Cannot create FPGA sysfs attributes\n");
+         kobject_put(fpga);
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return ret;
+     }
+ 
+@@ -1733,7 +1660,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+     if (!cpld1){
+         sysfs_remove_group(fpga, &fpga_attr_grp);
+         kobject_put(fpga);
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return -ENOMEM;
+     }
+     ret = sysfs_create_group(cpld1, &cpld1_attr_grp);
+@@ -1742,7 +1669,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+         kobject_put(cpld1);
+         sysfs_remove_group(fpga, &fpga_attr_grp);
+         kobject_put(fpga);
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return ret;
+     }
+ 
+@@ -1752,7 +1679,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+         kobject_put(cpld1);
+         sysfs_remove_group(fpga, &fpga_attr_grp);
+         kobject_put(fpga);
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return -ENOMEM;
+     }
+     ret = sysfs_create_group(cpld2, &cpld2_attr_grp);
+@@ -1763,7 +1690,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+         kobject_put(cpld1);
+         sysfs_remove_group(fpga, &fpga_attr_grp);
+         kobject_put(fpga);
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return ret;
+     }
+ 
+@@ -1776,7 +1703,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+         kobject_put(cpld1);
+         sysfs_remove_group(fpga, &fpga_attr_grp);
+         kobject_put(fpga);
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return PTR_ERR(sff_dev);
+     }
+ 
+@@ -1790,7 +1717,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+         kobject_put(cpld1);
+         sysfs_remove_group(fpga, &fpga_attr_grp);
+         kobject_put(fpga);
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return ret;
+     }
+ 
+@@ -1804,7 +1731,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+         kobject_put(cpld1);
+         sysfs_remove_group(fpga, &fpga_attr_grp);
+         kobject_put(fpga);
+-        kzfree(fpga_data);
++        kfree(fpga_data);
+         return ret;
+     }
+ 
+@@ -1817,18 +1744,30 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+     for(portid_count=0; portid_count < SFF_PORT_TOTAL; portid_count++){
+         struct i2c_adapter *i2c_adap = fpga_data->i2c_adapter[portid_count];
+         if(i2c_adap){
++            struct sff_device_data *sff_data;
++
+             fpga_data->sff_devices[portid_count] = seastone2_sff_init(portid_count);
+-            struct sff_device_data *sff_data = dev_get_drvdata(fpga_data->sff_devices[portid_count]);
++	    if (fpga_data->sff_devices[portid_count] == NULL)
++		continue;
++
++            sff_data = dev_get_drvdata(fpga_data->sff_devices[portid_count]);
+             BUG_ON(sff_data == NULL);
+             if( sff_data->port_type == QSFP ){
+-                fpga_data->sff_i2c_clients[portid_count] = i2c_new_device(i2c_adap, &sff8436_eeprom_info[0]);
++                fpga_data->sff_i2c_clients[portid_count] = i2c_new_client_device(i2c_adap, &sff8436_eeprom_info[0]);
+             }else{
+-                fpga_data->sff_i2c_clients[portid_count] = i2c_new_device(i2c_adap, &sff8436_eeprom_info[1]);
++                fpga_data->sff_i2c_clients[portid_count] = i2c_new_client_device(i2c_adap, &sff8436_eeprom_info[1]);
+             }
++
++	    if (IS_ERR(fpga_data->sff_i2c_clients[portid_count])) {
++		    fpga_data->sff_i2c_clients[portid_count] = NULL;
++		    continue;
++	    }
++
+             sff_data = NULL;
+-            sysfs_create_link(&fpga_data->sff_devices[portid_count]->kobj,
++            if (sysfs_create_link(&fpga_data->sff_devices[portid_count]->kobj,
+                 &fpga_data->sff_i2c_clients[portid_count]->dev.kobj,
+-                "i2c");
++                "i2c") < 0)
++		    printk(KERN_WARNING "failed to create sysfs link\n");
+         }
+ 
+     }
+@@ -1849,8 +1788,7 @@ static int seastone2_drv_probe(struct platform_device *pdev)
+     /* Init I2C buses that has PCA9548 switch device. */
+     for(portid_count = 0; portid_count < VIRTUAL_I2C_PORT_LENGTH; portid_count++){
+ 
+-       struct i2c_dev_data *dev_data;
+-       dev_data = i2c_get_adapdata(fpga_data->i2c_adapter[portid_count]);
++       struct i2c_dev_data *dev_data = i2c_get_adapdata(fpga_data->i2c_adapter[portid_count]);
+        unsigned char master_bus = dev_data->pca9548.master_bus;
+        unsigned char switch_addr = dev_data->pca9548.switch_addr;
+        unsigned char channel = dev_data->pca9548.channel;
+@@ -1925,6 +1863,7 @@ static int fpga_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ {
+     int err;
+     struct device *dev = &pdev->dev;
++    uint32_t buff;
+         if ((err = pci_enable_device(pdev))) {
+         dev_err(dev, "pci_enable_device probe error %d for device %s\n",
+             err, pci_name(pdev));
+@@ -1955,7 +1894,7 @@ static int fpga_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+     printk(KERN_INFO "FPGA ioremap registers of size %lu\n",(unsigned long)fpga_dev.data_mmio_len);
+     printk(KERN_INFO "FPGA Virtual BAR %d at %8.8lx - %8.8lx\n",FPGA_PCI_BAR_NUM,(unsigned long)fpga_dev.data_base_addr,(unsigned long)fpga_dev.data_base_addr+ (unsigned long)fpga_dev.data_mmio_len);
+     printk(KERN_INFO "");
+-    uint32_t buff = ioread32(fpga_dev.data_base_addr);
++    buff = ioread32(fpga_dev.data_base_addr);
+     printk(KERN_INFO "FPGA VERSION : %8.8x\n", buff);
+     fpgafw_init();
+     return 0;
+@@ -2145,4 +2084,4 @@ MODULE_DESCRIPTION("Celestica seastone2 platform driver");
+ MODULE_DESCRIPTION("Celestica questone2 platform driver");
+ #endif
+ MODULE_VERSION(MOD_VERSION);
+-MODULE_LICENSE("GPL");
+\ No newline at end of file
++MODULE_LICENSE("GPL");
+-- 
+2.34.1
+
