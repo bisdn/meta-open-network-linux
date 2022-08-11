@@ -87,4 +87,5 @@ ONL_MODULE_VENDORS:arm = " \
 "
 
 ONL_MODULE_VENDORS:x86-64 = " \
+    delta \
 "
