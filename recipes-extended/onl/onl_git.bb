@@ -45,9 +45,20 @@ SRC_URI += " \
            file://accton-as7726-32x/0001-as7726-32x-silence-ignored-return-value-warnings.patch \
            file://cel-questone-2a/0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
            file://cel-questone-2a/0002-cel-questone-2a-delete-unused-global-variables.patch \
+           file://cel-questone-2a/0003-cel-questone-2a-fix-various-issues-in-questone-2a_sw.patch \
+           file://cel-questone-2a/0004-cel-questone-2a-do-not-build-optoe.patch \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
+           file://delta-ag5648/0002-delta-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
+           file://delta-ag7648/0003-bump-kernel-to-4.9.patch \
+           file://delta-ag7648/0004-x86-64-delta-ag7648-i2c-mux-setting.ko-added-additio.patch \
+           file://delta-ag7648/0005-kernel-update-i2c-settings-module.patch \
+           file://delta-ag7648/0006-cpld-mux-2-was-off-by-1-to-select-the-correct-qsfp.patch \
+           file://delta-ag7648/0007-i2c-mux-setting-mod-add-match-for-newer-coreboot.patch \
+           file://delta-ag7648/0008-ag7648-i2c-mux-setting-mod-fix-race-in-CPLD-device-r.patch \
+           file://delta-ag7648/0009-ag7648-i2c-mux-setting-mod-force-mux-bus-numbers.patch \
+           file://delta-ag7648/0010-x86-64-delta-ag7648-i2c-mux-setting-mod-update-to-ne.patch \
 "
 
 FILES:${PN} = " \

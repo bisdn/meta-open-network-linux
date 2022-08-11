@@ -1,0 +1,60 @@
+Upstream-Status: Inappropriate [code not upstream]
+
+From 86ff576c690d08716b769c9bfb1cca9cc810a78e Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 23 Jan 2020 16:21:05 +0000
+Subject: [PATCH 6/8] ag7648-i2c-mux-setting-mod: fix race in CPLD device
+ registration
+
+Registering the device and attaching platform data in two steps is racy
+and may break if the driver attaches and probes between those steps.
+
+Luckily there is a function allowing us to do it in one step, so use it.
+
+Fixes i2c devices occationally not being created for the SFP ports
+behind the CPLDs.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c   | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+index b4fc055d20d9..e8298b5731d8 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -286,25 +286,22 @@ static struct platform_device *delta_ag7648_cpld1_init(void)
+ {
+ 	struct platform_device *pd;
+ 
+-	// FIXME this could hurt, since data is added later
+-	pd = platform_device_register_simple("i2c-mux-cpld", 1, NULL, 0);
++	pd = platform_device_register_data(NULL, "i2c-mux-cpld", 1,
++					   &delta_switch_ag7648_cpld1,
++					   sizeof(delta_switch_ag7648_cpld1));
+ 	if (IS_ERR(pd))
+ 		return NULL;//PTR_ERR(pd);
+-	// FIXME well the data added includes a pointer so this is prone to fail
+-	platform_device_add_data(pd, &delta_switch_ag7648_cpld1,
+-				 sizeof(delta_switch_ag7648_cpld1));
+ 	return pd;
+ }
+ static struct platform_device * delta_ag7648_cpld2_init(void)
+ {
+ 	struct platform_device *pd;
+ 
+-	pd = platform_device_register_simple("i2c-mux-cpld-2", 2, NULL, 0);
++	pd = platform_device_register_data(NULL, "i2c-mux-cpld-2", 2,
++					   &delta_switch_ag7648_cpld2,
++					   sizeof(delta_switch_ag7648_cpld2));
+ 	if (IS_ERR(pd))
+ 		return NULL;//PTR_ERR(pd);
+-	// FIXME well the data added includes a pointer so this is prone to fail
+-	platform_device_add_data(pd, &delta_switch_ag7648_cpld2,
+-				 sizeof(delta_switch_ag7648_cpld2));
+ 	return pd;
+ }
+ static struct i2c_peripheral delta_ag7648_peripherals[] __initdata = {
+-- 
+2.37.1
+

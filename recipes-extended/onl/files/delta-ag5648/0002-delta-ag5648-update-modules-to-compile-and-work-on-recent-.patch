@@ -1,0 +1,177 @@
+Upstream-Status: Unsubmitted [needs cleanup, older kernel compat]
+
+From 0e1991ee2bb881b89cafd8d50fbbfe3ec467a1c3 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 17 Jan 2020 14:29:42 +0000
+Subject: [PATCH] ag5648: update modules to compile and work on recent kernels
+
+Still require a lot of love to get them in a nice state.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86-64/ag5648/modules/builds/dni_ag5648_psu.c            |  2 +-
+ .../platforms/delta/x86-64/ag5648/modules/builds/i2c_cpld.c  | 65 +++++++------------
+ 2 files changed, 32 insertions(+), 41 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c b/packages/platforms/delta/x86-64/ag5648/modules/dni_ag5648_psu.c
+index a6bc521eb9fe..1a25071a090a 100644
+--- a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c
++++ b/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c
+@@ -373,7 +373,7 @@ static SENSOR_DEVICE_ATTR(psu_temp1_input,	\
+ 		S_IRUGO, for_linear_data,	NULL, PSU_TEMP1_INPUT);
+ static SENSOR_DEVICE_ATTR(psu_fan1_fault,	\
+ 		S_IRUGO, for_fan_fault, 	NULL, PSU_FAN1_FAULT);
+-static SENSOR_DEVICE_ATTR(psu_fan1_duty_cycle_percentage, S_IWUGO | S_IRUGO, \
++static SENSOR_DEVICE_ATTR(psu_fan1_duty_cycle_percentage, S_IWUSR | S_IRUGO, \
+ 		for_linear_data, set_fan_duty_cycle, PSU_FAN1_DUTY_CYCLE);
+ static SENSOR_DEVICE_ATTR(psu_fan1_speed_rpm, 	\
+ 		S_IRUGO, for_linear_data,	NULL, PSU_FAN1_SPEED);
+diff --git a/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c b/packages/platforms/delta/x86-64/modules/i2c_cpld.c
+index cd77cb36c7b2..bf368a781dc9 100644
+--- a/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c
++++ b/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c
+@@ -70,7 +70,7 @@ enum cpld_mux_type
+ struct i2c_cpld_mux
+ {
+   enum cpld_mux_type type;
+-  struct i2c_adapter *virt_adaps[I2C_CPLD_MUX_MAX_NCHANS];
++  struct i2c_client *client;
+   u8 last_chan;  /* last register value */
+ };
+ 
+@@ -145,10 +145,10 @@ static int i2c_cpld_mux_reg_write(struct i2c_adapter *adap,
+   return res;
+ }
+ 
+-static int i2c_cpld_mux_select_chan(struct i2c_adapter *adap,
+-                                    void *client, u32 chan)
++static int i2c_cpld_mux_select_chan(struct i2c_mux_core *muxc, u32 chan)
+ {
+-  struct i2c_cpld_mux *data = i2c_get_clientdata(client);
++  struct i2c_cpld_mux *data = i2c_mux_priv(muxc);
++  struct i2c_client *client = data->client;
+   u8 regval;
+   int ret = 0;
+ 
+@@ -157,23 +157,23 @@ static int i2c_cpld_mux_select_chan(struct i2c_adapter *adap,
+   /* Only select the channel if its different from the last channel */
+   if (data->last_chan != regval)
+   {
+-    ret = i2c_cpld_mux_reg_write(adap, client, regval);
++    ret = i2c_cpld_mux_reg_write(muxc->parent, client, regval);
+     data->last_chan = regval;
+   }
+ 
+   return ret;
+ }
+ 
+-static int i2c_cpld_mux_deselect_mux(struct i2c_adapter *adap,
+-                                     void *client, u32 chan)
++static int i2c_cpld_mux_deselect_mux(struct i2c_mux_core *muxc, u32 chan)
+ {
+-  struct i2c_cpld_mux *data = i2c_get_clientdata(client);
++  struct i2c_cpld_mux *data = i2c_mux_priv(muxc);
++  struct i2c_client *client = data->client;
+ 
+   /* Deselect active channel */
+   data->last_chan = chips[data->type].deselectChan;
+ 
+   //return i2c_cpld_mux_reg_write(adap, client, data->last_chan);
+-  i2c_cpld_mux_reg_write(adap, client, data->last_chan);
++  i2c_cpld_mux_reg_write(muxc->parent, client, data->last_chan);
+   return 0;
+ }
+ 
+@@ -336,7 +336,8 @@ static struct device_attribute ver = __ATTR(version, 0600, show_cpld_version,
+ static int i2c_cpld_mux_probe(struct i2c_client *client,
+                               const struct i2c_device_id *id)
+ {
+-  struct i2c_adapter *adap = to_i2c_adapter(client->dev.parent);
++  struct i2c_adapter *adap = client->adapter;
++  struct i2c_mux_core *muxc;
+   int chan = 0;
+   struct i2c_cpld_mux *data;
+   int ret = -ENODEV;
+@@ -346,14 +347,19 @@ static int i2c_cpld_mux_probe(struct i2c_client *client,
+     goto err;
+   }
+ 
+-  data = kzalloc(sizeof(struct i2c_cpld_mux), GFP_KERNEL);
+-  if (!data)
++  muxc = i2c_mux_alloc(adap, &client->dev, I2C_CPLD_MUX_MAX_NCHANS,
++		       sizeof(*data), 0, 
++		       i2c_cpld_mux_select_chan,
++		       i2c_cpld_mux_deselect_mux);
++  
++  if (!muxc)
+   {
+     ret = -ENOMEM;
+     goto err;
+   }
+-
+-  i2c_set_clientdata(client, data);
++  data = i2c_mux_priv(muxc);
++  i2c_set_clientdata(client, muxc);
++  data->client = client;
+ 
+   data->type = id->driver_data;
+   data->last_chan =
+@@ -362,16 +368,9 @@ static int i2c_cpld_mux_probe(struct i2c_client *client,
+   /* Now create an adapter for each channel */
+   for (chan = 0; chan < chips[data->type].nchans; chan++)
+   {
+-    data->virt_adaps[chan] = i2c_add_mux_adapter(adap, &client->dev, client, 0,
+-                                                 chan,
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
+-                                                 I2C_CLASS_HWMON | I2C_CLASS_SPD,
+-#endif
+-                                                 i2c_cpld_mux_select_chan,
+-                                                 i2c_cpld_mux_deselect_mux);
+-    if (data->virt_adaps[chan] == NULL)
++    ret = i2c_mux_add_adapter(muxc, false, chan, 0);
++    if (ret)
+     {
+-      ret = -ENODEV;
+       dev_err(&client->dev, "failed to register multiplexed adapter %d\n", chan);
+       goto virt_reg_failed;
+     }
+@@ -401,10 +400,7 @@ static int i2c_cpld_mux_probe(struct i2c_client *client,
+   return 0;
+ 
+ virt_reg_failed:
+-  for (chan--; chan >= 0; chan--)
+-  {
+-    i2c_del_mux_adapter(data->virt_adaps[chan]);
+-  }
++  i2c_mux_del_adapters(muxc);
+   kfree(data);
+ err:
+   return ret;
+@@ -412,22 +408,11 @@ err:
+ 
+ static int i2c_cpld_mux_remove(struct i2c_client *client)
+ {
+-  struct i2c_cpld_mux *data = i2c_get_clientdata(client);
+-  const struct chip_desc *chip = &chips[data->type];
+-  int chan;
++  struct i2c_mux_core *muxc = i2c_get_clientdata(client);
+ 
+   sysfs_remove_file(&client->dev.kobj, &ver.attr);
+ 
+-  for (chan = 0; chan < chip->nchans; ++chan)
+-  {
+-    if (data->virt_adaps[chan])
+-    {
+-      i2c_del_mux_adapter(data->virt_adaps[chan]);
+-      data->virt_adaps[chan] = NULL;
+-    }
+-  }
+-
+-  kfree(data);
++  i2c_mux_del_adapters(muxc);
+   i2c_cpld_remove_client(client);
+ 
+   return 0;
+-- 
+2.37.1
+

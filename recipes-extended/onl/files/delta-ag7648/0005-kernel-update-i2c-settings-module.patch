@@ -1,0 +1,242 @@
+Upstream-Status: Inappropriate [code not upstream]
+
+From a6a81777b60d67dc91074cd22e3db00df50d280e Mon Sep 17 00:00:00 2001
+From: Tobias Jungel <tobias.jungel@bisdn.de>
+Date: Thu, 22 Nov 2018 15:12:11 +0100
+Subject: [PATCH 3/8] kernel: update i2c settings module
+
+This patch ensures a more reliable i2c adapter/device initialization. We
+experienced some reordering of the cpld devices which is fixed due to a
+stronger dependency of the cplds.
+---
+ .../x86-64-delta-ag7648-i2c-mux-setting.c     | 114 ++++++++++--------
+ 1 file changed, 61 insertions(+), 53 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+index 3fe38522dd8d..48a7d0e44a3d 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -21,6 +21,7 @@ static const char *i2c_adapter_names[] = {
+ 	"SMBus I801 adapter",
+ 	"SMBus iSMT adapter",
+ 	"i2c-%d-mux",
++	"i2c-4-mux", // HACK...
+ };
+ 
+ /* Keep this enum consistent with i2c_adapter_names */
+@@ -29,22 +30,21 @@ enum i2c_adapter_type {
+ 	I2C_ADAPTER_SMBUS_I801,
+ 	I2C_ADAPTER_SMBUS_ISMT,
+ 	I2C_ADAPTER_MUX,
++	I2C_ADAPTER_CPLD_1,
+ };
+ 
+ struct i2c_peripheral {
+ 	struct i2c_board_info board_info;
+ 	unsigned short alt_addr;
+ 
+-	const char *dmi_name;
+-	unsigned long irqflags;
+-	struct resource irq_resource;
+-
+ 	enum i2c_adapter_type type;
+ 	enum i2c_adapter_type parent;
+ 	int nr;
+ 
+ 	u32 pci_devid;
+ 
++	struct platform_device *(*init_cb)(void);
++	struct platform_device *pd;
+ 	struct i2c_client *client;
+ };
+ 
+@@ -55,8 +55,6 @@ struct delta_switch {
+ 	 */
+ 	struct i2c_peripheral *i2c_peripherals;
+ 	unsigned int num_i2c_peripherals;
+-
+-	void (*post_inst_cb)(void);
+ };
+ 
+ static const struct delta_switch *dta_switch;
+@@ -152,11 +150,13 @@ static void delta_switch_check_adapter(struct i2c_adapter *adapter)
+ 	const char *adapter_name;
+ 	int all_initialized = 1;
+ 
++	pr_debug("checking %s id=%u\n", adapter->name, i2c_adapter_id(adapter));
++
+ 	for (i = 0; i < dta_switch->num_i2c_peripherals; i++) {
+ 		i2c_dev = &dta_switch->i2c_peripherals[i];
+ 
+ 		/* Skip devices already created */
+-		if (i2c_dev->client)
++		if (i2c_dev->client || i2c_dev->pd)
+ 			continue;
+ 
+ 		if (i2c_dev->type == I2C_ADAPTER_MUX &&
+@@ -176,15 +176,19 @@ static void delta_switch_check_adapter(struct i2c_adapter *adapter)
+ 			continue;
+ 		}
+ 
+-		i2c_dev->client = delta_switch_instantiate_i2c_device(
+-			adapter, &i2c_dev->board_info, i2c_dev->alt_addr);
++		if (i2c_dev->init_cb && !i2c_dev->pd) {
++			i2c_dev->pd = i2c_dev->init_cb();
++		} else {
++			i2c_dev->client = delta_switch_instantiate_i2c_device(
++				adapter, &i2c_dev->board_info, i2c_dev->alt_addr);
++		}
+ 	}
+ 
+ 	/* check if all devices are initialized */
+ 	for (i = 0; i < dta_switch->num_i2c_peripherals; i++) {
+ 		i2c_dev = &dta_switch->i2c_peripherals[i];
+ 
+-		if (i2c_dev->client)
++		if (i2c_dev->client || i2c_dev->pd)
+ 			continue;
+ 
+ 		pr_debug("found non initialized device %s\n",
+@@ -192,10 +196,6 @@ static void delta_switch_check_adapter(struct i2c_adapter *adapter)
+ 		all_initialized = 0;
+ 		break;
+ 	}
+-
+-	if (all_initialized && dta_switch->post_inst_cb) {
+-		dta_switch->post_inst_cb();
+-	}
+ }
+ 
+ static int delta_switch_i2c_notifier_call(struct notifier_block *nb,
+@@ -203,6 +203,8 @@ static int delta_switch_i2c_notifier_call(struct notifier_block *nb,
+ {
+ 	struct device *dev = data;
+ 
++	pr_debug("delta_switch_i2c_notifier_call: action=%lu\n", action);
++
+ 	switch (action) {
+ 	case BUS_NOTIFY_ADD_DEVICE:
+ 		if (dev->type == &i2c_adapter_type)
+@@ -222,8 +224,6 @@ static struct notifier_block delta_switch_i2c_notifier = {
+ 	static const struct delta_switch _name __initconst = {                 \
+ 		.i2c_peripherals = _name##_peripherals,                        \
+ 		.num_i2c_peripherals = ARRAY_SIZE(_name##_peripherals),        \
+-		.post_inst_cb =                                                \
+-			_name##_post_inst_cb ? _name##_post_inst_cb : NULL,    \
+ 	}
+ 
+ struct i2c_mux_cpld_platform_data {
+@@ -282,6 +282,31 @@ static struct i2c_mux_cpld_platform_data delta_switch_ag7648_cpld2 = {
+ 	.n_values = 0x06,
+ };
+ 
++static struct platform_device *delta_ag7648_cpld1_init(void)
++{
++	struct platform_device *pd;
++
++	// FIXME this could hurt, since data is added later
++	pd = platform_device_register_simple("i2c-mux-cpld", 1, NULL, 0);
++	if (IS_ERR(pd))
++		return NULL;//PTR_ERR(pd);
++	// FIXME well the data added includes a pointer so this is prone to fail
++	platform_device_add_data(pd, &delta_switch_ag7648_cpld1,
++				 sizeof(delta_switch_ag7648_cpld1));
++	return pd;
++}
++static struct platform_device * delta_ag7648_cpld2_init(void)
++{
++	struct platform_device *pd;
++
++	pd = platform_device_register_simple("i2c-mux-cpld-2", 2, NULL, 0);
++	if (IS_ERR(pd))
++		return NULL;//PTR_ERR(pd);
++	// FIXME well the data added includes a pointer so this is prone to fail
++	platform_device_add_data(pd, &delta_switch_ag7648_cpld2,
++				 sizeof(delta_switch_ag7648_cpld2));
++	return pd;
++}
+ static struct i2c_peripheral delta_ag7648_peripherals[] __initdata = {
+ 	/* pca9547. */
+ 	{
+@@ -339,34 +364,27 @@ static struct i2c_peripheral delta_ag7648_peripherals[] __initdata = {
+ 		.parent = I2C_ADAPTER_SMBUS_ISMT,
+ 		.nr = 3,
+ 	},
++	/* cpld-1 mux */
++	{
++		.board_info =
++			{
++				I2C_BOARD_INFO("cpld1", 0),
++			},
++		.type = I2C_ADAPTER_MUX,
++		.parent = I2C_ADAPTER_SMBUS_ISMT,
++		.nr = 9,
++		.init_cb = delta_ag7648_cpld1_init,
++	},
++	/* cpld-2 mux */
++	{
++		.board_info =
++			{
++				I2C_BOARD_INFO("cpld2", 0),
++			},
++		.type = I2C_ADAPTER_CPLD_1, // only after cpld1
++		.init_cb = delta_ag7648_cpld2_init,
++	},
+ };
+-static struct platform_device *cpld1;
+-static struct platform_device *cpld2;
+-static void delta_ag7648_post_inst_cb(void)
+-{
+-	// TODO maybe this should be integrated into the peripherals
+-
+-	if (!cpld1) {
+-		// FIXME this could hurt, since data is added later
+-		cpld1 = platform_device_register_simple("i2c-mux-cpld", 1, NULL,
+-							0);
+-		if (IS_ERR(cpld1))
+-			return PTR_ERR(cpld1);
+-		// FIXME well the data added includes a pointer so this is prone to fail
+-		platform_device_add_data(cpld1, &delta_switch_ag7648_cpld1,
+-					 sizeof(delta_switch_ag7648_cpld1));
+-	}
+-
+-	if (!cpld2) {
+-		cpld2 = platform_device_register_simple("i2c-mux-cpld-2", 2,
+-							NULL, 0);
+-		if (IS_ERR(cpld2))
+-			return PTR_ERR(cpld2);
+-		// FIXME well the data added includes a pointer so this is prone to fail
+-		platform_device_add_data(cpld2, &delta_switch_ag7648_cpld2,
+-					 sizeof(delta_switch_ag7648_cpld2));
+-	}
+-}
+ DECLARE_DELTA_SWITCH(delta_ag7648);
+ 
+ static const struct dmi_system_id delta_switch_dmi_table[] __initconst = {
+@@ -404,10 +422,6 @@ static int __init delta_switch_scan_peripherals(struct device *dev, void *data)
+ static int __init delta_switch_prepare_i2c_peripherals(
+ 	struct delta_switch *dta_switch, const struct delta_switch *src)
+ {
+-	struct i2c_peripheral *i2c_dev;
+-	struct i2c_board_info *info;
+-	int i;
+-
+ 	if (!src->num_i2c_peripherals)
+ 		return 0;
+ 
+@@ -419,12 +433,6 @@ static int __init delta_switch_prepare_i2c_peripherals(
+ 		return -ENOMEM;
+ 
+ 	dta_switch->num_i2c_peripherals = src->num_i2c_peripherals;
+-	dta_switch->post_inst_cb = src->post_inst_cb;
+-
+-	for (i = 0; i < dta_switch->num_i2c_peripherals; i++) {
+-		i2c_dev = &dta_switch->i2c_peripherals[i];
+-		info = &i2c_dev->board_info;
+-	}
+ 
+ 	return 0;
+ }
+-- 
+2.37.1
+

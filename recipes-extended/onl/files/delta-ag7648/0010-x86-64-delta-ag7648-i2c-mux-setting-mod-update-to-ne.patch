@@ -1,0 +1,106 @@
+Upstream-Status: Inappropriate [code not upstream]
+
+From 0c87b081876e10614a77a330a85e73f5bc0cec8b Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Mon, 14 Dec 2020 16:34:18 +0100
+Subject: [PATCH 8/8] x86-64-delta-ag7648-i2c-mux-setting-mod: update to newer
+ I2C API
+
+* i2c_new_client_device was added in 5.4, i2c_new_device dropped in 5.8
+* i2c_new_probed_device was replaced with i2c_new_scanned_device in 5.7
+
+The main difference is that the newer versions return ERR_PTRs instead
+of NULL.
+
+Add wrappers to ensure compatibility to earlier kernel versions.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86-64-delta-ag7648-i2c-mux-setting.c     | 39 ++++++++++++++-----
+ 1 file changed, 30 insertions(+), 9 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+index 3f8d2045a743..206094fbc5a1 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -15,6 +15,27 @@
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
+ #include <linux/property.h>
++#include <linux/version.h>
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(5,7,0)
++static inline
++struct i2c_client *
++i2c_new_scanned_device(struct i2c_adapter *adap,
++		       struct i2c_board_info *info,
++		       unsigned short const *addr_list,
++		       int (*probe)(struct i2c_adapter *adap, unsigned short addr))
++{
++	return i2c_new_probed_device(adap, info, addr_list, probe);
++}
++#endif
++#if LINUX_VERSION_CODE < KERNEL_VERSION(5,4,0)
++static inline
++struct i2c_client *
++i2c_new_client_device(struct i2c_adapter *adap, struct i2c_board_info const *info)
++{
++	return i2c_new_device(adap, info);
++}
++#endif
+ 
+ static const char *i2c_adapter_names[] = {
+ 	"undefined",
+@@ -51,7 +72,7 @@ struct i2c_peripheral {
+ struct delta_switch {
+ 	/*
+ 	 * Note that we can't mark this pointer as const because
+-	 * i2c_new_probed_device() changes passed in I2C board info, so.
++	 * i2c_new_scanned_device() changes passed in I2C board info, so.
+ 	 */
+ 	struct i2c_peripheral *i2c_peripherals;
+ 	unsigned int num_i2c_peripherals;
+@@ -72,8 +93,8 @@ delta_switch_instantiate_i2c_device(struct i2c_adapter *adapter,
+ 	 * address we scan secondary addresses. In any case the client
+ 	 * structure gets assigned primary address.
+ 	 */
+-	client = i2c_new_probed_device(adapter, info, addr_list, NULL);
+-	if (!client && alt_addr) {
++	client = i2c_new_scanned_device(adapter, info, addr_list, NULL);
++	if (IS_ERR_OR_NULL(client) && alt_addr) {
+ 		struct i2c_board_info dummy_info = {
+ 			I2C_BOARD_INFO("dummy", info->addr),
+ 		};
+@@ -81,23 +102,23 @@ delta_switch_instantiate_i2c_device(struct i2c_adapter *adapter,
+ 							 I2C_CLIENT_END };
+ 		struct i2c_client *dummy;
+ 
+-		dummy = i2c_new_probed_device(adapter, &dummy_info,
+-					      alt_addr_list, NULL);
+-		if (dummy) {
++		dummy = i2c_new_scanned_device(adapter, &dummy_info,
++					       alt_addr_list, NULL);
++		if (!IS_ERR_OR_NULL(dummy)) {
+ 			pr_debug("%d-%02x is probed at %02x\n", adapter->nr,
+ 				 info->addr, dummy->addr);
+ 			i2c_unregister_device(dummy);
+-			client = i2c_new_device(adapter, info);
++			client = i2c_new_client_device(adapter, info);
+ 		}
+ 	}
+ 
+-	if (!client)
++	if (IS_ERR_OR_NULL(client))
+ 		pr_debug("failed to register device %d-%02x\n", adapter->nr,
+ 			 info->addr);
+ 	else
+ 		pr_debug("added i2c device %d-%02x\n", adapter->nr, info->addr);
+ 
+-	return client;
++	return IS_ERR_OR_NULL(client) ? NULL : client;
+ }
+ 
+ static bool delta_switch_match_adapter_devid(struct device *dev, u32 devid)
+-- 
+2.37.1
+
