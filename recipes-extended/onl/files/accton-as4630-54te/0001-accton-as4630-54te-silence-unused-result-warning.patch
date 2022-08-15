@@ -1,0 +1,34 @@
+Upstream-Status: unsubmitted
+
+From 58e424e6e1223ef05078c02b834d53e43b378197 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Mon, 15 Aug 2022 14:41:52 +0200
+Subject: [PATCH] accton-as4630-54te: silence unused result warning
+
+Fixes the following build warning:
+| ../x86_64_accton_as4630_54pe/module/src/sysi.c: In function 'onlp_sysi_platform_manage_fans':
+| ../x86_64_accton_as4630_54pe/module/src/sysi.c:238:9: error: ignoring return value of 'system' declared with attribute 'warn_unused_result' [-Werror=unused-result]
+|   238 |         system(SHUTDOWN_DUT_CMD);
+|       |         ^~~~~~~~~~~~~~~~~~~~~~~~
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c     | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c
+index 941c9501099e..8f9e3bdac50d 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c
++++ b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/sysi.c
+@@ -235,7 +235,7 @@ int onlp_sysi_platform_manage_fans(void)
+         /*critical case*/
+         AIM_SYSLOG_CRIT("Temperature critical", "Temperature critical", "Alarm for temperature critical is detected, reset DUT");
+         sleep(2);
+-        system(SHUTDOWN_DUT_CMD);
++        (void)!!system(SHUTDOWN_DUT_CMD);
+     }
+ 
+     if (current_state != ori_state) {
+-- 
+2.37.2
+

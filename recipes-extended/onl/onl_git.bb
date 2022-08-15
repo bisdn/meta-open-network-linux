@@ -41,6 +41,7 @@ SRC_URI += " \
            file://accton-as4630-54pe/0003-Fix-fan-direction-api.patch \
            file://accton-as4630-54pe/0004-accton-as4630-54pe-silence-error.patch \
            file://accton-as4630-54pe/0005-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
+           file://accton-as4630-54te/0001-accton-as4630-54te-silence-unused-result-warning.patch \
            file://accton-as5835-54x/0001-AS5835-54x-Support-psu_fan_dir-sysfs-for-YM-1401A-PS.patch \
            file://accton-as5835-54x/0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
            file://accton-as7726-32x/0001-as7726-32x-silence-ignored-return-value-warnings.patch \
@@ -75,6 +76,7 @@ ONL_PLATFORM_SUPPORT:arm = " \
 
 ONL_PLATFORM_SUPPORT:x86-64 = " \
     x86-64-accton-as4630-54pe-r0 \
+    x86-64-accton-as4630-54te-r0 \
     x86-64-accton-as5835-54x-r0 \
     x86-64-accton-as7726-32x-r0 \
     x86-64-cel-questone-2a-r0 \
