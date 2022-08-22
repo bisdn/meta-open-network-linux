@@ -1,0 +1,81 @@
+Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/906]
+
+From eb1347ff172b658d523670ee0afb0bd7b81282a4 Mon Sep 17 00:00:00 2001
+From: Brandon Chuang <brandon_chuang@edge-core.com>
+Date: Fri, 12 Aug 2022 15:48:59 +0800
+Subject: [PATCH] [Edgecore][as4630_54te] Update thermal threshold
+
+Update the thermal threshold values provided by hardware team.
+The unit of temperature is degree Celsius.
+
+CPU
+  Warring 70
+  Error 75
+  Shuntdown 80
+
+LM75-4B
+  Warring 65
+  Error 70
+  Shuntdown 75
+
+LM75-4A
+  Warring 65
+  Error 70
+  Shuntdown 75
+
+LM75-48
+  Warring 65
+  Error 70
+  Shuntdown 75
+
+PSU
+  Warring 45
+  Error 50
+  Shuntdown 55
+
+Signed-off-by: Brandon Chuang <brandon_chuang@edge-core.com>
+---
+ .../x86_64_accton_as4630_54pe/module/src/thermali.c  | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/thermali.c b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/thermali.c
+index 71f30fb0f6fa..528974f407eb 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/thermali.c
++++ b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/thermali.c
+@@ -71,27 +71,27 @@ static onlp_thermal_info_t linfo[] = {
+     { }, /* Not used */
+     { { ONLP_THERMAL_ID_CREATE(THERMAL_CPU_CORE), "CPU Core", 0, {0} },
+             ONLP_THERMAL_STATUS_PRESENT,
+-            ONLP_THERMAL_CAPS_ALL, 0, ONLP_THERMAL_THRESHOLD_INIT_DEFAULTS
++            ONLP_THERMAL_CAPS_ALL, 0, { 70000, 75000, 80000 }
+         },
+     { { ONLP_THERMAL_ID_CREATE(THERMAL_1_ON_MAIN_BROAD), "LM75-1-4B", 0, {0} },
+             ONLP_THERMAL_STATUS_PRESENT,
+-            ONLP_THERMAL_CAPS_ALL, 0, ONLP_THERMAL_THRESHOLD_INIT_DEFAULTS
++            ONLP_THERMAL_CAPS_ALL, 0, { 65000, 70000, 75000 }
+         },
+     { { ONLP_THERMAL_ID_CREATE(THERMAL_2_ON_MAIN_BROAD), "LM75-2-4A", 0, {0} },
+             ONLP_THERMAL_STATUS_PRESENT,
+-            ONLP_THERMAL_CAPS_ALL, 0, ONLP_THERMAL_THRESHOLD_INIT_DEFAULTS
++            ONLP_THERMAL_CAPS_ALL, 0, { 65000, 70000, 75000 }
+         },
+     { { ONLP_THERMAL_ID_CREATE(THERMAL_3_ON_MAIN_BROAD), "LM77-3-48", 0, {0} },
+            ONLP_THERMAL_STATUS_PRESENT,
+-            ONLP_THERMAL_CAPS_ALL, 0, ONLP_THERMAL_THRESHOLD_INIT_DEFAULTS
++            ONLP_THERMAL_CAPS_ALL, 0, { 65000, 70000, 75000 }
+         },
+     { { ONLP_THERMAL_ID_CREATE(THERMAL_1_ON_PSU1), "PSU-1 Thermal Sensor 1", ONLP_PSU_ID_CREATE(PSU1_ID)},
+             ONLP_THERMAL_STATUS_PRESENT,
+-            ONLP_THERMAL_CAPS_ALL, 0, ONLP_THERMAL_THRESHOLD_INIT_DEFAULTS
++            ONLP_THERMAL_CAPS_ALL, 0, { 45000, 50000, 55000 }
+         },
+     { { ONLP_THERMAL_ID_CREATE(THERMAL_1_ON_PSU2), "PSU-2 Thermal Sensor 1", ONLP_PSU_ID_CREATE(PSU2_ID)},
+             ONLP_THERMAL_STATUS_PRESENT,
+-            ONLP_THERMAL_CAPS_ALL, 0, ONLP_THERMAL_THRESHOLD_INIT_DEFAULTS
++            ONLP_THERMAL_CAPS_ALL, 0, { 45000, 50000, 55000 }
+         }
+ };
+ 
+-- 
+2.37.2
+
