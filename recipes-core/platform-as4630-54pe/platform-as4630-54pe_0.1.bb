@@ -16,7 +16,7 @@ SRC_URI += " \
 FILES:${PN} = " \
     ${systemd_system_unitdir}/platform-as4630-54pe-init.service \
     ${bindir}/platform-as4630-54pe-init.sh \
-    ${sysconfdir}/systemd/network/90-enp.link \
+    ${systemd_unitdir}/network/90-enp.link \
 "
 
 
@@ -27,8 +27,8 @@ do_install() {
         install -m 0755 ${WORKDIR}/platform-as4630-54pe-init.sh ${D}${bindir}
 
         # systemd-networkd
-        install -d ${D}${sysconfdir}/systemd/network/
-        install -m 0644 ${WORKDIR}/*.link ${D}${sysconfdir}/systemd/network/
+        install -d ${D}${systemd_unitdir}/network/
+        install -m 0644 ${WORKDIR}/*.link ${D}${systemd_unitdir}/network/
 }
 
 SYSTEMD_SERVICE:${PN}:append = "platform-as4630-54pe-init.service"
