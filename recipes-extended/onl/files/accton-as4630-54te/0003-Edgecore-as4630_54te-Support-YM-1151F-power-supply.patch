@@ -1,0 +1,128 @@
+Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/907]
+
+From 35148f6ef6ff552a29982f08bc42fad29322804e Mon Sep 17 00:00:00 2001
+From: Brandon Chuang <brandon_chuang@edge-core.com>
+Date: Fri, 12 Aug 2022 16:14:17 +0800
+Subject: [PATCH] [Edgecore][as4630_54te] Support YM-1151F power supply
+
+Modify driver and onlp to support YM-1151F
+The airflow direction is front to back
+
+The output of onlpdump is as follows:
+   psu @ 1 = {
+       Description: PSU-1
+       Model:  YM-1151F-A01R
+       SN:     SA03A1442209007283
+       Status: 0x00000001 [ PRESENT ]
+       Caps:   0x00000151 [ AC,VOUT,IOUT,POUT ]
+       Vin:    0
+       Vout:   12015
+       Iin:    0
+       Iout:   2113
+       Pin:    0
+       Pout:   25000
+       fan @ 4 = {
+           Description: PSU 1 - Fan 1
+           Status: 0x00000009 [ PRESENT,F2B ]
+           Caps:   0x00000038 [ SET_PERCENTAGE,GET_RPM,GET_PERCENTAGE ]
+           RPM:    9600
+           Per:    37
+           Model:  NULL
+           SN:     NULL
+       }
+       thermal @ 5 = {
+           Description: PSU-1 Thermal Sensor 1
+           Status: 0x00000001 [ PRESENT ]
+           Caps:   0x0000000f [ GET_TEMPERATURE,GET_WARNING_THRESHOLD,GET_ERROR_THRESHOLD,GET_SHUTDOWN_THRESHOLD ]
+           Temperature: 36000
+           thresholds = {
+               Warning: 45000
+               Error: 50000
+               Shutdown: 55000
+           }
+       }
+   }
+
+Signed-off-by: Brandon Chuang <brandon_chuang@edge-core.com>
+---
+ .../modules/builds/x86-64-accton-as4630-54te-psu.c           | 5 +++--
+ .../onlp/builds/x86_64_accton_as4630_54pe/module/src/fani.c  | 3 ++-
+ .../x86_64_accton_as4630_54pe/module/src/platform_lib.c      | 4 +++-
+ .../x86_64_accton_as4630_54pe/module/src/platform_lib.h      | 3 ++-
+ .../onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c  | 1 +
+ 5 files changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/modules/builds/x86-64-accton-as4630-54te-psu.c b/packages/platforms/accton/x86-64/as4630-54te/modules/builds/x86-64-accton-as4630-54te-psu.c
+index 461b137d1866..f39985560a46 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/modules/builds/x86-64-accton-as4630-54te-psu.c
++++ b/packages/platforms/accton/x86-64/as4630-54te/modules/builds/x86-64-accton-as4630-54te-psu.c
+@@ -313,8 +313,9 @@ as4630_54te_psu_data *as4630_54te_psu_update_device(struct device *dev)
+ 				data->model_name[ARRAY_SIZE(data->model_name)-1] = '\0';
+ 			}
+ 
+-			if (strncmp(data->model_name, "YM-1151D-A03R", MAX_MODEL_NAME) == 0)
+-				serial_offset = 0x2E; /* YM-1151D-A03R */
++			if (strncmp(data->model_name, "YM-1151D-A03R", MAX_MODEL_NAME) == 0 ||
++				strncmp(data->model_name, "YM-1151F-A01R", MAX_MODEL_NAME) == 0)
++				serial_offset = 0x2E; /* YM-1151D-A03R or YM-1151F-A01R */
+ 			else
+ 				serial_offset = 0x35; /* YM-1151D-A02R */
+ 
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/fani.c b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/fani.c
+index 843e06d9e348..c7e55f359f68 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/fani.c
++++ b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/fani.c
+@@ -149,7 +149,8 @@ _onlp_get_fan_direction_on_psu(void)
+             continue;
+         }
+ 
+-        if (PSU_TYPE_YM1151D_F2B == psu_type) {
++        if (PSU_TYPE_YM1151D_F2B == psu_type ||
++            PSU_TYPE_YM1151F_F2B == psu_type) {
+             return ONLP_FAN_STATUS_F2B;
+         }
+         else {
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
+index a0f05c1ef35a..21a824625096 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
++++ b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
+@@ -24,7 +24,9 @@ psu_type_t get_psu_type(int id, char *data_buf, int data_len)
+     }
+ 
+     /* Check AC model name */
+-    if (strncmp(str, "YM-1151D-A03R", strlen("YM-1151D-A03R")) == 0)
++    if (strncmp(str, "YM-1151F-A01R", strlen("YM-1151F-A01R")) == 0)
++        ptype = PSU_TYPE_YM1151F_F2B;
++    else if (strncmp(str, "YM-1151D-A03R", strlen("YM-1151D-A03R")) == 0)
+         ptype = PSU_TYPE_YM1151D_F2B;
+     else
+         ptype = PSU_TYPE_YM1151D_B2F;
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.h
+index b572ae3fb93b..8efc34449110 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.h
+@@ -59,7 +59,8 @@ int psu_pmbus_info_get(int id, char *node, int *value);
+ typedef enum psu_type {
+     PSU_TYPE_UNKNOWN,
+     PSU_TYPE_YM1151D_F2B,
+-    PSU_TYPE_YM1151D_B2F
++    PSU_TYPE_YM1151D_B2F,
++    PSU_TYPE_YM1151F_F2B
+ } psu_type_t;
+ 
+ psu_type_t get_psu_type(int id, char* modelname, int modelname_len);
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c
+index 280acd7dde0d..5bf35ff66da4 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c
++++ b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c
+@@ -146,6 +146,7 @@ onlp_psui_info_get(onlp_oid_t id, onlp_psu_info_t* info)
+     psu_type = get_psu_type(index, info->model, sizeof(info->model));
+ 
+     switch (psu_type) {
++        case PSU_TYPE_YM1151F_F2B:
+         case PSU_TYPE_YM1151D_F2B:
+         case PSU_TYPE_YM1151D_B2F:
+             ret = psu_ym2651y_info_get(info);
+-- 
+2.37.2
+
