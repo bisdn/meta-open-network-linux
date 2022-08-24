@@ -89,3 +89,7 @@ ONL_MODULE_VENDORS:arm = " \
 ONL_MODULE_VENDORS:x86-64 = " \
     delta \
 "
+
+# for some unknown reason this module causes a deadlock when loaded too
+# late, so force it being loaded earlier by loading it explicitly
+KERNEL_MODULE_AUTOLOAD = "x86-64-delta-ag7648-i2c-mux-setting"
