@@ -1,0 +1,49 @@
+Upstream-Status: Unsubmitted
+
+From ccf52b835ec13e478a7b9e78967dd6126270c4ec Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 26 Aug 2022 12:10:23 +0200
+Subject: [PATCH 2/5] accton_as4610_psu: add of device match table
+
+For on-demand loading to work the kernel needs to know which compatibles
+are handled by the driver, so add an appropriate table.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../armxx/arm-accton-as4610/modules/accton_as4610_psu.c  | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
+index 9a579e79aec9..c29b9350ee7f 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
+@@ -33,6 +33,7 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/dmi.h>
++#include <linux/of.h>
+ 
+ #define MAX_MODEL_NAME 11
+ #define MAX_SERIAL_NUMBER 18
+@@ -204,10 +205,18 @@ static const struct i2c_device_id as4610_psu_id[] = {
+ };
+ MODULE_DEVICE_TABLE(i2c, as4610_psu_id);
+ 
++static const struct of_device_id as4610_psu_of_id[] = {
++	{ .compatible = "accton,as4610_psu1", .data = as4610_psu1 },
++	{ .compatible = "accton,as4610_psu2", .data = as4610_psu2 },
++	{}
++};
++MODULE_DEVICE_TABLE(of, as4610_psu_of_id);
++
+ static struct i2c_driver as4610_psu_driver = {
+ 	.class		  = I2C_CLASS_HWMON,
+ 	.driver = {
+ 		.name	  = "as4610_psu",
++		.of_match_table = as4610_psu_of_id,
+ 	},
+ 	.probe		  = as4610_psu_probe,
+ 	.remove		  = as4610_psu_remove,
+-- 
+2.37.2
+
