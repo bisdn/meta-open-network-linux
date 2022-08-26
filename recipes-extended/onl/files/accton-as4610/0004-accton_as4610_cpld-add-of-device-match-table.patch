@@ -1,0 +1,51 @@
+Upstream-Status: Unsubmitted
+
+From b7f587d0718b12d0c68886bfce2b55b4496ab976 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 26 Aug 2022 12:09:49 +0200
+Subject: [PATCH 1/5] accton_as4610_cpld: add of device match table
+
+For on-demand loading to work the kernel needs to know which compatibles
+are handled by the driver, so add an appropriate table.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../armxx/arm-accton-as4610/modules/accton_as4610_cpld.c  | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
+index 2ee2d1631095..767bdd11ecd5 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
+@@ -33,6 +33,7 @@
+ #include <linux/stat.h>
+ #include <linux/hwmon-sysfs.h>
+ #include <linux/delay.h>
++#include <linux/of.h>
+ 
+ #define I2C_RW_RETRY_COUNT				10
+ #define I2C_RW_RETRY_INTERVAL			60 /* ms */
+@@ -73,6 +74,12 @@ static const struct i2c_device_id as4610_54_cpld_id[] = {
+ };
+ MODULE_DEVICE_TABLE(i2c, as4610_54_cpld_id);
+ 
++static const struct of_device_id as4610_54_cpld_of_id[] = {
++    { .compatible = "accton,as4610_54_cpld", .data = as4610_54_cpld },
++    { }
++};
++MODULE_DEVICE_TABLE(of, as4610_54_cpld_of_id);
++
+ #define TRANSCEIVER_PRESENT_ATTR_ID(index)   	MODULE_PRESENT_##index
+ #define TRANSCEIVER_TXDISABLE_ATTR_ID(index)   	MODULE_TXDISABLE_##index
+ #define TRANSCEIVER_RXLOS_ATTR_ID(index)   		MODULE_RXLOS_##index
+@@ -601,6 +608,7 @@ static struct i2c_driver as4610_54_cpld_driver = {
+ 	.driver		= {
+ 		.name	= "as4610_54_cpld",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = as4610_54_cpld_of_id,
+ 	},
+ 	.probe		= as4610_54_cpld_probe,
+ 	.remove		= as4610_54_cpld_remove,
+-- 
+2.37.2
+

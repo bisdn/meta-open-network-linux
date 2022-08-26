@@ -26,6 +26,8 @@ SRC_URI += " \
            file://onl/0010-tools-replace-yaml.load-with-yaml.full_load.patch \
            file://onl/0011-optoe-allow-compilation-with-linux-5.5-and-newer.patch \
            file://onl/0012-kmodbuild.sh-don-t-treat-undefined-symbols-as-errors.patch \
+           file://onl/0013-optoe-add-of-device-match-table.patch \
+           file://onl/0014-ym2561y-add-of-device-match-table.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
@@ -36,6 +38,11 @@ SRC_URI += " \
            file://accton-as4610/0001-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
            file://accton-as4610/0002-accton-as4610-fix-value-truncation-when-accessing-le.patch \
            file://accton-as4610/0003-accton-as4610-do-not-try-to-read-out-PSU-values-for-.patch \
+           file://accton-as4610/0004-accton_as4610_cpld-add-of-device-match-table.patch \
+           file://accton-as4610/0005-accton_as4610_psu-add-of-device-match-table.patch \
+           file://accton-as4610/0006-accton-as4610-let-CPLD-handle-the-FAN-device.patch \
+           file://accton-as4610/0007-accton-as4610-fix-FAN-driver-id-table.patch \
+           file://accton-as4610/0008-accton-as4610-let-CPLD-handle-the-LED-device.patch \
            file://accton-as4630-54pe/0001-as4630-54pe-Add-SFP-reset-sysfs-and-fix-Led-drv.patch \
            file://accton-as4630-54pe/0002-Add-rest-lpmode-code-to-sfpi_control-set-get-api.patch \
            file://accton-as4630-54pe/0003-Fix-fan-direction-api.patch \
