@@ -49,7 +49,6 @@ BUILDER_MODULE_MANIFEST = "${WORKDIR}/modules/modules.mk"
 MODULEMANIFEST = "${BUILDER_MODULE_MANIFEST}"
 
 #export SUBMODULE_INFRA BUILDER BUILDER_MODULE_DATABASE BUILDER_MODULE_DATABASE_ROOT BUILDER_MODULE_MANIFEST MODULEMANIFEST ONL
-ARCH = "${TARGET_ARCH}"
 TOOLCHAIN = "gcc-local"
 NO_USE_GCC_VERSION_TOOL="1"
 
@@ -128,7 +127,7 @@ do_compile() {
 
   # "onl/onl/common" is the target path that ONL uses when building the modules
   # in the context of the kernel build
-  ARCH=${TARGET_ARCH} ${S}/tools/scripts/kmodbuild.sh "${STAGING_KERNEL_BUILDDIR}" "$mods" "onl/onl/common"
+  ${S}/tools/scripts/kmodbuild.sh "${STAGING_KERNEL_BUILDDIR}" "$mods" "onl/onl/common"
   cd -
 
   for onie_platform in ${ONL_PLATFORM_SUPPORT}; do
@@ -144,12 +143,12 @@ do_compile() {
       baseplatform=${platform%-r*}
 
       MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-platform-modules-${baseplatform}:${ONL_BUILD_ARCH})
-      V=1 VERBOSE=1 oe_runmake -C ${MODULES_DIR}/builds modules ARCH=${TARGET_ARCH} KERNELS=${STAGING_KERNEL_BUILDDIR}
+      V=1 VERBOSE=1 oe_runmake -C ${MODULES_DIR}/builds modules ARCH=${ARCH} KERNELS=${STAGING_KERNEL_BUILDDIR}
   done
 
   for vendor in ${ONL_MODULE_VENDORS}; do
       MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-vendor-${vendor}-modules:${ONL_BUILD_ARCH})
-      V=1 VERBOSE=1 oe_runmake -C ${MODULES_DIR}/builds modules ARCH=${TARGET_ARCH} KERNELS=${STAGING_KERNEL_BUILDDIR}
+      V=1 VERBOSE=1 oe_runmake -C ${MODULES_DIR}/builds modules ARCH=${ARCH} KERNELS=${STAGING_KERNEL_BUILDDIR}
   done
 }
 
