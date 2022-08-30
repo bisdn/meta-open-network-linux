@@ -1,0 +1,155 @@
+From 38b9a96a3c6ce0e24cfa3d94fca257f7363a828a Mon Sep 17 00:00:00 2001
+From: Roger Luethi <roger.luethi@bisdn.de>
+Date: Tue, 30 Aug 2022 14:54:38 +0200
+Subject: [PATCH] platforms: remove CROSS_COMPILE
+
+Signed-off-by: Roger Luethi <roger.luethi@bisdn.de>
+---
+ .../accton/arm64/as4224/as4224-52p/modules/builds/Makefile       | 1 -
+ .../accton/arm64/as4224/as4224-52t/modules/builds/Makefile       | 1 -
+ .../accton/arm64/as4224/as5114-48x/modules/builds/Makefile       | 1 -
+ .../platforms/accton/arm64/as4564-26p/modules/builds/Makefile    | 1 -
+ .../delta/arm64/tn48m-dn/tn4810m-dn/modules/builds/Makefile      | 1 -
+ .../delta/arm64/tn48m-dn/tn48m-dn/modules/builds/Makefile        | 1 -
+ .../delta/arm64/tn48m-dn/tn48m-poe-dn/modules/builds/Makefile    | 1 -
+ .../platforms/delta/arm64/tn48m/tn4810m/modules/builds/Makefile  | 1 -
+ .../delta/arm64/tn48m/tn48m-poe/modules/builds/Makefile          | 1 -
+ .../platforms/delta/arm64/tn48m/tn48m/modules/builds/Makefile    | 1 -
+ packages/platforms/delta/arm64/tx4810/modules/builds/Makefile    | 1 -
+ packages/platforms/marvell/arm64/ac5x-db/modules/builds/Makefile | 1 -
+ .../platforms/wnc/arm64/qsa72-aom-a-48p/modules/builds/Makefile  | 1 -
+ .../platforms/wnc/arm64/qsd61-aom-a-48/modules/builds/Makefile   | 1 -
+ 14 files changed, 14 deletions(-)
+
+diff --git a/packages/platforms/accton/arm64/as4224/as4224-52p/modules/builds/Makefile b/packages/platforms/accton/arm64/as4224/as4224-52p/modules/builds/Makefile
+index b0de05ba..6e0bd88d 100644
+--- a/packages/platforms/accton/arm64/as4224/as4224-52p/modules/builds/Makefile
++++ b/packages/platforms/accton/arm64/as4224/as4224-52p/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := accton
+ BASENAME := arm64-accton-as4224-52p
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+\ No newline at end of file
+diff --git a/packages/platforms/accton/arm64/as4224/as4224-52t/modules/builds/Makefile b/packages/platforms/accton/arm64/as4224/as4224-52t/modules/builds/Makefile
+index 90803faf..8d5b0e97 100644
+--- a/packages/platforms/accton/arm64/as4224/as4224-52t/modules/builds/Makefile
++++ b/packages/platforms/accton/arm64/as4224/as4224-52t/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := accton
+ BASENAME := arm64-accton-as4224-52t
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+\ No newline at end of file
+diff --git a/packages/platforms/accton/arm64/as4224/as5114-48x/modules/builds/Makefile b/packages/platforms/accton/arm64/as4224/as5114-48x/modules/builds/Makefile
+index b79dacd5..364230d1 100644
+--- a/packages/platforms/accton/arm64/as4224/as5114-48x/modules/builds/Makefile
++++ b/packages/platforms/accton/arm64/as4224/as5114-48x/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := accton
+ BASENAME := arm64-accton-as5114-48x
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/accton/arm64/as4564-26p/modules/builds/Makefile b/packages/platforms/accton/arm64/as4564-26p/modules/builds/Makefile
+index d0935d23..628707c0 100644
+--- a/packages/platforms/accton/arm64/as4564-26p/modules/builds/Makefile
++++ b/packages/platforms/accton/arm64/as4564-26p/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := accton
+ BASENAME := arm64-accton-as4564-26p
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+\ No newline at end of file
+diff --git a/packages/platforms/delta/arm64/tn48m-dn/tn4810m-dn/modules/builds/Makefile b/packages/platforms/delta/arm64/tn48m-dn/tn4810m-dn/modules/builds/Makefile
+index 8455190e..4cd1f9a7 100644
+--- a/packages/platforms/delta/arm64/tn48m-dn/tn4810m-dn/modules/builds/Makefile
++++ b/packages/platforms/delta/arm64/tn48m-dn/tn4810m-dn/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := delta
+ BASENAME := arm64-delta-tn4810m-dn
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/delta/arm64/tn48m-dn/tn48m-dn/modules/builds/Makefile b/packages/platforms/delta/arm64/tn48m-dn/tn48m-dn/modules/builds/Makefile
+index 2cf66761..19935b81 100644
+--- a/packages/platforms/delta/arm64/tn48m-dn/tn48m-dn/modules/builds/Makefile
++++ b/packages/platforms/delta/arm64/tn48m-dn/tn48m-dn/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := delta
+ BASENAME := arm64-delta-tn48m-dn
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/delta/arm64/tn48m-dn/tn48m-poe-dn/modules/builds/Makefile b/packages/platforms/delta/arm64/tn48m-dn/tn48m-poe-dn/modules/builds/Makefile
+index b63de94c..ffc470f9 100644
+--- a/packages/platforms/delta/arm64/tn48m-dn/tn48m-poe-dn/modules/builds/Makefile
++++ b/packages/platforms/delta/arm64/tn48m-dn/tn48m-poe-dn/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := delta
+ BASENAME := arm64-delta-tn48m-poe-dn
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/delta/arm64/tn48m/tn4810m/modules/builds/Makefile b/packages/platforms/delta/arm64/tn48m/tn4810m/modules/builds/Makefile
+index e56649fc..91c5e776 100644
+--- a/packages/platforms/delta/arm64/tn48m/tn4810m/modules/builds/Makefile
++++ b/packages/platforms/delta/arm64/tn48m/tn4810m/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := delta
+ BASENAME := arm64-delta-tn4810m
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/delta/arm64/tn48m/tn48m-poe/modules/builds/Makefile b/packages/platforms/delta/arm64/tn48m/tn48m-poe/modules/builds/Makefile
+index a0279dd1..3553ea8f 100644
+--- a/packages/platforms/delta/arm64/tn48m/tn48m-poe/modules/builds/Makefile
++++ b/packages/platforms/delta/arm64/tn48m/tn48m-poe/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := delta
+ BASENAME := arm64-delta-tn48m-poe
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/delta/arm64/tn48m/tn48m/modules/builds/Makefile b/packages/platforms/delta/arm64/tn48m/tn48m/modules/builds/Makefile
+index c80e2ce8..36050596 100644
+--- a/packages/platforms/delta/arm64/tn48m/tn48m/modules/builds/Makefile
++++ b/packages/platforms/delta/arm64/tn48m/tn48m/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := delta
+ BASENAME := arm64-delta-tn48m
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/delta/arm64/tx4810/modules/builds/Makefile b/packages/platforms/delta/arm64/tx4810/modules/builds/Makefile
+index 9ea4fd07..22d9bd48 100644
+--- a/packages/platforms/delta/arm64/tx4810/modules/builds/Makefile
++++ b/packages/platforms/delta/arm64/tx4810/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := delta
+ BASENAME := arm64-delta-tx4810
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/marvell/arm64/ac5x-db/modules/builds/Makefile b/packages/platforms/marvell/arm64/ac5x-db/modules/builds/Makefile
+index 534fc8c1..7eaea63b 100644
+--- a/packages/platforms/marvell/arm64/ac5x-db/modules/builds/Makefile
++++ b/packages/platforms/marvell/arm64/ac5x-db/modules/builds/Makefile
+@@ -4,4 +4,3 @@ VENDOR := marvell
+ BASENAME := arm64-marvell-ac5x-db
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/wnc/arm64/qsa72-aom-a-48p/modules/builds/Makefile b/packages/platforms/wnc/arm64/qsa72-aom-a-48p/modules/builds/Makefile
+index 0db83d8c..046f000c 100755
+--- a/packages/platforms/wnc/arm64/qsa72-aom-a-48p/modules/builds/Makefile
++++ b/packages/platforms/wnc/arm64/qsa72-aom-a-48p/modules/builds/Makefile
+@@ -5,4 +5,3 @@ VENDOR := wnc
+ BASENAME := arm64-wnc-qsa72-aom-a-48p
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+diff --git a/packages/platforms/wnc/arm64/qsd61-aom-a-48/modules/builds/Makefile b/packages/platforms/wnc/arm64/qsd61-aom-a-48/modules/builds/Makefile
+index 217e8d81..35333f19 100755
+--- a/packages/platforms/wnc/arm64/qsd61-aom-a-48/modules/builds/Makefile
++++ b/packages/platforms/wnc/arm64/qsd61-aom-a-48/modules/builds/Makefile
+@@ -5,4 +5,3 @@ VENDOR := wnc
+ BASENAME := arm64-wnc-qsd61-aom-a-48
+ ARCH := arm64
+ include $(ONL)/make/kmodule.mk
+-export CROSS_COMPILE=aarch64-linux-gnu-
+-- 
+2.37.2
+
