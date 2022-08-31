@@ -31,4 +31,5 @@ SRC_URI += " \
            file://infra/0003-avoid-multiple-global-definitions-for-__not_empty__.patch;patchdir=${SUBMODULE_INFRA} \
            file://infra/0004-replace-yaml.load-with-yaml.full_load.patch;patchdir=${SUBMODULE_INFRA} \
            file://delta-tn48m/0001-tn48m-fix-ignoring-unused-results-warnings.patch \
+           file://delta-tn48m/0002-tn48m-dn-fix-ignoring-unused-results-warnings.patch \
 "

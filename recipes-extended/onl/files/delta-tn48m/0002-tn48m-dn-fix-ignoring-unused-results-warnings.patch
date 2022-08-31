@@ -1,0 +1,59 @@
+From 6a31a31c85e3b808faf5378bbadb5e75b086f0cc Mon Sep 17 00:00:00 2001
+From: Roger Luethi <roger.luethi@bisdn.de>
+Date: Wed, 31 Aug 2022 10:50:13 +0200
+Subject: [PATCH] [PATCH] tn48m-dn: fix ignoring unused results warnings
+
+Adapt for the tn48m-dn the patch for the tn48m which fixes the following
+build error with newer GCCs:
+
+| ../../../../src/arm64_delta_tn48m_dn/module/src/psui.c: In function 'plat_psu_state_update':
+| ../../../../src/arm64_delta_tn48m_dn/module/src/psui.c:187:25: error: ignoring return value of 'system' declared with attribute 'warn_unused_result' [-Werror=unused-result]
+|   187 |                         system(psu->pmbus_insert_cmd);
+|       |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| ../../../../src/arm64_delta_tn48m_dn/module/src/psui.c:200:21: error: ignoring return value of 'system' declared with attribute 'warn_unused_result' [-Werror=unused-result]
+|   200 |                     system(psu->pmbus_remove_cmd);
+|       |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| ../../../../src/arm64_delta_tn48m_dn/module/src/psui.c:214:25: error: ignoring return value of 'system' declared with attribute 'warn_unused_result' [-Werror=unused-result]
+|   214 |                         system(psu->pmbus_remove_cmd);
+|       |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| cc1: all warnings being treated as errors
+
+Signed-off-by: Roger Luethi <roger.luethi@bisdn.de>
+---
+ .../tn48m-dn/src/arm64_delta_tn48m_dn/module/src/psui.c     | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/packages/platforms/delta/arm64/tn48m-dn/src/arm64_delta_tn48m_dn/module/src/psui.c b/packages/platforms/delta/arm64/tn48m-dn/src/arm64_delta_tn48m_dn/module/src/psui.c
+index 1e446d0d..75ddaedc 100644
+--- a/packages/platforms/delta/arm64/tn48m-dn/src/arm64_delta_tn48m_dn/module/src/psui.c
++++ b/packages/platforms/delta/arm64/tn48m-dn/src/arm64_delta_tn48m_dn/module/src/psui.c
+@@ -184,7 +184,7 @@ static int plat_psu_state_update (plat_psu_t *psu)
+                     psu->state = PLAT_PSU_STATE_PMBUS_READY;
+                     if (!plat_os_file_is_existed(psu->pmbus_ready_path) &&
+                         psu->pmbus_insert_cmd) {
+-                        system(psu->pmbus_insert_cmd);
++                        (void)!system(psu->pmbus_insert_cmd);
+                     }
+                     if (psu->event_callback)
+                         psu->event_callback(psu, PLAT_PSU_PMBUS_CONNECT);
+@@ -197,7 +197,7 @@ static int plat_psu_state_update (plat_psu_t *psu)
+                 psu->state = PLAT_PSU_STATE_UNPRESENT;
+                 if (plat_os_file_is_existed(psu->pmbus_ready_path) &&
+                     psu->pmbus_remove_cmd) {
+-                    system(psu->pmbus_remove_cmd);
++                    (void)!system(psu->pmbus_remove_cmd);
+                 }
+                 if (psu->event_callback)
+                     psu->event_callback(psu, PLAT_PSU_EVENT_UNPLUG);
+@@ -211,7 +211,7 @@ static int plat_psu_state_update (plat_psu_t *psu)
+                     psu->state = PLAT_PSU_STATE_PRESENT;
+                     if (plat_os_file_is_existed(psu->pmbus_ready_path) &&
+                         psu->pmbus_remove_cmd) {
+-                        system(psu->pmbus_remove_cmd);
++                        (void)!system(psu->pmbus_remove_cmd);
+                     }
+                     if (psu->event_callback)
+                         psu->event_callback(psu, PLAT_PSU_PMBUS_DISCONNECT);
+-- 
+2.37.2
+
