@@ -183,6 +183,28 @@ static inline struct bf_pci_dev *bf_get_pci_dev(struct bf_dev_info *info) {
   return container_of(info, struct bf_pci_dev, info);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+/*
+ * It masks the msix on/off of generating MSI-X messages.
+ */
+static void bf_msix_mask_irq(struct msi_desc *desc, int32_t state) {
+  u32 mask_bits = desc->msix_ctrl;
+  unsigned offset = desc->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
+                    PCI_MSIX_ENTRY_VECTOR_CTRL;
+
+  if (state != 0) {
+    mask_bits &= ~PCI_MSIX_ENTRY_CTRL_MASKBIT;
+  } else {
+    mask_bits |= PCI_MSIX_ENTRY_CTRL_MASKBIT;
+  }
+
+  if (mask_bits != desc->msix_ctrl) {
+    writel(mask_bits, desc->mask_base + offset);
+    readl(desc->mask_base);
+    desc->msix_ctrl = mask_bits;
+  }
+}
+#else
 /*
  * It masks the msix on/off of generating MSI-X messages.
  */
@@ -203,6 +225,7 @@ static void bf_msix_mask_irq(struct msi_desc *desc, int32_t state) {
     desc->masked = mask_bits;
   }
 }
+#endif
 
 /**
  * irqcontrol can be used to disable/enable interrupt from user space processes.
