@@ -24,6 +24,26 @@ create_i2c_dev() {
   echo "$i2c_dev_name" "$i2c_dev_addr" > /sys/bus/i2c/devices/i2c-${i2c_bus_no}/new_device
 }
 
+# -----------------------------------------------------------------------------
+# Make sure fpga_driver is loaded without i2c-801 present
+
+if zcat /proc/config.gz | grep -q ^CONFIG_I2C_I801=y; then
+  # fpga_driver, too, wants to manage /sys/bus/i2c/devices/i2c-1/
+  echo "ERROR i2c_i801 is built into the kernel and cannot be removed."
+  echo "ERROR Aborting."
+  exit 1
+fi
+
+if lsmod | grep -q i2c_i801; then
+  echo "Unloading i2c_i801."
+  if lsmod | grep -q fpga_driver; then
+    # fpga_driver may be missing resources taken by i2c_i801
+    echo "Unloading fpga_driver."
+    rmmod fpga_driver
+  fi
+fi
+
+# -----------------------------------------------------------------------------
 # Logic taken from CSP-7551_Driver_Package_20220517.7z
 
 modprobe -r i2c-i801 || true
