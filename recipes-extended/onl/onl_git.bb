@@ -81,6 +81,9 @@ FILES:${PN} = " \
 # ONIE platforms that should not be built
 ONL_PLATFORMS_IGNORE = ""
 
+# delta_ag5648v1 is an alias for delta_ag5648
+ONL_PLATFORMS_IGNORE += "x86_64-delta_ag5648v1-r0"
+
 # for some unknown reason this module causes a deadlock when loaded too
 # late, so force it being loaded earlier by loading it explicitly
 KERNEL_MODULE_AUTOLOAD = "x86-64-delta-ag7648-i2c-mux-setting"
