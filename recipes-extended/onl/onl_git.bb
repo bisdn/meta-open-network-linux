@@ -78,6 +78,9 @@ FILES:${PN} = " \
   ${libdir}/libonlp*.so.1 \
 "
 
+# ONIE platforms that should not be built
+ONL_PLATFORMS_IGNORE = ""
+
 # for some unknown reason this module causes a deadlock when loaded too
 # late, so force it being loaded earlier by loading it explicitly
 KERNEL_MODULE_AUTOLOAD = "x86-64-delta-ag7648-i2c-mux-setting"

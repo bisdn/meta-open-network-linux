@@ -80,6 +80,9 @@ def onl_arch_map(arch, tune):
 ONL_BUILD_ARCH = "${@onl_arch_map(d.getVar('TARGET_ARCH'), d.getVar('TUNE_FEATURES'))}"
 ONL_DEBIAN_SUITE = "buster"
 
+ONL_PLATFORMS_BUILD = "${ONL_PLATFORM_SUPPORT}"
+ONL_PLATFORMS_BUILD:remove = "${ONL_PLATFORMS_IGNORE}"
+
 ###
 # TODO CFLAGS?
 EXTRA_OEMAKE = "\
@@ -130,7 +133,7 @@ do_compile() {
   ${S}/tools/scripts/kmodbuild.sh "${STAGING_KERNEL_BUILDDIR}" "$mods" "onl/onl/common"
   cd -
 
-  for onie_platform in ${ONL_PLATFORM_SUPPORT}; do
+  for onie_platform in ${ONL_PLATFORMS_BUILD}; do
       # onl uses dashes instead of undescores for platforms
       platform="$(echo $onie_platform | tr '_' '-')"
 
@@ -182,7 +185,7 @@ do_install() {
   mkdir -p ${D}${nonarch_base_libdir}/modules
   cp -r onl-modules/lib/modules ${D}${nonarch_base_libdir}
 
-  for onie_platform in ${ONL_PLATFORM_SUPPORT}; do
+  for onie_platform in ${ONL_PLATFORMS_BUILD}; do
       # onl uses dashes instead of undescores for platforms
       platform="$(echo $onie_platform | tr '_' '-')"
       # get the path to the platform
