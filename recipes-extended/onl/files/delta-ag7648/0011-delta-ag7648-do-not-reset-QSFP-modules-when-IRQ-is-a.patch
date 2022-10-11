@@ -1,0 +1,116 @@
+Upstream-Status: Unsubmitted
+
+From 40cdd20bf474905924c141ff3d87553a9dbf0239 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 11 Oct 2022 16:42:23 +0200
+Subject: [PATCH] delta-ag7648: do not reset QSFP modules when IRQ is asserted
+
+The IntL signal may also be asserted when the module finished initializing:
+
+SFF-8679 says:
+
+> 5.3.2 ResetL
+>
+> ... During the execution of a reset (t_init) the host shall disregard
+> all status bits until the module indicates a completion of reset
+> interrupt by asserting "low" on the IntL/RxLOSL signal (see SFF-8636
+> for details). However, on power up (including hot insertion) the module
+> should post this completion of reset interrupt without the host pulling
+> ResetL low.
+
+If a module does this, then this puts the driver in an endless loop of:
+
+1. module resets/initializes, asserts interrupt
+2. driver sees interrupt asserted, resets module
+3. goto 1
+
+To fix that, don't try to be clever in the mux driver, and let userspace
+handle any issues.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../builds/x86-64-delta-ag7648-cpld-mux-2.c   | 61 -------------------
+ 1 file changed, 61 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+index d42daee20770..339c0071fb5d 100755
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+@@ -71,7 +71,6 @@ static int i2c_mux_cpld_set(const struct cpldmux *mux, unsigned int chan_id)
+ 	int try
+ 		, change = 0;
+ 	s32 res = -EIO;
+-	int intr, reset_ctrl;
+ 	int i;
+ 
+ 	data.byte = chan_id;
+@@ -94,66 +93,6 @@ static int i2c_mux_cpld_set(const struct cpldmux *mux, unsigned int chan_id)
+ 				I2C_SMBUS_BYTE_DATA, &data);
+ 			if (res == -EAGAIN)
+ 				continue;
+-			//read the interrupt status
+-			res = ctrl_adap->algo->smbus_xfer(
+-				ctrl_adap, mux->data.cpld_addr, flags,
+-				I2C_SMBUS_READ, CPLD_QSFP_INTR_STATUS_REG,
+-				I2C_SMBUS_BYTE_DATA, &data);
+-			if (res == -EAGAIN)
+-				continue;
+-
+-			intr = data.byte;
+-
+-			//read the reset control
+-			res = ctrl_adap->algo->smbus_xfer(
+-				ctrl_adap, mux->data.cpld_addr, flags,
+-				I2C_SMBUS_READ, CPLD_QSFP_RESET_CTRL_REG,
+-				I2C_SMBUS_BYTE_DATA, &data);
+-			if (res == -EAGAIN)
+-				continue;
+-
+-			reset_ctrl = data.byte;
+-
+-			/* there is an interrupt for QSFP port, including failure/plugin/un-plugin
+-            *  try to reset it.
+-            *
+-            */
+-			for (i = 0; i < mux->data.n_values; i++) {
+-				if ((reset_ctrl & (1 << i)) == 0) {
+-					change = 1;
+-				}
+-				if ((intr & (1 << i)) == 0) {
+-					res = ctrl_adap->algo->smbus_xfer(
+-						ctrl_adap, mux->data.cpld_addr,
+-						flags, I2C_SMBUS_READ,
+-						CPLD_QSFP_RESET_CTRL_REG,
+-						I2C_SMBUS_BYTE_DATA, &data);
+-					if (res == -EAGAIN)
+-						continue;
+-					data.byte &= ~(1 << i);
+-
+-					res = ctrl_adap->algo->smbus_xfer(
+-						ctrl_adap, mux->data.cpld_addr,
+-						flags, I2C_SMBUS_WRITE,
+-						CPLD_QSFP_RESET_CTRL_REG,
+-						I2C_SMBUS_BYTE_DATA, &data);
+-					if (res == -EAGAIN)
+-						continue;
+-					change = 1;
+-				}
+-			}
+-			if (change) {
+-				msleep(10);
+-				data.byte = CPLD_DESELECT_CHANNEL;
+-				res = ctrl_adap->algo->smbus_xfer(
+-					ctrl_adap, mux->data.cpld_addr, flags,
+-					I2C_SMBUS_WRITE,
+-					CPLD_QSFP_RESET_CTRL_REG,
+-					I2C_SMBUS_BYTE_DATA, &data);
+-				if (res == -EAGAIN)
+-					continue;
+-				msleep(200);
+-			}
+ 
+ 			// read first
+ 			//res = ctrl_adap->algo->smbus_xfer(ctrl_adap, mux->data.cpld_addr, flags,
+-- 
+2.37.3
+

@@ -14,6 +14,11 @@ function enable_tx() {
 	i2cset -y 2 0x33 0x0d 0x00
 }
 
+function enable_qsfp() {
+	# clear ResetL
+	i2cset -y 2 0x32 0x0d 0x3f
+}
+
 function wait_for_file() {
 	FILE=$1
 	i=0
@@ -53,4 +58,4 @@ if [ "$BOOT_STATE" != "success" ]; then
 fi
 
 wait_for_file /sys/bus/i2c/devices/0-0069 && set_clocksouce
-wait_for_file /sys/bus/i2c/devices/i2c-2 && enable_tx
+wait_for_file /sys/bus/i2c/devices/i2c-2 && enable_tx && enable_qsfp
