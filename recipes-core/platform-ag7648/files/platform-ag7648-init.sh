@@ -15,6 +15,8 @@ function enable_tx() {
 }
 
 function enable_qsfp() {
+	# disable LP Mode
+	i2cset -y 2 0x32 0x0b 0xc0
 	# clear ResetL
 	i2cset -y 2 0x32 0x0d 0x3f
 }
