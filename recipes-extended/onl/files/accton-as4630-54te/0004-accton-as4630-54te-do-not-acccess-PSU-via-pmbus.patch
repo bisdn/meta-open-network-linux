@@ -1,0 +1,57 @@
+Upstream-Status: unsuitable [waiting for proper fix]
+
+From 7b062d300dc4e9371a9d8f0fae8141d709e0207d Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 28 Oct 2022 15:21:49 +0200
+Subject: [PATCH] accton-as4630-54te: do not acccess PSU via pmbus
+
+Accessing the PSUs via pmbus seems to have a chance of locking up the
+I2C bus. After that, any I2C access fail:
+
+[ 5740.409947] ismt_smbus 0000:00:12.0: completion wait timed out
+[ 5741.433936] ismt_smbus 0000:00:12.0: completion wait timed out
+[ 5742.457922] ismt_smbus 0000:00:12.0: completion wait timed out
+[ 5743.481914] ismt_smbus 0000:00:12.0: completion wait timed out
+[ 5744.569919] ismt_smbus 0000:00:12.0: completion wait timed out
+
+Until we have a known fix/workaround, disable the pmbus accesses for
+now.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c   | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c
+index 5bf35ff66da4..6f061e3e0f47 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c
++++ b/packages/platforms/accton/x86-64/as4630-54te/onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c
+@@ -55,7 +55,9 @@ onlp_psui_init(void)
+ static int
+ psu_ym2651y_info_get(onlp_psu_info_t* info)
+ {
++#if 0
+     int val   = 0;
++#endif
+     int index = ONLP_OID_ID_GET(info->hdr.id);
+ 
+     /* Set capability
+@@ -65,6 +67,7 @@ psu_ym2651y_info_get(onlp_psu_info_t* info)
+     if (info->status & ONLP_PSU_STATUS_FAILED)
+         return ONLP_STATUS_OK;
+ 
++#if 0
+     /* Set the associated oid_table */
+     info->hdr.coids[0] = ONLP_FAN_ID_CREATE(index + CHASSIS_FAN_COUNT);
+     info->hdr.coids[1] = ONLP_THERMAL_ID_CREATE(index + CHASSIS_THERMAL_COUNT);
+@@ -84,6 +87,7 @@ psu_ym2651y_info_get(onlp_psu_info_t* info)
+         info->mpout = val;
+         info->caps |= ONLP_PSU_CAPS_POUT;
+     }
++#endif
+ 
+     get_psu_eeprom_str(index, info->serial, sizeof(info->serial), "psu_serial_number");
+ 
+-- 
+2.37.3
+

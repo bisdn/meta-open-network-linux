@@ -51,6 +51,7 @@ SRC_URI += " \
            file://accton-as4630-54te/0001-accton-as4630-54te-silence-unused-result-warning.patch \
            file://accton-as4630-54te/0002-Edgecore-as4630_54te-Update-thermal-threshold.patch \
            file://accton-as4630-54te/0003-Edgecore-as4630_54te-Support-YM-1151F-power-supply.patch \
+           file://accton-as4630-54te/0004-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
            file://accton-as5835-54x/0001-AS5835-54x-Support-psu_fan_dir-sysfs-for-YM-1401A-PS.patch \
            file://accton-as5835-54x/0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
            file://accton-as7726-32x/0001-as7726-32x-silence-ignored-return-value-warnings.patch \
