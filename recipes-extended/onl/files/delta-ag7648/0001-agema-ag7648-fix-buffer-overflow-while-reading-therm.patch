@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted
-
 From cf5880b9385d19c974f0312db387e30f7a8d2eea Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Fri, 19 Mar 2021 10:30:32 +0100
@@ -32,6 +30,7 @@ agema-ag7648:~$ sudo onlps
 *** buffer overflow detected ***: onlpdump terminated
 Aborted (core dumped)
 
+Upstream-Status: Unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../onlp/builds/x86_64_delta_ag7648/module/src/thermali.c      | 3 ++-

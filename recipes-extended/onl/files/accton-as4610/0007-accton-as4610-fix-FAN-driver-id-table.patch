@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted
-
 From 80a2852c20fe5c8d4d8c134028201bd8a7a54f3b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 14:16:09 +0200
@@ -8,6 +6,7 @@ Subject: [PATCH 4/5] accton-as4610: fix FAN driver id table
 This is a platform driver, not an I2C driver, so fix and add the id
 table to the driver.
 
+Upstream-Status: Unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../armxx/arm-accton-as4610/modules/accton_as4610_fan.c      | 5 +++--

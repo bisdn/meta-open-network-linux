@@ -1,5 +1,3 @@
-Upstream-Status: inappropriate [should be fixed, not ignored]
-
 From 62c127e3bb7d707293555ee1958d062915159cf1 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@gmail.com>
 Date: Thu, 19 May 2022 10:09:04 +0200
@@ -12,6 +10,7 @@ resolved.
 For now reduce the error to a warning to allow building with newer
 kernels.
 
+Upstream-Status: inappropriate [should be fixed, not ignored]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  tools/scripts/kmodbuild.sh | 2 +-

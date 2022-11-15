@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted
-
 From cc75588a7aa5e3f580148e4339ebb1caaefea889 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 19 Mar 2021 12:00:28 +0100
@@ -21,6 +19,7 @@ Silences the following errors:
 |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
 | cc1: all warnings being treated as errors
 
+Upstream-Status: Unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  packages/base/any/onlp/src/onlplib/module/src/file_uds.c | 4 ++--

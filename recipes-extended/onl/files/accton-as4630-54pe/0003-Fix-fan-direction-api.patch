@@ -1,10 +1,9 @@
-Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/862]
-
 From 33bd2bd6ac83c1674ecc468a6c242117fe309ae6 Mon Sep 17 00:00:00 2001
 From: Jostar Yang <jostar_yang@accton.com.tw>
 Date: Tue, 16 Nov 2021 11:10:50 +0800
 Subject: [PATCH 3/3] Fix fan direction api
 
+Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/862]
 Signed-off-by: Jostar Yang <jostar_yang@accton.com.tw>
 ---
  .../as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c | 2 +-

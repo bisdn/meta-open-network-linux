@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted
-
 From 40cdd20bf474905924c141ff3d87553a9dbf0239 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 11 Oct 2022 16:42:23 +0200
@@ -27,6 +25,7 @@ If a module does this, then this puts the driver in an endless loop of:
 To fix that, don't try to be clever in the mux driver, and let userspace
 handle any issues.
 
+Upstream-Status: Unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../builds/x86-64-delta-ag7648-cpld-mux-2.c   | 61 -------------------

@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted
-
 From 7bd9ca8fc5bf7eaeb3cc7e1b5b79518b35be32fd Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:22:19 +0200
@@ -12,6 +10,7 @@ platform driver.
 Ideally this would be handled as a MFD device, but this would require
 more substantial changes.
 
+Upstream-Status: Unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../modules/accton_as4610_cpld.c              | 27 ++++++

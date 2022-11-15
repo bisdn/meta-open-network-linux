@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted
-
 From f60b8fb4397ba68c0cfafd8ea73e17c8d599ba52 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 19 Apr 2021 16:23:26 +0200
@@ -25,6 +23,7 @@ Fixes the following issue with GCC 9.3:
 |   106 |   return __builtin___strncpy_chk (__dest, __src, __len, __bos (__dest));
 |       |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Upstream-Status: Unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../base/any/onlp/src/onlplib/module/src/file.c     | 13 ++++++++-----
