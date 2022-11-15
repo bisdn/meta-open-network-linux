@@ -1,10 +1,9 @@
-Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/862]
-
 From b0acedd32916464e57cbb23ed7c00ce7e4f920bf Mon Sep 17 00:00:00 2001
 From: Jostar Yang <jostar_yang@accton.com.tw>
 Date: Tue, 9 Nov 2021 17:55:55 +0800
 Subject: [PATCH 2/3] Add rest/lpmode code to sfpi_control set/get api
 
+Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/862]
 Signed-off-by: Jostar Yang <jostar_yang@accton.com.tw>
 ---
  .../builds/x86-64-accton-as4630-54pe-psu.c    |   8 +-

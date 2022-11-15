@@ -1,5 +1,3 @@
-Upstream-Status: Inappropriate [Questone 2a support not upstream]
-
 From 50e366359ef435858895eedeacc318d45fbfcaf7 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 5 Aug 2022 10:43:37 +0000
@@ -177,6 +175,7 @@ Fixes the following errors on build:
 |       |                 ~~~~~~
 | cc1: some warnings being treated as errors
 
+Upstream-Status: Inappropriate [Questone 2a support not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../builds/src/questone2a_switchboard.c       | 189 ++++++------------

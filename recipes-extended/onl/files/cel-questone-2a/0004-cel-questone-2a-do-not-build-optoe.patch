@@ -1,5 +1,3 @@
-Upstream-Status: Inappropriate [Questone 2a support not upstream]
-
 From 2be51d50647be1f43f0b6a0903bc7dcff47efb47 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 5 Aug 2022 11:34:17 +0000
@@ -8,6 +6,7 @@ Subject: [PATCH] cel-questone-2a: do not build optoe
 No reason to use the local copy, just use the onl one that is more
 recent.
 
+Upstream-Status: Inappropriate [Questone 2a support not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../onl/files/questone-2a/modules/builds/src/Makefile           | 2 +-

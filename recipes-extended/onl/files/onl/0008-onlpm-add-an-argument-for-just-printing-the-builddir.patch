@@ -1,5 +1,3 @@
-Upstream-Status: Inappropriate [Hack for building with yocto]
-
 From ae45c22f92901b54ae817fd8bcf2f5bae3d5c205 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 18 May 2022 15:49:13 +0200
@@ -11,6 +9,7 @@ build dir for passing to make.
 Add an argument to onlpm that allows printing the appropriate build
 directories of packages.
 
+Upstream-Status: Inappropriate [Hack for building with yocto]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  tools/onlpm.py | 10 ++++++++++

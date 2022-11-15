@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted [needs cleanup, older kernel compat]
-
 From 0e1991ee2bb881b89cafd8d50fbbfe3ec467a1c3 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 17 Jan 2020 14:29:42 +0000
@@ -7,6 +5,7 @@ Subject: [PATCH] ag5648: update modules to compile and work on recent kernels
 
 Still require a lot of love to get them in a nice state.
 
+Upstream-Status: Unsubmitted [needs cleanup, older kernel compat]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../x86-64/ag5648/modules/builds/dni_ag5648_psu.c            |  2 +-
