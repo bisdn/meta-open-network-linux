@@ -1,5 +1,3 @@
-Upstream-Status: Inappropriate [code not upstream]
-
 From 86ff576c690d08716b769c9bfb1cca9cc810a78e Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 23 Jan 2020 16:21:05 +0000
@@ -14,6 +12,7 @@ Luckily there is a function allowing us to do it in one step, so use it.
 Fixes i2c devices occationally not being created for the SFP ports
 behind the CPLDs.
 
+Upstream-Status: Inappropriate [code not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c   | 15 ++++++---------

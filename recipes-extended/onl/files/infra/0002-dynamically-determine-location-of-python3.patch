@@ -1,5 +1,3 @@
-Upstream-Status: untested
-
 From ce75aed32595d8c19ebb6e62680e015511659a14 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 16 Jun 2022 10:51:14 +0200
@@ -9,6 +7,7 @@ To allow running the scripts within a distro context with custom python
 search paths, replace the hardcoded location of the python3 binary with
 an env call.
 
+Upstream-Status: untested
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  builder/unix/tools/dependmodules.py  | 2 +-

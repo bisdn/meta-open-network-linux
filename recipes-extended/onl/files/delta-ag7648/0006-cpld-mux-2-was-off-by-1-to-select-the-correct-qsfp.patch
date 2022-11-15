@@ -1,10 +1,9 @@
-Upstream-Status: Inappropriate [code not upstream]
-
 From 281f0a5d92de6283c5b3c438d3a04095c67328f0 Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Wed, 19 Dec 2018 22:43:23 +0100
 Subject: [PATCH 4/8] cpld mux 2 was off by 1 to select the correct qsfp
 
+Upstream-Status: Inappropriate [code not upstream]
 ---
  .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c               | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)

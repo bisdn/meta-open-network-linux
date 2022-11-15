@@ -1,5 +1,3 @@
-Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/907]
-
 From 35148f6ef6ff552a29982f08bc42fad29322804e Mon Sep 17 00:00:00 2001
 From: Brandon Chuang <brandon_chuang@edge-core.com>
 Date: Fri, 12 Aug 2022 16:14:17 +0800
@@ -43,6 +41,7 @@ The output of onlpdump is as follows:
        }
    }
 
+Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/907]
 Signed-off-by: Brandon Chuang <brandon_chuang@edge-core.com>
 ---
  .../modules/builds/x86-64-accton-as4630-54te-psu.c           | 5 +++--

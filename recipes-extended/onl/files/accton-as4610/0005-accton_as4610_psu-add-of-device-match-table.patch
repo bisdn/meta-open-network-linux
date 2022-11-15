@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted
-
 From ccf52b835ec13e478a7b9e78967dd6126270c4ec Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:10:23 +0200
@@ -8,6 +6,7 @@ Subject: [PATCH 2/5] accton_as4610_psu: add of device match table
 For on-demand loading to work the kernel needs to know which compatibles
 are handled by the driver, so add an appropriate table.
 
+Upstream-Status: Unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../armxx/arm-accton-as4610/modules/accton_as4610_psu.c  | 9 +++++++++

@@ -1,5 +1,3 @@
-Upstream-Status: Inappropriate [Hack for building with yocto]
-
 From c93de5cc415e211f6c2079616701ab4be019b4dd Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 23 Jun 2022 11:13:22 +0200
@@ -8,6 +6,7 @@ Subject: [PATCH 3/3] onlpm: allow overriding the dist codename from environment
 Yocto does not provide a lsb_release module, so add support for
 overriding the dist codename, and only try to use lsb_release if unset.
 
+Upstream-Status: Inappropriate [Hack for building with yocto]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  tools/onlpm.py | 6 ++++--

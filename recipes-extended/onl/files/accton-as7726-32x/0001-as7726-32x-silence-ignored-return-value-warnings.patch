@@ -1,5 +1,3 @@
-Upstream-Status: Unsubmitted
-
 From e1bbc0fe2b6c536140fee5d0d1f0eec0a81760ac Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 2 Sep 2021 12:03:50 +0200
@@ -38,6 +36,7 @@ Silences the following errors:
 |       |                      ^~~~~~~~~~~~~~~~
 | cc1: all warnings being treated as errors
 
+Upstream-Status: Unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../x86_64_accton_as7726_32x/module/src/sysi.c   | 16 ++++++++--------
