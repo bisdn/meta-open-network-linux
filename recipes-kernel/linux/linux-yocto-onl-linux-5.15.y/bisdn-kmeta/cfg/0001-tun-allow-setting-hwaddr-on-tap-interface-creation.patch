@@ -1,5 +1,3 @@
-Upstream-Status: undecided if suitable [rather hackish, but also simple]
-
 From 4644f254c1e41263ffb8e9f6a1559daed42fdeb9 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 19 Jul 2022 14:44:05 +0200
@@ -17,6 +15,7 @@ just use the sa_data field of ifr_hwaddr for passing it.
 To avoid assigning unexpected mac addresses, do a validity check before
 trying to use it.
 
+Upstream-Status: undecided if suitable [rather hackish, but also simple]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  drivers/net/tun.c | 5 ++++-
