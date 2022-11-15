@@ -1,5 +1,3 @@
-Upstream-Status: unsubmitted
-
 From 47fbd141f6ca3998b5086ccdcdbcc7684a390eb1 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 13 Jun 2022 15:56:01 +0200
@@ -23,6 +21,7 @@ Fixes the following build error:
 | /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sleep_none.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/OS/module/src/os_sleep_none.c:33: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.c:139: first defined here
 | collect2: error: ld returned 1 exit status
 
+Upstream-Status: unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  modules/OS/module/src/os_sem_none.c      | 2 +-

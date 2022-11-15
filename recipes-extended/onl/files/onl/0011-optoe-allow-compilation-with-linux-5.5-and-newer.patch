@@ -12,6 +12,7 @@ code as ERR_PTR, instead of just NULL, if it fails.
 To keep the code simple, just check for both, and set optoe[1]->client
 to NULL in the error case, even if it is redundant for older kernels.
 
+Upstream-Status: unsubmitted
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  packages/base/any/kernels/modules/optoe.c | 15 +++++++++++++--

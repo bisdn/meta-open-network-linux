@@ -1,5 +1,3 @@
-Upstream-Status: Inappropriate [code not upstream]
-
 From 8207ae9769d63f198e234be44673af7f97793cdb Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Wed, 10 Oct 2018 13:37:07 +0200
@@ -8,6 +6,8 @@ Subject: [PATCH 2/8] x86-64-delta-ag7648-i2c-mux-setting.ko: added additional
 
 Delta seems to have different settings for this. Added OEM vendor
 as well
+
+Upstream-Status: Inappropriate [code not upstream]
 ---
  .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c          | 9 +++++++++
  1 file changed, 9 insertions(+)

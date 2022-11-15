@@ -1,5 +1,3 @@
-Upstream-Status: Inappropriate [code not upstream]
-
 From 0c87b081876e10614a77a330a85e73f5bc0cec8b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 14 Dec 2020 16:34:18 +0100
@@ -14,6 +12,7 @@ of NULL.
 
 Add wrappers to ensure compatibility to earlier kernel versions.
 
+Upstream-Status: Inappropriate [code not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../x86-64-delta-ag7648-i2c-mux-setting.c     | 39 ++++++++++++++-----
