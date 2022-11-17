@@ -11,14 +11,12 @@ inherit systemd
 SRC_URI += " \
     file://platform-as4610-init.service \
     file://platform-as4610-init.sh \
-    file://90-enp.link \
     file://fw_env.config \
 "
 
 FILES:${PN} = " \
     ${systemd_system_unitdir}/platform-as4610-init.service \
     ${bindir}/platform-as4610-init.sh \
-    ${systemd_unitdir}/network/90-enp.link \
     ${sysconfdir}/fw_env.config \
 "
 
@@ -28,9 +26,6 @@ do_install() {
         install -m 0644 ${WORKDIR}/platform-as4610-init.service ${D}${systemd_system_unitdir}
         install -d ${D}${bindir}
         install -m 0755 ${WORKDIR}/platform-as4610-init.sh ${D}${bindir}
-        # systemd-networkd
-        install -d ${D}${systemd_unitdir}/network/
-        install -m 0644 ${WORKDIR}/*.link ${D}${systemd_unitdir}/network/
         # uboot env
         install -d ${D}${sysconfdir}
         install -m 0644 ${WORKDIR}/fw_env.config ${D}/${sysconfdir}/
