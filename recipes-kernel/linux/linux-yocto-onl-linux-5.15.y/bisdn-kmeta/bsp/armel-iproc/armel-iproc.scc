@@ -26,8 +26,6 @@ patch 10-17-usb-udc-xgs-iproc-udc.patch
 patch 10-18-usb-phy-phy-xgs-iproc.patch
 patch 10-19-watchdog-sp805_wdt-clear-bootstatus.patch
 patch 10-20-drivers-usb-phy-phy-xgs-iproc-usb-phy-mode.patch
-patch 10-21-iproc-cmic-export-iproc_cmic_base_get.patch
-patch 10-22-iproc-cmic-get-and-export-irq.patch
 
 include cfg/bisdn-linux.scc
 
