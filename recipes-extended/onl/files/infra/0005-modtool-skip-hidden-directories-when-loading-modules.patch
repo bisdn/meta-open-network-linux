@@ -1,0 +1,55 @@
+From 733456c8c2046f95a57a337747690961a1ff0e15 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Sat, 19 Nov 2022 13:55:30 +0100
+Subject: [PATCH] modtool: skip hidden directories when loading modules
+
+When built via a build system (e.g. Yocto) that uses quilt, quilt may
+create a hidden ".pc" directory containing duplicates of modified files,
+or in case of newly added files empty files.
+
+If any of these files are scanned, they will be treated as broken or
+duplicate modules, breaking the build. So ignore hidden directories to
+avoid running into the issue.
+
+Avoids error messages like:
+
+| Traceback (most recent call last):
+|   File "/home/ubuntu/yocto/master/work/cel_questone_2a-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/builder/unix/tools/modtool.py", line 123, in <module>
+|     mm.load_modules(ops.dbroot)
+|   File "/home/ubuntu/yocto/master/work/cel_questone_2a-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/builder/unix/tools/modtool.py", line 43, in load_modules
+|     self.__load_module(os.path.join(root, f))
+|   File "/home/ubuntu/yocto/master/work/cel_questone_2a-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/builder/unix/tools/modtool.py", line 25, in __load_module
+|     if 'name' not in d:
+| TypeError: argument of type 'NoneType' is not iterable
+
+
+Upstream-Status: Unsubmitted
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ builder/unix/tools/modtool.py | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/builder/unix/tools/modtool.py b/builder/unix/tools/modtool.py
+index 6605eaaa7253..ed0e3fbbe393 100755
+--- a/builder/unix/tools/modtool.py
++++ b/builder/unix/tools/modtool.py
+@@ -37,10 +37,12 @@ class ModuleTool(object):
+     def load_modules(self, target):
+         target = os.path.abspath(target)
+         if os.path.isdir(target):
+-            for (root, dirs, files) in os.walk(target):
+-                for f in files:
+-                    if f == ".module":
+-                        self.__load_module(os.path.join(root, f))
++            with os.scandir(target) as it:
++                for entry in it:
++                    if entry.is_dir() and not entry.name.startswith('.'):
++                        self.load_modules(entry.path)
++                    elif entry.is_file() and entry.name == '.module':
++                        self.__load_module(entry.path)
+         elif os.path.isfile(target):
+             self.__load_module(target)
+ 
+-- 
+2.38.1
+
