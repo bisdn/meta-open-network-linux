@@ -13,7 +13,6 @@ URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git;protocol=ht
 
 # submodules are checked out individually to support license file checking
 SRC_URI += " \
-           file://questone-2a;subdir=git/packages/platforms/celestica/x86-64 \
            file://onl/0001-file_uds-silence-unused-result-warnings.patch \
            file://onl/0002-platform_manager-do-not-ignore-write-return-value.patch \
            file://onl/0003-file-check-unix-socket-path-is-short-enough.patch \
@@ -35,6 +34,7 @@ SRC_URI += " \
            file://infra/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_INFRA} \
            file://infra/0003-avoid-multiple-global-definitions-for-__not_empty__.patch;patchdir=${SUBMODULE_INFRA} \
            file://infra/0004-replace-yaml.load-with-yaml.full_load.patch;patchdir=${SUBMODULE_INFRA} \
+           file://infra/0005-modtool-skip-hidden-directories-when-loading-modules.patch;patchdir=${SUBMODULE_INFRA} \
            file://accton-as4610/0001-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
            file://accton-as4610/0002-accton-as4610-fix-value-truncation-when-accessing-le.patch \
            file://accton-as4610/0003-accton-as4610-do-not-try-to-read-out-PSU-values-for-.patch \
@@ -55,10 +55,11 @@ SRC_URI += " \
            file://accton-as5835-54x/0001-AS5835-54x-Support-psu_fan_dir-sysfs-for-YM-1401A-PS.patch \
            file://accton-as5835-54x/0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
            file://accton-as7726-32x/0001-as7726-32x-silence-ignored-return-value-warnings.patch \
-           file://cel-questone-2a/0001-questone-2a-fix-ignoring-unused-result-warnings.patch \
-           file://cel-questone-2a/0002-cel-questone-2a-delete-unused-global-variables.patch \
-           file://cel-questone-2a/0003-cel-questone-2a-fix-various-issues-in-questone-2a_sw.patch \
-           file://cel-questone-2a/0004-cel-questone-2a-do-not-build-optoe.patch \
+           file://cel-questone-2a/0001-add-celestica-questone-2a.patch \
+           file://cel-questone-2a/0002-questone-2a-fix-ignoring-unused-result-warnings.patch \
+           file://cel-questone-2a/0003-cel-questone-2a-delete-unused-global-variables.patch \
+           file://cel-questone-2a/0004-cel-questone-2a-fix-various-issues-in-questone-2a_sw.patch \
+           file://cel-questone-2a/0005-cel-questone-2a-do-not-build-optoe.patch \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
            file://delta-ag5648/0002-delta-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
