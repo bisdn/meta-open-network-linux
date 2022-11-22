@@ -1,0 +1,127 @@
+From fedd998baed3fa5c3ebb4bf49833205bf5d3edc8 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 15 Nov 2022 14:52:06 +0100
+Subject: [PATCH 3/7] accton-as4630-54pe: update i2c_driver with 6.1
+ compatibility
+
+i2c_remove changes its return type from int to void, so we need to
+provide different versions based on kernel version.
+
+Add variants using the following semantic patch:
+
+// <smpl>
+@r@
+identifier DRIVER;
+identifier remove_fn;
+fresh identifier remove_fn_wrap = remove_fn ## "_6_1";
+position p;
+@@
+struct i2c_driver DRIVER@p = {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++     .remove = remove_fn_wrap,
++#else
+      .remove = remove_fn,
++#endif
+};
+
+@i depends on r@
+@@
+#include <linux/version.h>
+@depends on r&&!i@
+@@
+#include <...>
++#include <linux/version.h>
+@depends on r@
+identifier r.remove_fn;
+identifier r.remove_fn_wrap;
+@@
+int remove_fn(...) {...}
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void remove_fn_wrap(struct i2c_Client *client)
++{
++     remove_fn(client);
++}
++#endif
+// </smpl>
+
+applied with
+
+  spatch --smpl-spacing --sp-file 6.1-i2c_remove_sig.cocci --in-place --dir packages/
+
+Result taken as is, without any code style fixes.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../modules/builds/x86-64-accton-as4630-54pe-cpld.c   | 10 ++++++++++
+ .../modules/builds/x86-64-accton-as4630-54pe-psu.c    | 11 +++++++++++
+ 2 files changed, 21 insertions(+)
+
+diff --git a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
+index d6d3cba0ff5f..ed1236f0519f 100755
+--- a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
++++ b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
+@@ -749,6 +749,12 @@ static int as4630_54pe_cpld_remove(struct i2c_client *client)
+ 
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void as4630_54pe_cpld_remove_6_1(struct i2c_client *client)
++{
++    as4630_54pe_cpld_remove(client);
++}
++#endif
+ 
+ static int as4630_54pe_cpld_read_internal(struct i2c_client *client, u8 reg)
+ {
+@@ -840,7 +846,11 @@ static struct i2c_driver as4630_54pe_cpld_driver = {
+ 		.owner	= THIS_MODULE,
+ 	},
+ 	.probe		= as4630_54pe_cpld_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++	.remove = as4630_54pe_cpld_remove_6_1,
++#else
+ 	.remove		= as4630_54pe_cpld_remove,
++#endif
+ 	.id_table	= as4630_54pe_cpld_id,
+ };
+ 
+diff --git a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-psu.c b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-psu.c
+index 73f1e672e52c..f3351b56c4a1 100755
+--- a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-psu.c
++++ b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-psu.c
+@@ -33,6 +33,7 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/dmi.h>
++#include <linux/version.h>
+ 
+ #define MAX_MODEL_NAME          20
+ #define MAX_SERIAL_NUMBER       19
+@@ -208,6 +209,12 @@ static int as4630_54pe_psu_remove(struct i2c_client *client)
+ 
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void as4630_54pe_psu_remove_6_1(struct i2c_client *client)
++{
++    as4630_54pe_psu_remove(client);
++}
++#endif
+ 
+ enum psu_index
+ {
+@@ -228,7 +235,11 @@ static struct i2c_driver as4630_54pe_psu_driver = {
+         .name     = "as4630_54pe_psu",
+     },
+     .probe        = as4630_54pe_psu_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++    .remove = as4630_54pe_psu_remove_6_1,
++#else
+     .remove       = as4630_54pe_psu_remove,
++#endif
+     .id_table     = as4630_54pe_psu_id,
+     .address_list = normal_i2c,
+ };
+-- 
+2.38.1
+

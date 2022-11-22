@@ -27,6 +27,8 @@ SRC_URI += " \
            file://onl/0012-kmodbuild.sh-don-t-treat-undefined-symbols-as-errors.patch \
            file://onl/0013-optoe-add-of-device-match-table.patch \
            file://onl/0014-ym2561y-add-of-device-match-table.patch \
+           file://onl/0015-modules-do-not-call-hwmon_device_register_with_info-.patch \
+           file://onl/0016-modules-update-i2c_driver-with-6.1-compatibility.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
@@ -43,25 +45,36 @@ SRC_URI += " \
            file://accton-as4610/0006-accton-as4610-let-CPLD-handle-the-FAN-device.patch \
            file://accton-as4610/0007-accton-as4610-fix-FAN-driver-id-table.patch \
            file://accton-as4610/0008-accton-as4610-let-CPLD-handle-the-LED-device.patch \
+           file://accton-as4610/0009-accton-as4610-do-not-call-hwmon_device_register_with.patch \
+           file://accton-as4610/0010-accton-as4610-update-i2c_driver-with-6.1-compatibili.patch \
            file://accton-as4630-54pe/0001-as4630-54pe-Add-SFP-reset-sysfs-and-fix-Led-drv.patch \
            file://accton-as4630-54pe/0002-Add-rest-lpmode-code-to-sfpi_control-set-get-api.patch \
            file://accton-as4630-54pe/0003-Fix-fan-direction-api.patch \
            file://accton-as4630-54pe/0004-accton-as4630-54pe-silence-error.patch \
            file://accton-as4630-54pe/0005-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
+           file://accton-as4630-54pe/0006-accton-as4630-54pe-update-i2c_driver-with-6.1-compat.patch \
            file://accton-as4630-54te/0001-accton-as4630-54te-silence-unused-result-warning.patch \
            file://accton-as4630-54te/0002-Edgecore-as4630_54te-Update-thermal-threshold.patch \
            file://accton-as4630-54te/0003-Edgecore-as4630_54te-Support-YM-1151F-power-supply.patch \
            file://accton-as4630-54te/0004-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
+           file://accton-as4630-54te/0005-accton-as4610-54te-do-not-call-hwmon_device_register.patch \
+           file://accton-as4630-54te/0006-accton-as4630-54te-update-i2c_driver-with-6.1-compat.patch \
            file://accton-as5835-54x/0001-AS5835-54x-Support-psu_fan_dir-sysfs-for-YM-1401A-PS.patch \
            file://accton-as5835-54x/0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
+           file://accton-as5835-54x/0003-accton-as5835-54x-do-not-call-hwmon_device_register_.patch \
+           file://accton-as5835-54x/0004-accton-as5835-54x-update-i2c_driver-with-6.1-compati.patch \
            file://accton-as7726-32x/0001-as7726-32x-silence-ignored-return-value-warnings.patch \
+           file://accton-as7726-32x/0002-accton-as7726-32x-do-not-call-hwmon_device_register_.patch \
+           file://accton-as7726-32x/0003-accton-as7726-32x-update-i2c_driver-with-6.1-compati.patch \
            file://cel-questone-2a/0001-add-celestica-questone-2a.patch \
            file://cel-questone-2a/0002-questone-2a-fix-ignoring-unused-result-warnings.patch \
            file://cel-questone-2a/0003-cel-questone-2a-delete-unused-global-variables.patch \
            file://cel-questone-2a/0004-cel-questone-2a-fix-various-issues-in-questone-2a_sw.patch \
            file://cel-questone-2a/0005-cel-questone-2a-do-not-build-optoe.patch \
+           file://cel-questone-2a/0006-cel-questone-2a-update-i2c_drivers-with-6.1-compatib.patch \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
            file://delta-ag5648/0002-delta-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
+           file://delta-ag5648/0003-delta-ag5648-update-i2c_driver-with-6.1-compatibilit.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
            file://delta-ag7648/0003-bump-kernel-to-4.9.patch \
