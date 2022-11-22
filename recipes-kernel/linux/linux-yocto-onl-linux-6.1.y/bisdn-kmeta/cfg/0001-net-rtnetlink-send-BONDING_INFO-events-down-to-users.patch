@@ -1,0 +1,25 @@
+From 872b388b631d06ae09cf2e30dcafbcc64bcafae6 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 8 Oct 2020 10:28:38 +0200
+Subject: [PATCH] net: rtnetlink: send BONDING_INFO events down to userspace
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ net/core/rtnetlink.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
+index 944acb1a9f29..65b36d2c756a 100644
+--- a/net/core/rtnetlink.c
++++ b/net/core/rtnetlink.c
+@@ -5300,6 +5300,7 @@ static int rtnetlink_event(struct notifier_block *this, unsigned long event, voi
+ 	case NETDEV_CHANGEUPPER:
+ 	case NETDEV_RESEND_IGMP:
+ 	case NETDEV_CHANGEINFODATA:
++	case NETDEV_BONDING_INFO:
+ 	case NETDEV_CHANGELOWERSTATE:
+ 	case NETDEV_CHANGE_TX_QUEUE_LEN:
+ 		rtmsg_ifinfo_event(RTM_NEWLINK, dev, 0, rtnl_get_event(event),
+-- 
+2.28.0
+
