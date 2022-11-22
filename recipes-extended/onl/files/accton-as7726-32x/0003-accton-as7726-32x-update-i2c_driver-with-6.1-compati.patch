@@ -1,0 +1,165 @@
+From cf96262b19f401cb4439e48e41954e2e9f923d5e Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 15 Nov 2022 14:53:18 +0100
+Subject: [PATCH 6/7] accton-as7726-32x: update i2c_driver with 6.1
+ compatibility
+
+i2c_remove changes its return type from int to void, so we need to
+provide different versions based on kernel version.
+
+Add variants using the following semantic patch:
+
+// <smpl>
+@r@
+identifier DRIVER;
+identifier remove_fn;
+fresh identifier remove_fn_wrap = remove_fn ## "_6_1";
+position p;
+@@
+struct i2c_driver DRIVER@p = {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++     .remove = remove_fn_wrap,
++#else
+      .remove = remove_fn,
++#endif
+};
+
+@i depends on r@
+@@
+#include <linux/version.h>
+@depends on r&&!i@
+@@
+#include <...>
++#include <linux/version.h>
+@depends on r@
+identifier r.remove_fn;
+identifier r.remove_fn_wrap;
+@@
+int remove_fn(...) {...}
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void remove_fn_wrap(struct i2c_Client *client)
++{
++     remove_fn(client);
++}
++#endif
+// </smpl>
+
+applied with
+
+  spatch --smpl-spacing --sp-file 6.1-i2c_remove_sig.cocci --in-place --dir packages/
+
+Result taken as is, without any code style fixes.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../modules/builds/x86-64-accton-as7726-32x-cpld.c    | 10 ++++++++++
+ .../modules/builds/x86-64-accton-as7726-32x-fan.c     | 11 +++++++++++
+ .../modules/builds/x86-64-accton-as7726-32x-psu.c     | 11 +++++++++++
+ 3 files changed, 32 insertions(+)
+
+diff --git a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-cpld.c b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-cpld.c
+index ab0b9c4527f0..fbabae198ea6 100755
+--- a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-cpld.c
++++ b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-cpld.c
+@@ -625,6 +625,12 @@ static int as7726_32x_cpld_remove(struct i2c_client *client)
+ 
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void as7726_32x_cpld_remove_6_1(struct i2c_client *client)
++{
++    as7726_32x_cpld_remove(client);
++}
++#endif
+ 
+ static int as7726_32x_cpld_read_internal(struct i2c_client *client, u8 reg)
+ {
+@@ -716,7 +722,11 @@ static struct i2c_driver as7726_32x_cpld_driver = {
+ 		.owner	= THIS_MODULE,
+ 	},
+ 	.probe		= as7726_32x_cpld_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++	.remove = as7726_32x_cpld_remove_6_1,
++#else
+ 	.remove		= as7726_32x_cpld_remove,
++#endif
+ 	.id_table	= as7726_32x_cpld_id,
+ };
+ 
+diff --git a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
+index 78e5309c621e..47c0a890ff17 100755
+--- a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
++++ b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
+@@ -29,6 +29,7 @@
+ #include <linux/sysfs.h>
+ #include <linux/slab.h>
+ #include <linux/dmi.h>
++#include <linux/version.h>
+ 
+ #define DRVNAME "as7726_32x_fan"
+ 
+@@ -463,6 +464,12 @@ static int as7726_32x_fan_remove(struct i2c_client *client)
+ 
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void as7726_32x_fan_remove_6_1(struct i2c_client *client)
++{
++    as7726_32x_fan_remove(client);
++}
++#endif
+ 
+ /* Addresses to scan */
+ static const unsigned short normal_i2c[] = { 0x66, I2C_CLIENT_END };
+@@ -479,7 +486,11 @@ static struct i2c_driver as7726_32x_fan_driver = {
+         .name     = DRVNAME,
+     },
+     .probe        = as7726_32x_fan_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++    .remove = as7726_32x_fan_remove_6_1,
++#else
+     .remove       = as7726_32x_fan_remove,
++#endif
+     .id_table     = as7726_32x_fan_id,
+     .address_list = normal_i2c,
+ };
+diff --git a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
+index 2b93b6728ee3..4dfd95785911 100755
+--- a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
++++ b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
+@@ -33,6 +33,7 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/dmi.h>
++#include <linux/version.h>
+ 
+ #define MAX_MODEL_NAME          16
+ #define MAX_SERIAL_NUMBER       19
+@@ -215,6 +216,12 @@ static int as7726_32x_psu_remove(struct i2c_client *client)
+ 
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void as7726_32x_psu_remove_6_1(struct i2c_client *client)
++{
++    as7726_32x_psu_remove(client);
++}
++#endif
+ 
+ enum psu_index
+ {
+@@ -235,7 +242,11 @@ static struct i2c_driver as7726_32x_psu_driver = {
+         .name     = "as7726_32x_psu",
+     },
+     .probe        = as7726_32x_psu_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++    .remove = as7726_32x_psu_remove_6_1,
++#else
+     .remove       = as7726_32x_psu_remove,
++#endif
+     .id_table     = as7726_32x_psu_id,
+     .address_list = normal_i2c,
+ };
+-- 
+2.38.1
+

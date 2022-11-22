@@ -1,0 +1,229 @@
+From d154afe881f2497a8c323a9934693939dc3c9598 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 15 Nov 2022 14:48:11 +0100
+Subject: [PATCH 1/7] modules: update i2c_driver with 6.1 compatibility
+
+i2c_remove changes its return type from int to void, so we need to
+provide different versions based on kernel version.
+
+Add variants using the following semantic patch:
+
+// <smpl>
+@r@
+identifier DRIVER;
+identifier remove_fn;
+fresh identifier remove_fn_wrap = remove_fn ## "_6_1";
+position p;
+@@
+struct i2c_driver DRIVER@p = {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++     .remove = remove_fn_wrap,
++#else
+      .remove = remove_fn,
++#endif
+};
+
+@i depends on r@
+@@
+#include <linux/version.h>
+@depends on r&&!i@
+@@
+#include <...>
++#include <linux/version.h>
+@depends on r@
+identifier r.remove_fn;
+identifier r.remove_fn_wrap;
+@@
+int remove_fn(...) {...}
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void remove_fn_wrap(struct i2c_Client *client)
++{
++     remove_fn(client);
++}
++#endif
+// </smpl>
+
+applied with
+
+  spatch --smpl-spacing --sp-file 6.1-i2c_remove_sig.cocci --in-place --dir packages/
+
+Result taken as is, without any code style fixes.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../base/any/kernels/modules/accton_i2c_psu.c     | 10 ++++++++++
+ packages/base/any/kernels/modules/cpr_4011_4mxx.c | 10 ++++++++++
+ packages/base/any/kernels/modules/dps850.c        | 15 +++++++++++++--
+ packages/base/any/kernels/modules/emerson700.c    |  4 ++++
+ packages/base/any/kernels/modules/optoe.c         | 10 ++++++++++
+ packages/base/any/kernels/modules/ym2651y.c       | 10 ++++++++++
+ 6 files changed, 57 insertions(+), 2 deletions(-)
+
+diff --git a/packages/base/any/kernels/modules/accton_i2c_psu.c b/packages/base/any/kernels/modules/accton_i2c_psu.c
+index 279ffd9d541c..d3b769b347b8 100755
+--- a/packages/base/any/kernels/modules/accton_i2c_psu.c
++++ b/packages/base/any/kernels/modules/accton_i2c_psu.c
+@@ -367,6 +367,12 @@ static int accton_i2c_psu_remove(struct i2c_client *client)
+     
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void accton_i2c_psu_remove_6_1(struct i2c_client *client)
++{
++    accton_i2c_psu_remove(client);
++}
++#endif
+ /* Support psu moduel
+  */
+ static const struct i2c_device_id accton_i2c_psu_id[] = {
+@@ -382,7 +388,11 @@ static struct i2c_driver accton_i2c_psu_driver = {
+         .name     = "accton_i2c_psu",
+     },
+     .probe        = accton_i2c_psu_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++    .remove = accton_i2c_psu_remove_6_1,
++#else
+     .remove       = accton_i2c_psu_remove,
++#endif
+     .id_table     = accton_i2c_psu_id,
+     .address_list = normal_i2c,
+ };
+diff --git a/packages/base/any/kernels/modules/cpr_4011_4mxx.c b/packages/base/any/kernels/modules/cpr_4011_4mxx.c
+index cfb58ee4d0cd..e67833a0cc26 100644
+--- a/packages/base/any/kernels/modules/cpr_4011_4mxx.c
++++ b/packages/base/any/kernels/modules/cpr_4011_4mxx.c
+@@ -280,6 +280,12 @@ static int cpr_4011_4mxx_remove(struct i2c_client *client)
+     
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void cpr_4011_4mxx_remove_6_1(struct i2c_client *client)
++{
++    cpr_4011_4mxx_remove(client);
++}
++#endif
+ 
+ static const struct i2c_device_id cpr_4011_4mxx_id[] = {
+     { "cpr_4011_4mxx", 0 },
+@@ -293,7 +299,11 @@ static struct i2c_driver cpr_4011_4mxx_driver = {
+         .name     = "cpr_4011_4mxx",
+     },
+     .probe        = cpr_4011_4mxx_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++    .remove = cpr_4011_4mxx_remove_6_1,
++#else
+     .remove       = cpr_4011_4mxx_remove,
++#endif
+     .id_table     = cpr_4011_4mxx_id,
+     .address_list = normal_i2c,
+ };
+diff --git a/packages/base/any/kernels/modules/dps850.c b/packages/base/any/kernels/modules/dps850.c
+index cb7c1d8f5560..de33815344a1 100755
+--- a/packages/base/any/kernels/modules/dps850.c
++++ b/packages/base/any/kernels/modules/dps850.c
+@@ -289,7 +289,13 @@ static int dps850_remove(struct i2c_client *client)
+ 	kfree(data);
+ 
+ 	return 0;
+-}
++}
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void dps850_remove_6_1(struct i2c_client *client)
++{
++	dps850_remove(client);
++}
++#endif
+ 
+ static const struct i2c_device_id dps850_id[] = {
+ 	{ "dps850", DPS850 },
+@@ -303,7 +309,12 @@ static struct i2c_driver dps850_driver = {
+ 		.name	= "dps850",
+ 	},
+ 	.probe	  = dps850_probe,
+-	.remove	  = dps850_remove,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++	.remove = dps850_remove_6_1,
++#else
++	.remove	  = dps850_remove,
++#endif
++	
+ 	.id_table = dps850_id,
+ 	.address_list = normal_i2c,
+ };
+diff --git a/packages/base/any/kernels/modules/emerson700.c b/packages/base/any/kernels/modules/emerson700.c
+index b1a537c8f2ba..2bec1abd5b08 100644
+--- a/packages/base/any/kernels/modules/emerson700.c
++++ b/packages/base/any/kernels/modules/emerson700.c
+@@ -227,7 +227,11 @@ static struct i2c_driver emerson700_pmbus_driver = {
+ 		   .name = "emerson700",
+ 		   },
+ 	.probe = emerson700_pmbus_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++	.remove = pmbus_do_remove_6_1,
++#else
+ 	.remove = pmbus_do_remove,
++#endif
+ 	.id_table = emerson700_pmbus_id,
+ };
+ 
+diff --git a/packages/base/any/kernels/modules/optoe.c b/packages/base/any/kernels/modules/optoe.c
+index dae5e5b5d5f9..869b7eff887b 100644
+--- a/packages/base/any/kernels/modules/optoe.c
++++ b/packages/base/any/kernels/modules/optoe.c
+@@ -835,6 +835,12 @@ static int optoe_remove(struct i2c_client *client)
+ 	kfree(optoe);
+ 	return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void optoe_remove_6_1(struct i2c_client *client)
++{
++	optoe_remove(client);
++}
++#endif
+ 
+ static ssize_t show_dev_class(struct device *dev,
+ 			struct device_attribute *dattr, char *buf)
+@@ -1195,7 +1201,11 @@ static struct i2c_driver optoe_driver = {
+ 		.of_match_table = of_match_ptr(optoe_of_ids),
+ 	},
+ 	.probe = optoe_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++	.remove = optoe_remove_6_1,
++#else
+ 	.remove = optoe_remove,
++#endif
+ 	.id_table = optoe_ids,
+ };
+ 
+diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
+index aacda0fd45c5..c9b16550e29b 100755
+--- a/packages/base/any/kernels/modules/ym2651y.c
++++ b/packages/base/any/kernels/modules/ym2651y.c
+@@ -591,6 +591,12 @@ static int ym2651y_remove(struct i2c_client *client)
+ 
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void ym2651y_remove_6_1(struct i2c_client *client)
++{
++    ym2651y_remove(client);
++}
++#endif
+ 
+ static const struct i2c_device_id ym2651y_id[] = {
+     { "ym2651", YM2651 },
+@@ -621,7 +627,11 @@ static struct i2c_driver ym2651y_driver = {
+         .of_match_table = of_match_ptr(ym2651y_of_id),
+     },
+     .probe    = ym2651y_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++    .remove = ym2651y_remove_6_1,
++#else
+     .remove   = ym2651y_remove,
++#endif
+     .id_table = ym2651y_id,
+     .address_list = normal_i2c,
+ };
+-- 
+2.38.1
+

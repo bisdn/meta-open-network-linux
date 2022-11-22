@@ -1,0 +1,172 @@
+From e2360037b5b34fdcacb00792fe923a1dacdc89f0 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 22 Nov 2022 13:07:46 +0100
+Subject: [PATCH] cel-questone-2a: update i2c_drivers with 6.1 compatibility
+
+i2c_remove changes its return type from int to void, so we need to
+provide different versions based on kernel version.
+
+Add variants using the following semantic patch:
+
+// <smpl>
+@r@
+identifier DRIVER;
+identifier remove_fn;
+fresh identifier remove_fn_wrap = remove_fn ## "_6_1";
+position p;
+@@
+struct i2c_driver DRIVER@p = {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++     .remove = remove_fn_wrap,
++#else
+      .remove = remove_fn,
++#endif
+};
+
+@i depends on r@
+@@
+#include <linux/version.h>
+@depends on r&&!i@
+@@
+#include <...>
++#include <linux/version.h>
+@depends on r@
+identifier r.remove_fn;
+identifier r.remove_fn_wrap;
+@@
+int remove_fn(...) {...}
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void remove_fn_wrap(struct i2c_Client *client)
++{
++     remove_fn(client);
++}
++#endif
+// </smpl>
+
+applied with
+
+  spatch --smpl-spacing --sp-file 6.1-i2c_remove_sig.cocci --in-place --dir packages/
+
+Result taken as is, without any code style fixes.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86-64/questone-2a/modules/builds/src/mc24lc64t.c | 11 +++++++++++
+ .../x86-64/questone-2a/modules/builds/src/optoe.c     | 11 +++++++++++
+ .../questone-2a/modules/builds/src/sff_8436_eeprom.c  | 11 +++++++++++
+ 3 files changed, 33 insertions(+)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c
+index ae79770a4d8e..7901297137f4 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c
+@@ -17,6 +17,7 @@
+ #include <linux/types.h>
+ #include <linux/delay.h>
+ #include <linux/jiffies.h>
++#include <linux/version.h>
+ 
+ #define EEPROM_SIZE 8192  //mc24lt64t eeprom size in bytes.
+ 
+@@ -149,6 +150,12 @@ static int mc24lc64t_remove(struct i2c_client *client)
+ 
+         return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void mc24lc64t_remove_6_1(struct i2c_client *client)
++{
++        mc24lc64t_remove(client);
++}
++#endif
+ 
+ static const struct i2c_device_id mc24lc64t_id[] = {
+         { "24lc64t", 0 },
+@@ -162,7 +169,11 @@ static struct i2c_driver mc24lc64t_driver = {
+                 .owner = THIS_MODULE,
+         },
+         .probe          = mc24lc64t_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++        .remove = mc24lc64t_remove_6_1,
++#else
+         .remove         = mc24lc64t_remove,
++#endif
+         .id_table       = mc24lc64t_id,
+ };
+ 
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/optoe.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/optoe.c
+index c22b92a29abe..76ee8aee17db 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/optoe.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/optoe.c
+@@ -124,6 +124,7 @@
+ #endif
+ 
+ #include <linux/types.h>
++#include <linux/version.h>
+ 
+ /* The maximum length of a port name */
+ #define MAX_PORT_NAME_LEN 20
+@@ -800,6 +801,12 @@ static int optoe_remove(struct i2c_client *client)
+ 	kfree(optoe);
+ 	return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void optoe_remove_6_1(struct i2c_client *client)
++{
++	optoe_remove(client);
++}
++#endif
+ 
+ static ssize_t show_dev_class(struct device *dev,
+ 			struct device_attribute *dattr, char *buf)
+@@ -1119,7 +1126,11 @@ static struct i2c_driver optoe_driver = {
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.probe = optoe_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++	.remove = optoe_remove_6_1,
++#else
+ 	.remove = optoe_remove,
++#endif
+ 	.id_table = optoe_ids,
+ };
+ 
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/sff_8436_eeprom.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/sff_8436_eeprom.c
+index 6779ccee5e5e..191cc65e6755 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/sff_8436_eeprom.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/sff_8436_eeprom.c
+@@ -85,6 +85,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/memory.h>
++#include <linux/version.h>
+ 
+ #define SFF_8436_EEPROM_SIZE       5*128
+ #define SFF_8436_MAX_PAGE_COUNT    5
+@@ -788,6 +789,12 @@ static int sff_8436_remove(struct i2c_client *client)
+ 	kfree(sff_8436);
+ 	return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++static void sff_8436_remove_6_1(struct i2c_client *client)
++{
++	sff_8436_remove(client);
++}
++#endif
+ static int sff_8436_eeprom_probe(struct i2c_client *client,
+ 			const struct i2c_device_id *id)
+ {
+@@ -955,7 +962,11 @@ static struct i2c_driver sff_8436_driver = {
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.probe = sff_8436_eeprom_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
++	.remove = sff_8436_remove_6_1,
++#else
+ 	.remove = sff_8436_remove,
++#endif
+ 	.id_table = sff8436_ids,
+ };
+ 
+-- 
+2.38.1
+
