@@ -29,6 +29,7 @@
 #include <linux/debugfs.h>
 
 #include <asm/unaligned.h>
+#include <linux/version.h>
 
 /* TODO: replace these with regmap or something more sane */
 extern int as4630_54pe_cpld_read(unsigned short cpld_addr, u8 reg);
@@ -493,6 +494,12 @@ static int as4630_poe_pse_remove(struct i2c_client *client)
 
 	return 0;
 }
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+static void as4630_poe_pse_remove_6_1(struct i2c_client *client)
+{
+	as4630_poe_pse_remove(client);
+}
+#endif
 
 static const struct i2c_device_id as4630_54pe_poe_pse_id[] = {
     { "as4630_54pe_poe_mcu" },
@@ -502,7 +509,11 @@ MODULE_DEVICE_TABLE(i2c, as4630_54pe_poe_pse_id);
 
 static struct i2c_driver as4630_poe_pse_driver = {
 	.probe = as4630_poe_pse_probe,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+	.remove = as4630_poe_pse_remove_6_1,
+#else
 	.remove = as4630_poe_pse_remove,
+#endif
 	.id_table = as4630_54pe_poe_pse_id,
 	.driver = {
 		.name = "as4630_54pe_poe_mcu",
