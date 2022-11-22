@@ -1,0 +1,30 @@
+From 349d270ba886f48f9e4331b47c15b53d2094c235 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 13 Oct 2021 12:30:26 +0200
+Subject: [PATCH 08/20] gpio: allow xgs-iproc for ARCH_XGS_IPROC as well
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ drivers/gpio/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index a01af1180616..ef3f050c9240 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -187,10 +187,10 @@ config GPIO_BCM_KONA
+ 
+ config GPIO_BCM_XGS_IPROC
+ 	tristate "BRCM XGS iProc GPIO support"
+-	depends on OF_GPIO && (ARCH_BCM_IPROC || COMPILE_TEST)
++	depends on OF_GPIO && (ARCH_BCM_IPROC || ARCH_XGS_IPROC || COMPILE_TEST)
+ 	select GPIO_GENERIC
+ 	select GPIOLIB_IRQCHIP
+-	default ARCH_BCM_IPROC
++	default ARCH_BCM_IPROC || ARCH_XGS_IPROC
+ 	help
+ 	  Say yes here to enable GPIO support for Broadcom XGS iProc SoCs.
+ 
+-- 
+2.38.1
+

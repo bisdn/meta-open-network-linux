@@ -1,0 +1,141 @@
+diff --git a/arch/arm/mach-iproc/Makefile b/arch/arm/mach-iproc/Makefile
+index 627739d6e53a..1cfce89e73d9 100644
+--- a/arch/arm/mach-iproc/Makefile
++++ b/arch/arm/mach-iproc/Makefile
+@@ -1,2 +1,3 @@
+ obj-y := board_bu.o
++obj-y += shm.o
+ obj-$(CONFIG_SMP) += platsmp.o
+diff --git a/arch/arm/mach-iproc/include/plat/shm.h b/arch/arm/mach-iproc/include/plat/shm.h
+new file mode 100644
+index 000000000000..9c4af8927619
+--- /dev/null
++++ b/arch/arm/mach-iproc/include/plat/shm.h
+@@ -0,0 +1,37 @@
++/*
++ * Copyright (C) 2013, Broadcom Corporation. All Rights Reserved.
++ * 
++ * Permission to use, copy, modify, and/or distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ * 
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
++ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
++ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++/*
++ * Header for declaring shim layer exports.
++ */
++
++#ifndef __SHM_DOT_H_INCLUDED__
++#define __SHM_DOT_H_INCLUDED__
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/gpio.h>
++
++
++extern struct resource *
++iproc_platform_get_resource(struct platform_device *dev, unsigned int type,
++		      unsigned int num);
++
++extern int iproc_platform_device_register(struct platform_device * pdev);
++extern void iproc_platform_device_unregister(struct platform_device * pdev);
++extern int iproc_platform_driver_register(struct platform_driver *drv);
++extern void iproc_platform_driver_unregister(struct platform_driver *drv);
++
++#endif /*#ifndef __SHM_DOT_H_INCLUDED__*/
+diff --git a/arch/arm/mach-iproc/shm.c b/arch/arm/mach-iproc/shm.c
+new file mode 100644
+index 000000000000..7ae532e1b002
+--- /dev/null
++++ b/arch/arm/mach-iproc/shm.c
+@@ -0,0 +1,81 @@
++/*
++ * Copyright (C) 2013, Broadcom Corporation. All Rights Reserved.
++ * 
++ * Permission to use, copy, modify, and/or distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ * 
++ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
++ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
++ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++#include "include/plat/shm.h"
++
++/**
++ *	iproc_platform_get_resource -
++ *           wrapper function for platform_get_resource
++ *	@dev: platform device
++ *	@type: resource type
++ *	@num: resource index
++ */
++struct resource *
++iproc_platform_get_resource(struct platform_device *dev, unsigned int type,
++		      unsigned int num)
++{
++	return platform_get_resource(dev, type, num);
++}
++EXPORT_SYMBOL(iproc_platform_get_resource);
++
++
++/**
++ *	iproc_platform_driver_register -
++ *           wrapper function for platform_driver_register
++ *	@drv: platform driver structure
++ */
++int iproc_platform_driver_register(struct platform_driver *drv)
++{
++	return platform_driver_register(drv);
++}
++EXPORT_SYMBOL(iproc_platform_driver_register);
++
++
++/**
++ *	iproc_platform_driver_unregister
++ *           wrapper function for platform_driver_unregister
++ *	@drv: platform driver structure
++ */
++void iproc_platform_driver_unregister(struct platform_driver *drv)
++{
++	return platform_driver_unregister(drv);
++}
++EXPORT_SYMBOL(iproc_platform_driver_unregister);
++
++
++/**
++ *      iproc_platform_device_register - add a platform-level device
++ *          wrapper function for platform_device_register
++ *      @pdev:  platform device we're adding
++ *
++ */
++int iproc_platform_device_register(struct platform_device * pdev)
++{
++        return platform_device_register(pdev);
++}
++EXPORT_SYMBOL(iproc_platform_device_register);
++
++
++/**
++ *	iproc_platform_device_unregister -
++ *          wrapper function for platform_device_unregister
++ *	@pdev:	platform device we're unregistering
++ */
++void iproc_platform_device_unregister(struct platform_device * pdev)
++{
++	return platform_device_unregister(pdev);
++}
++EXPORT_SYMBOL(iproc_platform_device_unregister);
+-- 
+2.38.1
+
