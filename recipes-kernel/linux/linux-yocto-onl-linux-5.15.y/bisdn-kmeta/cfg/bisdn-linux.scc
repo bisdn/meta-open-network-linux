@@ -8,6 +8,7 @@ patch 0001-tun-allow-setting-hwaddr-on-tap-interface-creation.patch
 include features/bpf/bpf.scc
 include features/cgroups/cgroups.scc
 include features/tun/tun.scc
+include features/vrf/vrf.scc
 include cfg/fs/ext4.scc
 include cfg/net/bridge.scc
 include cgl/cfg/net/ip_vs.scc
