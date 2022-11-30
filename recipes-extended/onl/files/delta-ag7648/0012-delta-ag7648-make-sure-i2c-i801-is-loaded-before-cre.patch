@@ -1,0 +1,49 @@
+From f20cf829e7b2bfbf803aa975ccd2f8231b7a2068 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 30 Nov 2022 10:21:21 +0100
+Subject: [PATCH] delta-ag7648: make sure i2c-i801 is loaded before creating
+ devices
+
+The order in which the modules must be loaded are super fragile:
+i2c-i801 must be loaded before instantiating the devices.
+
+Neither i2c-ismt nor any of the cpld drivers may be loaded before
+creating the devices, else only a subset of devices may be created, or
+the module may hang in init.
+
+We cannot request modules to be unloaded or not loaded, but we can
+at least make sure that i2c-i801 is loaded and ready.
+
+Upstream-Status: Unsuitable [platform is EOL]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../builds/x86-64-delta-ag7648-i2c-mux-setting.c    | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+index 206094fbc5a1..012209db24dc 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -517,6 +517,19 @@ static int __init delta_switch_init(void)
+ 
+ 	pr_debug("DMI Matched %s\n", dmi_id->ident);
+ 
++	/*
++	 * The order in which these modules must be loaded are super fragile:
++	 * i2c-i801 must be loaded before instantiating the devices.
++	 * 
++	 * Neither i2c-ismt nor any of the cpld drivers may be loaded before
++	 * creating the devices, else only a subset of devices may be created,
++	 * or the module may hang in init.
++	 *
++	 * We cannot request modules to be unloaded or not loaded, but we can
++	 * at least make sure that i2c-i801 is loaded and ready.
++	 */
++	request_module("i2c-i801");
++
+ 	dta_switch = delta_switch_prepare((void *)dmi_id->driver_data);
+ 	if (IS_ERR(dta_switch))
+ 		return PTR_ERR(dta_switch);
+-- 
+2.38.1
+
