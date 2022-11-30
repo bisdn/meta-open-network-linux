@@ -73,6 +73,7 @@ SRC_URI += " \
            file://delta-ag7648/0009-ag7648-i2c-mux-setting-mod-force-mux-bus-numbers.patch \
            file://delta-ag7648/0010-x86-64-delta-ag7648-i2c-mux-setting-mod-update-to-ne.patch \
            file://delta-ag7648/0011-delta-ag7648-do-not-reset-QSFP-modules-when-IRQ-is-a.patch \
+           file://delta-ag7648/0012-delta-ag7648-make-sure-i2c-i801-is-loaded-before-cre.patch \
 "
 
 FILES:${PN} = " \
