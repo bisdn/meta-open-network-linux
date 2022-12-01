@@ -8,6 +8,7 @@ SRC_URI += " \
     file://platform-onl-init.service \
     file://platform-onl-init.sh \
     file://platform-x86-64-delta-ag5648-r0-init.sh \
+    file://platform-x86-64-delta-ag7648-r0-init.sh \
 "
 
 do_install() {
