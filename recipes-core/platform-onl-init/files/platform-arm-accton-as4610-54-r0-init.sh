@@ -1,0 +1,1 @@
+platform-arm-accton-as4610-30-r0-init.sh
