@@ -1,0 +1,1 @@
+platform-x86-64-accton-as4630-54pe-r0-init.sh
