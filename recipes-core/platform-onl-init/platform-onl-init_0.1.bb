@@ -4,10 +4,16 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/MPL-2.0;md5=81
 
 inherit systemd
 
+# This will actually be provided by the installer, but we need to pretend to
+# provide it so Yocto will be happy.
+RPROVIDES:${PN} += " u-boot-default-env"
+
 SRC_URI += " \
     file://8v89307_init.sh \
     file://platform-onl-init.service \
     file://platform-onl-init.sh \
+    file://platform-arm-accton-as4610-30-r0-init.sh \
+    file://platform-arm-accton-as4610-54-r0-init.sh \
     file://platform-x86-64-accton-as4630-54pe-r0-init.sh \
     file://platform-x86-64-accton-as4630-54te-r0-init.sh \
     file://platform-x86-64-accton-as5835-54x-r0-init.sh \
