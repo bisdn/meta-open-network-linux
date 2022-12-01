@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup ONL platform
+After=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/platform-onl-init.sh
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=sysinit.target
