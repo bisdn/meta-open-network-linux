@@ -1,0 +1,3 @@
+# Assume neither USB mouse nor keyboard is connected
+HAVE_TOUCHSCREEN=0
+HAVE_KEYBOARD=0
