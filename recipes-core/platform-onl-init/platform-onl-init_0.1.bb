@@ -9,6 +9,7 @@ SRC_URI += " \
     file://platform-onl-init.sh \
     file://platform-x86-64-accton-as4630-54pe-r0-init.sh \
     file://platform-x86-64-accton-as4630-54te-r0-init.sh \
+    file://platform-x86-64-accton-as5835-54x-r0-init.sh \
     file://platform-x86-64-delta-ag5648-r0-init.sh \
     file://platform-x86-64-delta-ag7648-r0-init.sh \
 "
