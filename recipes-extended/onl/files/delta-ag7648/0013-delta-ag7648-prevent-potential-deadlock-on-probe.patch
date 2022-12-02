@@ -1,0 +1,121 @@
+From 8af85840361e6d7b69eaf29feef6a90962557ec8 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 2 Dec 2022 11:26:07 +0100
+Subject: [PATCH] delta-ag7648: prevent potential deadlock on probe
+
+When the i2c-ismt and pca954x modules are already loaded, there
+will be a deadlock due to recursive locking:
+
+ i2c_for_each_dev()
+   mutex_lock(&core_lock) <-- first lock
+   bus_for_each_dev()
+     delta_switch_scan_peripherals()
+       delta_switch_instantiate_i2c_device()
+         i2c_new_scanned_device()
+             ...
+             i2c_device_probe()
+               pca954x_probe()
+                 i2c_mux_add_adapter()
+                   i2c_add_adapter()
+                     mutex_lock(&core_lock) <-- deadlock
+
+To avoid this, do not try to add any devices while under the core lock,
+and just collect the matched adapters, and only after returning from the
+bus scan, do the device registration.
+
+Upstream-Status: Unsuitable [platform is EOL]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86-64-delta-ag7648-i2c-mux-setting.c     | 54 ++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 2 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+index cedfa4e3da62..3a0dfb591aad 100644
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
+@@ -67,6 +67,7 @@ struct i2c_peripheral {
+ 	struct platform_device *(*init_cb)(void);
+ 	struct platform_device *pd;
+ 	struct i2c_client *client;
++	struct i2c_adapter *adapter;
+ };
+ 
+ struct delta_switch {
+@@ -441,8 +442,41 @@ MODULE_DEVICE_TABLE(dmi, delta_switch_dmi_table);
+ 
+ static int __init delta_switch_scan_peripherals(struct device *dev, void *data)
+ {
++	struct i2c_peripheral *i2c_dev;
++	struct i2c_adapter *adapter;
++	const char *adapter_name;
++	int i;
++
+ 	if (dev->type == &i2c_adapter_type) {
+-		delta_switch_check_adapter(to_i2c_adapter(dev));
++		adapter = to_i2c_adapter(dev);
++		for (i = 0; i < dta_switch->num_i2c_peripherals; i++) {
++			i2c_dev = &dta_switch->i2c_peripherals[i];
++
++			/* Skip devices already created */
++			if (i2c_dev->client || i2c_dev->pd)
++				continue;
++
++			/*
++			 * The only adapters that can exist at this point are
++			 * the SMBUS adapters.
++			 */
++			if (i2c_dev->type != I2C_ADAPTER_SMBUS_I801
++			    && i2c_dev->type != I2C_ADAPTER_SMBUS_ISMT)
++				continue;
++
++			adapter_name = delta_switch_get_adapter_name(i2c_dev, adapter);
++			if (!adapter_name)
++				continue;
++
++			if (strncmp(adapter->name, adapter_name, strlen(adapter_name)))
++				continue;
++			/*
++			 * Registering the device directly here would might
++			 * cause a deadlock, so store the adapter here for
++			 * now.
++			 */
++			i2c_dev->adapter = adapter;
++		}
+ 	}
+ 
+ 	return 0;
+@@ -507,7 +541,7 @@ delta_switch_prepare(const struct delta_switch *src)
+ static int __init delta_switch_init(void)
+ {
+ 	const struct dmi_system_id *dmi_id;
+-	int error;
++	int error, i;
+ 
+ 	dmi_id = dmi_first_match(delta_switch_dmi_table);
+ 	if (!dmi_id) {
+@@ -551,6 +585,22 @@ static int __init delta_switch_init(void)
+ 	 */
+ 	i2c_for_each_dev(NULL, delta_switch_scan_peripherals);
+ 
++	for (i = 0; i < dta_switch->num_i2c_peripherals; i++) {
++		struct i2c_peripheral *i2c_dev;
++
++		i2c_dev = &dta_switch->i2c_peripherals[i];
++
++		/* Skip devices already created */
++		if (i2c_dev->client)
++			continue;
++
++		if (!i2c_dev->adapter)
++			continue;
++
++		i2c_dev->client = delta_switch_instantiate_i2c_device(
++			i2c_dev->adapter, &i2c_dev->board_info, i2c_dev->alt_addr);
++	}
++
+ 	return 0;
+ 
+ err_destroy_dta_switch:
+-- 
+2.38.1
+
