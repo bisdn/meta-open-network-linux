@@ -12,8 +12,6 @@ SRC_URI = " \
 
 S = "${WORKDIR}"
 
-KERNEL_MODULE_AUTOLOAD += "accton_as4630_54pe_poe_mcu"
-
 EXTRA_OEMAKE += " KBUILD_MODPOST_WARN=1"
 
 FILES:${PN} += "${sbindir}/poectl"
