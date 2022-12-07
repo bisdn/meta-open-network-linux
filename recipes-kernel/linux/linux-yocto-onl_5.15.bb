@@ -35,3 +35,11 @@ SRC_URI:append:arm = "\
 DEPENDS += "${@bb.utils.contains('ARCH', 'x86', 'elfutils-native', '', d)}"
 DEPENDS += "openssl-native util-linux-native"
 DEPENDS += "gmp-native libmpc-native"
+
+# With i2c-i801 and i2c-ismt built as modules there is no guarantee one or the
+# other will be probed first and gets bus 0, but platforms use hardcoded paths
+# assuming bus 0 is i2c-i801.
+# So mark i2c-i801 as to be loaded before i2c-ismt to make sure it is probed
+# first.
+KERNEL_MODULE_PROBECONF:append:x86-64 = " i2c-ismt"
+module_conf_i2c-ismt = "softdep i2c-ismt pre: i2c-i801"
