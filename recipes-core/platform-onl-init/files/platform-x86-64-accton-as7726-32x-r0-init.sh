@@ -13,11 +13,6 @@ ir3570_check() {
 	fi
 }
 
-add_port() {
-	create_i2c_dev optoe1 0x50 ${2}
-	echo "port${1}" > "/sys/bus/i2c/devices/${2}-0050/port_name"
-}
-
 setup_10g() {
 	# Jitter Adjustment
 	i2cset -y 16 0x18 0xff 0x4
@@ -118,33 +113,33 @@ setup_10g "sfp"
 
 # add QSFP28 ports
 for port in {1..4}; do
-	add_port $port $((port + 20))
+	add_port 'optoe1' $port $((port + 20))
 done
 
-add_port 5 26
-add_port 6 25
-add_port 7 28
-add_port 8 27
+add_port 'optoe1' 5 26
+add_port 'optoe1' 6 25
+add_port 'optoe1' 7 28
+add_port 'optoe1' 8 27
 
 for port in {9..12}; do
-	add_port $port $((port + 8))
+	add_port 'optoe1' $port $((port + 8))
 done
 for port in {13..16}; do
-	add_port $port $((port + 16))
+	add_port 'optoe1' $port $((port + 16))
 done
 for port in {17..20}; do
-	add_port $port $((port + 16))
+	add_port 'optoe1' $port $((port + 16))
 done
 for port in {21..24}; do
-	add_port $port $((port + 24))
+	add_port 'optoe1' $port $((port + 24))
 done
 for port in {25..32}; do
-	add_port $port $((port + 12))
+	add_port 'optoe1' $port $((port + 12))
 done
 
 # add SFP+ ports
 for port in {33..34}; do
-	add_port $port $((port - 18))
+	add_port 'optoe1' $port $((port - 18))
 done
 
 # add EEPROM

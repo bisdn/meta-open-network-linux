@@ -1,5 +1,11 @@
 #!/bin/bash
 
+add_port() {
+	create_i2c_dev ${1} 0x50 ${3}
+	wait_for_file "/sys/bus/i2c/devices/${3}-0050/port_name"
+	echo "port${1}" > "/sys/bus/i2c/devices/${3}-0050/port_name"
+}
+
 create_i2c_dev() {
 	echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
 }
