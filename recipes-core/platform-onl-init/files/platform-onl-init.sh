@@ -14,9 +14,19 @@ create_i2c_dev() {
 	local i2c_dev_name=$1
 	local i2c_addr=$2
 	local i2c_bus_no=$3
+	local i2c_addr_4="00${i2c_addr:2}"
 
 	wait_for_file "/sys/bus/i2c/devices/i2c-${i2c_bus_no}/new_device"
 	echo ${i2c_dev_name} ${i2c_addr} > /sys/bus/i2c/devices/i2c-${i2c_bus_no}/new_device
+
+	# apply additional parameters passed as <parameter>=<value> strings
+	while [ "$#" -gt 3 ]; do
+		local parameter="${4%%=*}"
+		local value="${4#*=}"
+		wait_for_file "/sys/bus/i2c/devices/${i2c_bus_no}-${i2c_addr_4}/${parameter}"
+		echo "$value" > "/sys/bus/i2c/devices/${i2c_bus_no}-${i2c_addr_4}/${parameter}"
+		shift
+	done
 }
 
 wait_for_file() {
