@@ -1,9 +1,5 @@
 #!/bin/bash
 
-create_i2c_dev() {
-	echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
-}
-
 # Occasionally the management interface goes missing, a reboot seems to fix it.
 # Until we can find the root cause, check for its presence and reboot if not found.
 

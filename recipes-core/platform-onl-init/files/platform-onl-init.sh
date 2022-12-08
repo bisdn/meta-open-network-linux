@@ -1,5 +1,9 @@
 #!/bin/bash
 
+create_i2c_dev() {
+	echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
+}
+
 wait_for_file() {
 	local FILE=$1
 	local i=0

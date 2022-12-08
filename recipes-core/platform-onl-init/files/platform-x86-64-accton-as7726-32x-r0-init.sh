@@ -1,9 +1,5 @@
 #!/bin/bash
 
-create_i2c_dev() {
-	echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
-}
-
 # IR3570A chip casue problem when read eeprom by i2c-block mode.
 # It happen when read 16th-byte offset that value is 0x8. So disable chip
 ir3570_check() {
