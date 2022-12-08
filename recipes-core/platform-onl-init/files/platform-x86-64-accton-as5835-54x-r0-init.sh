@@ -8,33 +8,33 @@
 
 set -o errexit -o nounset
 
-function wait_for_file() {
-  FILE=$1
-  i=0
-  while [ $i -lt 10 ]; do
-    test -e $FILE && return 0
-    i=$(( i + 1 ))
-    sleep 1
-  done
-  return 1
+wait_for_file() {
+	FILE=$1
+	i=0
+	while [ $i -lt 10 ]; do
+		test -e $FILE && return 0
+		i=$((i + 1))
+		sleep 1
+	done
+	return 1
 }
 
 create_i2c_dev() {
-  local i2c_dev_name=$1
-  local i2c_dev_addr=$2
-  local i2c_bus_no=$3
+	local i2c_dev_name=$1
+	local i2c_dev_addr=$2
+	local i2c_bus_no=$3
 
-  wait_for_file "/sys/bus/i2c/devices/i2c-$i2c_bus_no/new_device"
-  echo "$i2c_dev_name" "$i2c_dev_addr" > /sys/bus/i2c/devices/i2c-${i2c_bus_no}/new_device
+	wait_for_file "/sys/bus/i2c/devices/i2c-$i2c_bus_no/new_device"
+	echo "$i2c_dev_name" "$i2c_dev_addr" > /sys/bus/i2c/devices/i2c-${i2c_bus_no}/new_device
 
-  # For pca9548 multiplexer, set idle_state to -2 (MUX_IDLE_DISCONNECT)
-  # Not doing this can result, for instance, in SFP EEPROMs not being
-  # read correctly by onlp.
-  if [ "$i2c_dev_name" = "pca9548" ]; then
-    # Replace leading "0x" with "00"
-    i2c_dev_addr_4="00${i2c_dev_addr:2}"
-    echo '-2' > /sys/bus/i2c/devices/$i2c_bus_no-$i2c_dev_addr_4/idle_state
-  fi
+	# For pca9548 multiplexer, set idle_state to -2 (MUX_IDLE_DISCONNECT)
+	# Not doing this can result, for instance, in SFP EEPROMs not being
+	# read correctly by onlp.
+	if [ "$i2c_dev_name" = "pca9548" ]; then
+		# Replace leading "0x" with "00"
+		i2c_dev_addr_4="00${i2c_dev_addr:2}"
+		echo '-2' > /sys/bus/i2c/devices/$i2c_bus_no-$i2c_dev_addr_4/idle_state
+	fi
 }
 # make sure i2c-i801 is present
 wait_for_file /sys/bus/i2c/devices/i2c-0
@@ -86,30 +86,30 @@ create_i2c_dev 24c02 0x57 1
 
 # initialize SFP devices
 for port in {1..48}; do
-  create_i2c_dev optoe2 0x50 $((port + 41))
+	create_i2c_dev optoe2 0x50 $((port + 41))
 done
 
 for port in {1..48}; do
-  echo "port$port" > "/sys/bus/i2c/devices/$((port + 41))-0050/port_name"
+	echo "port$port" > "/sys/bus/i2c/devices/$((port + 41))-0050/port_name"
 done
 
 # initialize QSFP devices
 for port in {49..54}; do
-  create_i2c_dev optoe1 0x50 $((port - 23))
-  echo 0 > "/sys/bus/i2c/devices/3-0062/module_reset_$port"
+	create_i2c_dev optoe1 0x50 $((port - 23))
+	echo 0 > "/sys/bus/i2c/devices/3-0062/module_reset_$port"
 done
 
 port=49
 for sfp_no in 28 29 26 30 31 27; do
-  echo "port$port" > "/sys/bus/i2c/devices/$sfp_no-0050/port_name"
-  port=$(( port + 1 ))
+	echo "port$port" > "/sys/bus/i2c/devices/$sfp_no-0050/port_name"
+	port=$((port + 1))
 done
 
 # Set disable tx_disable to sfp port
 for port in {1..38}; do
-  echo 0 > "/sys/bus/i2c/devices/3-0061/module_tx_disable_$port"
+	echo 0 > "/sys/bus/i2c/devices/3-0061/module_tx_disable_$port"
 done
 
 for port in {39..48}; do
-  echo 0 > "/sys/bus/i2c/devices/3-0062/module_tx_disable_$port"
+	echo 0 > "/sys/bus/i2c/devices/3-0062/module_tx_disable_$port"
 done

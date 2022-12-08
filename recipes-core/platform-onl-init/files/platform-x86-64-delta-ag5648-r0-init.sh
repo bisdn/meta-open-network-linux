@@ -1,15 +1,15 @@
 #!/bin/bash
 
 create_i2c_dev() {
-  echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
+	echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
 }
 
-function wait_for_file() {
+wait_for_file() {
 	FILE=$1
 	i=0
 	while [ $i -lt 10 ]; do
 		test -e $FILE && return 0
-		i=$(( i + 1 ))
+		i=$((i + 1))
 		sleep 1
 	done
 	return 1
@@ -19,7 +19,7 @@ function wait_for_file() {
 # Until we can find the root cause, check for its presence and reboot if not found.
 
 MGMT_STATE="FAILURE"
-wait_for_file /sys/class/net/enp0s20 &&	MGMT_STATE="SUCCESS"
+wait_for_file /sys/class/net/enp0s20 && MGMT_STATE="SUCCESS"
 
 [ -f "/var/last_boot.log" ] && LAST_STATE="$(tail -n 1 /var/last_boot.log | awk '{print $1;}')"
 echo "$MGMT_STATE $(date)" >> /var/last_boot.log

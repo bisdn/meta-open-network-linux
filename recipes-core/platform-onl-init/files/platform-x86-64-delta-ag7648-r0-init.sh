@@ -1,10 +1,10 @@
 #!/bin/bash
 
-function set_clocksouce() {
+set_clocksouce() {
 	echo tsc > /sys/devices/system/clocksource/clocksource0/current_clocksource
 }
 
-function enable_tx() {
+enable_tx() {
 	# Set Module TX-Disable Registers
 	i2cset -y 2 0x33 0x08 0x00
 	i2cset -y 2 0x33 0x09 0x00
@@ -14,19 +14,19 @@ function enable_tx() {
 	i2cset -y 2 0x33 0x0d 0x00
 }
 
-function enable_qsfp() {
+enable_qsfp() {
 	# disable LP Mode
 	i2cset -y 2 0x32 0x0b 0xc0
 	# clear ResetL
 	i2cset -y 2 0x32 0x0d 0x3f
 }
 
-function wait_for_file() {
+wait_for_file() {
 	FILE=$1
 	i=0
 	while [ $i -lt 10 ]; do
 		test -e $FILE && return 0
-		i=$(( i + 1 ))
+		i=$((i + 1))
 		sleep 1
 	done
 	return 1
