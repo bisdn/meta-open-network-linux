@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 onl_platform="$(cat /etc/onl/platform)"
 

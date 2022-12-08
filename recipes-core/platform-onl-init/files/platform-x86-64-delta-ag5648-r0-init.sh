@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 create_i2c_dev() {
   echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device

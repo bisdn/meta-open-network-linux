@@ -8,6 +8,8 @@ inherit systemd
 # provide it so Yocto will be happy.
 RPROVIDES:${PN} += " u-boot-default-env"
 
+RDEPENDS:${PN} += "bash"
+
 SRC_URI += " \
     file://8v89307_init.sh \
     file://platform-onl-init.service \

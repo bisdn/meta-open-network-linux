@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Platform init for as5835-54x
 #
