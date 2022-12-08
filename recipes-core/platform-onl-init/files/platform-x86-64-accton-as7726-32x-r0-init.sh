@@ -139,7 +139,7 @@ done
 
 # add SFP+ ports
 for port in {33..34}; do
-	add_port 'optoe1' $port $((port - 18))
+	add_port 'optoe2' $port $((port - 18))
 done
 
 # add EEPROM
