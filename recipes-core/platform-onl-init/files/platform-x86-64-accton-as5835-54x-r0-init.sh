@@ -61,22 +61,14 @@ create_i2c_dev 24c02 0x57 1
 
 # initialize SFP devices
 for port in {1..48}; do
-	create_i2c_dev optoe2 0x50 $((port + 41))
-done
-
-for port in {1..48}; do
-	echo "port$port" > "/sys/bus/i2c/devices/$((port + 41))-0050/port_name"
+	add_port optoe2 $port $((port + 41))
 done
 
 # initialize QSFP devices
-for port in {49..54}; do
-	create_i2c_dev optoe1 0x50 $((port - 23))
-	echo 0 > "/sys/bus/i2c/devices/3-0062/module_reset_$port"
-done
-
 port=49
 for sfp_no in 28 29 26 30 31 27; do
-	echo "port$port" > "/sys/bus/i2c/devices/$sfp_no-0050/port_name"
+	add_port optoe1 $port $sfp_no
+	echo 0 > "/sys/bus/i2c/devices/3-0062/module_reset_$port"
 	port=$((port + 1))
 done
 
