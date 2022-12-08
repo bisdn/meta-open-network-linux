@@ -5,9 +5,7 @@ add_port() {
 	local portnum=$2
 	local i2c_bus_no=$3
 
-	create_i2c_dev ${i2c_dev_name} 0x50 ${i2c_bus_no}
-	wait_for_file "/sys/bus/i2c/devices/${i2c_bus_no}-0050/port_name"
-	echo "port${portnum}" > "/sys/bus/i2c/devices/${i2c_bus_no}-0050/port_name"
+	create_i2c_dev ${i2c_dev_name} 0x50 ${i2c_bus_no} "port_name=port${portnum}"
 }
 
 create_i2c_dev() {
