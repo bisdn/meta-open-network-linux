@@ -1,15 +1,15 @@
 #!/bin/bash
 
 create_i2c_dev() {
-  echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
+	echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
 }
 
-function wait_for_file() {
+wait_for_file() {
 	FILE=$1
 	i=0
 	while [ $i -lt 10 ]; do
 		test -e $FILE && return 0
-		i=$(( i + 1 ))
+		i=$((i + 1))
 		sleep 1
 	done
 	return 1
@@ -46,7 +46,7 @@ setup_10g() {
 	ic2set -y 16 0x18 0x2d 0x81
 
 	# Check devices
-	i2cget -y 14 0x58 0x00 b >/dev/null || return 1
+	i2cget -y 14 0x58 0x00 b > /dev/null || return 1
 
 	# VOD DEM EQ Adjustment
 	i2cset -y 14 0x58 0x06 0x18
@@ -133,7 +133,7 @@ setup_10g "sfp"
 
 # add QSFP28 ports
 for port in {1..4}; do
-	add_port $port $((port+20))
+	add_port $port $((port + 20))
 done
 
 add_port 5 26
@@ -142,24 +142,24 @@ add_port 7 28
 add_port 8 27
 
 for port in {9..12}; do
-	add_port $port $((port+8))
+	add_port $port $((port + 8))
 done
 for port in {13..16}; do
-	add_port $port $((port+16))
+	add_port $port $((port + 16))
 done
 for port in {17..20}; do
-	add_port $port $((port+16))
+	add_port $port $((port + 16))
 done
 for port in {21..24}; do
-	add_port $port $((port+24))
+	add_port $port $((port + 24))
 done
 for port in {25..32}; do
-	add_port $port $((port+12))
+	add_port $port $((port + 12))
 done
 
 # add SFP+ ports
 for port in {33..34}; do
-	add_port $port $((port-18))
+	add_port $port $((port - 18))
 done
 
 # add EEPROM
