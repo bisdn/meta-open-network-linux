@@ -71,21 +71,13 @@ modprobe x86-64-accton-as7726-32x-psu
 modprobe x86-64-accton-as7726-32x-leds
 
 # add PCA9548 muxes and enable disconnect on idle
-create_i2c_dev pca9548 0x77 0
-echo '-2' > /sys/bus/i2c/devices/0-0077/idle_state
-wait_for_file /sys/bus/i2c/devices/i2c-1
-create_i2c_dev pca9548 0x76 1
-echo '-2' > /sys/bus/i2c/devices/1-0076/idle_state
-create_i2c_dev pca9548 0x72 1
-echo '-2' > /sys/bus/i2c/devices/1-0072/idle_state
-create_i2c_dev pca9548 0x73 1
-echo '-2' > /sys/bus/i2c/devices/1-0073/idle_state
-create_i2c_dev pca9548 0x74 1
-echo '-2' > /sys/bus/i2c/devices/1-0074/idle_state
-create_i2c_dev pca9548 0x75 1
-echo '-2' > /sys/bus/i2c/devices/1-0075/idle_state
-create_i2c_dev pca9548 0x71 2
-echo '-2' > /sys/bus/i2c/devices/2-0071/idle_state
+create_i2c_dev pca9548 0x77 0 "idle_state=-2"
+create_i2c_dev pca9548 0x76 1 "idle_state=-2"
+create_i2c_dev pca9548 0x72 1 "idle_state=-2"
+create_i2c_dev pca9548 0x73 1 "idle_state=-2"
+create_i2c_dev pca9548 0x74 1 "idle_state=-2"
+create_i2c_dev pca9548 0x75 1 "idle_state=-2"
+create_i2c_dev pca9548 0x71 2 "idle_state=-2"
 
 # add CPLD
 create_i2c_dev as7726_32x_cpld1 0x60 11
