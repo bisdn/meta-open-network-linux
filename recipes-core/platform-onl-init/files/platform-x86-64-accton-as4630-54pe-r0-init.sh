@@ -12,12 +12,9 @@ modprobe x86-64-accton-as4630-54pe-psu
 modprobe x86-64-accton-as4630-54pe-leds
 
 # init mux (PCA9548)
-create_i2c_dev pca9548 0x77 1
-echo '-2' > /sys/bus/i2c/devices/1-0077/idle_state
-create_i2c_dev pca9548 0x71 2
-echo '-2' > /sys/bus/i2c/devices/2-0071/idle_state
-create_i2c_dev pca9548 0x70 3
-echo '-2' > /sys/bus/i2c/devices/3-0070/idle_state
+create_i2c_dev pca9548 0x77 1 "idle_state=-2"
+create_i2c_dev pca9548 0x71 2 "idle_state=-2"
+create_i2c_dev pca9548 0x70 3 "idle_state=-2"
 
 # allow SFP LEDs to be controlled by MAC
 OTHER=$(i2cget -y -f 0x3 0x60 0x86)
