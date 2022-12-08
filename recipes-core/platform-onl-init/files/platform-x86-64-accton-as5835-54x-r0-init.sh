@@ -8,23 +8,6 @@
 
 set -o errexit -o nounset
 
-create_i2c_dev() {
-	local i2c_dev_name=$1
-	local i2c_dev_addr=$2
-	local i2c_bus_no=$3
-
-	wait_for_file "/sys/bus/i2c/devices/i2c-$i2c_bus_no/new_device"
-	echo "$i2c_dev_name" "$i2c_dev_addr" > /sys/bus/i2c/devices/i2c-${i2c_bus_no}/new_device
-
-	# For pca9548 multiplexer, set idle_state to -2 (MUX_IDLE_DISCONNECT)
-	# Not doing this can result, for instance, in SFP EEPROMs not being
-	# read correctly by onlp.
-	if [ "$i2c_dev_name" = "pca9548" ]; then
-		# Replace leading "0x" with "00"
-		i2c_dev_addr_4="00${i2c_dev_addr:2}"
-		echo '-2' > /sys/bus/i2c/devices/$i2c_bus_no-$i2c_dev_addr_4/idle_state
-	fi
-}
 # make sure i2c-i801 is present
 wait_for_file /sys/bus/i2c/devices/i2c-0
 
@@ -36,10 +19,13 @@ modprobe x86-64-accton-as5835-54x-leds
 modprobe x86-64-accton-as5835-54x-fan
 
 # initialize multiplexer (PCA9548)
-create_i2c_dev pca9548 0x77 1
-create_i2c_dev pca9548 0x70 2
-create_i2c_dev pca9548 0x71 2
-create_i2c_dev pca9548 0x72 2
+# For pca9548 multiplexer, set idle_state to -2 (MUX_IDLE_DISCONNECT)
+# Not doing this can result, for instance, in SFP EEPROMs not being
+# read correctly by onlp.
+create_i2c_dev pca9548 0x77 1 "idle_state=-2"
+create_i2c_dev pca9548 0x70 2 "idle_state=-2"
+create_i2c_dev pca9548 0x71 2 "idle_state=-2"
+create_i2c_dev pca9548 0x72 2 "idle_state=-2"
 
 # initialize CPLD
 create_i2c_dev as5835_54x_cpld1 0x60 3
