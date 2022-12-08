@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function set_clocksouce() {
 	echo tsc > /sys/devices/system/clocksource/clocksource0/current_clocksource

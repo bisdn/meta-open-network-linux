@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function wait_for_file() {
 	FILE=$1
