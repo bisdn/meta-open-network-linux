@@ -1,8 +1,9 @@
 #!/bin/bash
 
 wait_for_file() {
-	FILE=$1
-	i=0
+	local FILE=$1
+	local i=0
+
 	while [ $i -lt 10 ]; do
 		test -e $FILE && return 0
 		i=$((i + 1))
