@@ -2,12 +2,6 @@
 
 set -e
 
-add_port() {
-	create_i2c_dev ${1} 0x50 ${3}
-	wait_for_file "/sys/bus/i2c/devices/${3}-0050/port_name"
-	echo "port${2}" > "/sys/bus/i2c/devices/${3}-0050/port_name"
-}
-
 onl_platform="$(cat /etc/onl/platform)"
 
 case "$onl_platform" in
