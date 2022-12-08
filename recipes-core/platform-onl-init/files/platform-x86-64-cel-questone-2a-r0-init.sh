@@ -4,16 +4,6 @@ create_i2c_dev() {
 	echo $1 $2 > /sys/bus/i2c/devices/i2c-${3}/new_device
 }
 
-wait_for_file() {
-	FILE=$1
-	i=0
-	while [ $i -lt 10 ]; do
-		test -e $FILE && return 0
-		i=$((i + 1))
-		sleep 1
-	done
-	return 1
-}
 # make sure i2c-i801 is present
 wait_for_file /sys/bus/i2c/devices/i2c-0
 
