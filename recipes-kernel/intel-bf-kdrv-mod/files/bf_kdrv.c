@@ -183,7 +183,28 @@ static inline struct bf_pci_dev *bf_get_pci_dev(struct bf_dev_info *info) {
   return container_of(info, struct bf_pci_dev, info);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
+/*
+ * It masks the msix on/off of generating MSI-X messages.
+ */
+static void bf_msix_mask_irq(struct msi_desc *desc, int32_t state) {
+  u32 mask_bits = desc->pci.msix_ctrl;
+  unsigned offset = desc->msi_index * PCI_MSIX_ENTRY_SIZE +
+                    PCI_MSIX_ENTRY_VECTOR_CTRL;
+
+  if (state != 0) {
+    mask_bits &= ~PCI_MSIX_ENTRY_CTRL_MASKBIT;
+  } else {
+    mask_bits |= PCI_MSIX_ENTRY_CTRL_MASKBIT;
+  }
+
+  if (mask_bits != desc->pci.msix_ctrl) {
+    writel(mask_bits, desc->pci.mask_base + offset);
+    readl(desc->pci.mask_base);
+    desc->pci.msix_ctrl = mask_bits;
+  }
+}
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 /*
  * It masks the msix on/off of generating MSI-X messages.
  */
@@ -250,8 +271,11 @@ static int bf_pci_irqcontrol(struct bf_pci_dev *bfdev, s32 irq_state) {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 2, 0)
     list_for_each_entry(desc, &pdev->msi_list, list)
         bf_msix_mask_irq(desc, irq_state);
-#else
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 17, 0)
     for_each_pci_msi_entry(desc, pdev) bf_msix_mask_irq(desc, irq_state);
+#else
+    msi_for_each_desc(desc, &pdev->dev, MSI_DESC_ASSOCIATED)
+        bf_msix_mask_irq(desc, irq_state);
 #endif
   }
   pci_cfg_access_unlock(pdev);
