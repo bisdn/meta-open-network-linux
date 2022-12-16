@@ -1,8 +1,8 @@
 diff --git a/drivers/net/ethernet/broadcom/Kconfig b/drivers/net/ethernet/broadcom/Kconfig
-index 56e0fb07aec7..5bf230e1889d 100644
+index cd1706909044..d7e076ca9e0c 100644
 --- a/drivers/net/ethernet/broadcom/Kconfig
 +++ b/drivers/net/ethernet/broadcom/Kconfig
-@@ -181,11 +181,11 @@ config BGMAC_BCMA
+@@ -182,11 +182,11 @@ config BGMAC_BCMA
  
  config BGMAC_PLATFORM
  	tristate "Broadcom iProc GBit platform support"
@@ -186,7 +186,7 @@ index 94eb3a42158e..f86bb6b803b1 100644
  	{},
  };
 diff --git a/drivers/net/ethernet/broadcom/bgmac.c b/drivers/net/ethernet/broadcom/bgmac.c
-index fe4d99abd548..f779338eb60b 100644
+index fa2a43d465db..0fa5cf18b9df 100644
 --- a/drivers/net/ethernet/broadcom/bgmac.c
 +++ b/drivers/net/ethernet/broadcom/bgmac.c
 @@ -18,6 +18,12 @@
@@ -202,7 +202,7 @@ index fe4d99abd548..f779338eb60b 100644
  static bool bgmac_wait_value(struct bgmac *bgmac, u16 reg, u32 mask,
  			     u32 value, int timeout)
  {
-@@ -1118,6 +1125,7 @@ static void bgmac_chip_init(struct bgmac *bgmac)
+@@ -1118,6 +1124,7 @@ static void bgmac_chip_init(struct bgmac *bgmac)
  
  	bgmac_umac_write(bgmac, UMAC_MAX_FRAME_LEN, 32 + ETHER_MAX_LEN);
  
@@ -210,7 +210,16 @@ index fe4d99abd548..f779338eb60b 100644
  	bgmac_chip_intrs_on(bgmac);
  
  	bgmac_enable(bgmac);
-@@ -1195,6 +1203,16 @@ static int bgmac_open(struct net_device *net_dev)
+@@ -1195,10 +1202,25 @@ static int bgmac_open(struct net_device *net_dev)
+ 	}
+ 	napi_enable(&bgmac->napi);
+ 
++	if (IS_ENABLED(CONFIG_ARCH_XGS_IPROC)) {
++		/* Reset emulated MIB statistics to zero */
++		memset(&bgmac->estats, 0, sizeof(struct bgmac_ethtool_stats));
++	}
++
+ 	phy_start(net_dev->phydev);
  
  	netif_start_queue(net_dev);
  
@@ -227,7 +236,7 @@ index fe4d99abd548..f779338eb60b 100644
  	return 0;
  }
  
-@@ -1378,6 +1409,9 @@ static void bgmac_get_ethtool_stats(struct net_device *dev,
+@@ -1378,6 +1400,9 @@ static void bgmac_get_ethtool_stats(struct net_device *dev,
  	const struct bgmac_stat *s;
  	unsigned int i;
  	u64 val;
@@ -237,7 +246,7 @@ index fe4d99abd548..f779338eb60b 100644
  
  	if (!netif_running(dev))
  		return;
-@@ -1388,18 +1422,70 @@ static void bgmac_get_ethtool_stats(struct net_device *dev,
+@@ -1388,18 +1413,70 @@ static void bgmac_get_ethtool_stats(struct net_device *dev,
  		if (s->size == 8)
  			val = (u64)bgmac_read(bgmac, s->offset + 4) << 32;
  		val |= bgmac_read(bgmac, s->offset);
@@ -308,7 +317,7 @@ index fe4d99abd548..f779338eb60b 100644
  	.get_strings		= bgmac_get_strings,
  	.get_sset_count		= bgmac_get_sset_count,
  	.get_ethtool_stats	= bgmac_get_ethtool_stats,
-@@ -1430,11 +1516,11 @@ void bgmac_adjust_link(struct net_device *net_dev)
+@@ -1430,11 +1507,11 @@ void bgmac_adjust_link(struct net_device *net_dev)
  		}
  	}
  
@@ -322,7 +331,7 @@ index fe4d99abd548..f779338eb60b 100644
  EXPORT_SYMBOL_GPL(bgmac_adjust_link);
  
  int bgmac_phy_connect_direct(struct bgmac *bgmac)
-@@ -1489,6 +1575,12 @@ int bgmac_enet_probe(struct bgmac *bgmac)
+@@ -1489,6 +1566,12 @@ int bgmac_enet_probe(struct bgmac *bgmac)
  {
  	struct net_device *net_dev = bgmac->net_dev;
  	int err;
@@ -335,7 +344,7 @@ index fe4d99abd548..f779338eb60b 100644
  
  	bgmac_chip_intrs_off(bgmac);
  
-@@ -1535,6 +1627,37 @@ int bgmac_enet_probe(struct bgmac *bgmac)
+@@ -1535,6 +1618,37 @@ int bgmac_enet_probe(struct bgmac *bgmac)
  		goto err_dma_free;
  	}
  
@@ -472,5 +481,5 @@ index 110088e662ea..f1de44b5a7b9 100644
  	void (*write)(struct bgmac *bgmac, u16 offset, u32 value);
  	u32 (*idm_read)(struct bgmac *bgmac, u16 offset);
 -- 
-2.37.1
+2.38.1
 
