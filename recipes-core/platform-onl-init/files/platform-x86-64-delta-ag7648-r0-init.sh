@@ -59,5 +59,11 @@ if [ "$BOOT_STATE" != "success" ]; then
 	fi
 fi
 
+# make sure i2c-i801 is present
+wait_for_file /sys/bus/i2c/devices/i2c-0
+
+# load modules
+modprobe i2c-ismt
+
 wait_for_file /sys/bus/i2c/devices/0-0069 && set_clocksouce
 wait_for_file /sys/bus/i2c/devices/i2c-2 && enable_tx && enable_qsfp

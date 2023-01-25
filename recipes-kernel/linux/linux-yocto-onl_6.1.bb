@@ -39,10 +39,10 @@ DEPENDS += "gmp-native libmpc-native"
 # With i2c-i801 and i2c-ismt built as modules there is no guarantee one or the
 # other will be probed first and gets bus 0, but platforms use hardcoded paths
 # assuming bus 0 is i2c-i801.
-# So mark i2c-i801 as to be loaded before i2c-ismt to make sure it is probed
-# first.
+# So blacklist i2c-ismt to load it via platform code once i2c-i801 finished
+# registering its i2c bus.
 KERNEL_MODULE_PROBECONF:append:x86-64 = " i2c-ismt"
-module_conf_i2c-ismt = "softdep i2c-ismt pre: i2c-i801"
+module_conf_i2c-ismt = "blacklist i2c-ismt"
 
 # meta-virtualization does not provide a linux-yocto_6.1_virtualization.inc,
 # so we need to include it directly.
