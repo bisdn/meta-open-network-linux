@@ -40,12 +40,17 @@ case "$onl_platform" in
 		;;
 esac
 
+# make sure i2c-i801 is present
+wait_for_file /sys/bus/i2c/devices/i2c-0
+
 # load modules
+modprobe i2c-ismt
 modprobe x86-64-accton-as4630-${variant}-cpld
 modprobe x86-64-accton-as4630-${variant}-psu
 modprobe x86-64-accton-as4630-${variant}-leds
 
 # init mux (PCA9548)
+wait_for_file /sys/bus/i2c/devices/i2c-1
 create_i2c_dev pca9548 0x77 1
 echo '-2' > /sys/bus/i2c/devices/1-0077/idle_state
 create_i2c_dev pca9548 0x71 2

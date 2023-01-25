@@ -36,8 +36,11 @@ create_i2c_dev() {
     echo '-2' > /sys/bus/i2c/devices/$i2c_bus_no-$i2c_dev_addr_4/idle_state
   fi
 }
+# make sure i2c-i801 is present
+wait_for_file /sys/bus/i2c/devices/i2c-0
 
 # load modules
+modprobe i2c-ismt
 modprobe x86-64-accton-as5835-54x-cpld
 modprobe x86-64-accton-as5835-54x-psu
 modprobe x86-64-accton-as5835-54x-leds

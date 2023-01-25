@@ -80,17 +80,20 @@ setup_10g() {
 		return 1
 	fi
 }
+# make sure i2c-i801 is present
+wait_for_file /sys/bus/i2c/devices/i2c-0
 
 # load modules
+modprobe i2c-ismt
 modprobe x86-64-accton-as7726-32x-cpld
 modprobe x86-64-accton-as7726-32x-fan
 modprobe x86-64-accton-as7726-32x-psu
 modprobe x86-64-accton-as7726-32x-leds
 
 # add PCA9548 muxes and enable disconnect on idle
-wait_for_file /sys/bus/i2c/devices/i2c-0
 create_i2c_dev pca9548 0x77 0
 echo '-2' > /sys/bus/i2c/devices/0-0077/idle_state
+wait_for_file /sys/bus/i2c/devices/i2c-1
 create_i2c_dev pca9548 0x76 1
 echo '-2' > /sys/bus/i2c/devices/1-0076/idle_state
 create_i2c_dev pca9548 0x72 1
