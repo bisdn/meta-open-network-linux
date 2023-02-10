@@ -27,12 +27,10 @@ wait_for_file /sys/bus/i2c/devices/i2c-0
 modprobe i2c-ismt
 
 # PCA9547 modulize
-wait_for_file /sys/bus/i2c/devices/i2c-1
 create_i2c_dev pca9548 0x70 1
 
 # Insert swpld module and create devs
 modprobe i2c_cpld
-wait_for_file /sys/bus/i2c/devices/i2c-2
 create_i2c_dev cpld 0x31 2
 create_i2c_dev cpld 0x35 2
 create_i2c_dev cpld 0x39 2
