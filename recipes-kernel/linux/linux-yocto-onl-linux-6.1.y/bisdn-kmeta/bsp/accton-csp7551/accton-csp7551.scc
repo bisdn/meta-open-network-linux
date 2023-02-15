@@ -1,4 +1,0 @@
-define KFEATURE_DESCRIPTION "Enable additional features needed by ice on csp7551"
-define KFEATURE_COMPATIBILITY board
-
-kconf hardware accton-csp7551.cfg
