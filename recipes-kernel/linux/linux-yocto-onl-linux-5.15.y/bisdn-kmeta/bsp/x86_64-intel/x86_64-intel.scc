@@ -9,3 +9,5 @@ patch igb_print_mac_phy_type.patch
 include cfg/bisdn-linux.scc
 
 kconf hardware x86_64-intel.cfg
+
+include features/usb/xhci-hcd.scc
