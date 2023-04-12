@@ -55,6 +55,7 @@ extern int as4610_54_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 #define MCU_OP_PSE_EN			0x00
 #define MCU_OP_PSE_MAP			0x02
 #define MCU_OP_PSE_MAP_RESET		0x03
+#define MCU_OP_PSE_HIGH_POWER_LIMIT	0x07
 #define MCU_OP_PSE_RESET		0x09
 #define MCU_OP_PSE_SETUP_PORT		0x0e
 #define MCU_OP_PSE_PORT_DETECT_TYPE	0x10
@@ -479,7 +480,16 @@ static int as4610_poe_set_power_limits(struct as4610_poe_pse *pse,
 	cmd.data[0] = 2;
 	put_unaligned_be16(2 * psu_rating * 10, &cmd.data[1]);
 	put_unaligned_be16(guard * 10, &cmd.data[3]);
+	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	if (ret)
+		return ret;
+
+	/* Set High Power Device limit */
+	memset(cmd.data, 0xff, sizeof(cmd.data));
+	cmd.opcode = MCU_OP_PSE_HIGH_POWER_LIMIT;
+	cmd.data[0] = 2; /* 31.2W */
 	return as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+
 }
 
 static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
