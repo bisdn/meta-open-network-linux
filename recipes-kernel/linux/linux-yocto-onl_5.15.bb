@@ -43,3 +43,8 @@ DEPENDS += "gmp-native libmpc-native"
 # registering its i2c bus.
 KERNEL_MODULE_PROBECONF:append:x86-64 = " i2c-ismt"
 module_conf_i2c-ismt = "blacklist i2c-ismt"
+
+# The i2c-i801 reserves resources that may be meant for another driver.
+# Blacklist i2c-i801 and only load it as needed.
+KERNEL_MODULE_PROBECONF:append:x86-64 = " i2c-i801"
+module_conf_i2c-i801 = "blacklist i2c-i801"
