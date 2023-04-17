@@ -21,6 +21,7 @@ else
 fi
 
 # make sure i2c-i801 is present
+modprobe i2c-i801
 wait_for_file /sys/bus/i2c/devices/i2c-0
 
 # load modules
