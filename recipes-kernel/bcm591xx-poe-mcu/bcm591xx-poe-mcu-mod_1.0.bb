@@ -7,6 +7,7 @@ SRC_URI = " \
           file://Makefile \
           file://accton_as4610_poe_mcu.c \
           file://accton_as4630_54pe_poe_mcu.c \
+          file://bcm591xx.c \
           file://bcm591xx.h \
           file://COPYING \
           file://poectl \
