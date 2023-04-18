@@ -10,6 +10,8 @@ obj-m += accton_as4610_poe_mcu.o
 endif
 obj-m += accton_as4630_54pe_poe_mcu.o
 
+obj-m += bcm591xx.o
+
 SRC := $(shell pwd)
 
 all:
