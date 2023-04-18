@@ -5,7 +5,10 @@
 #ARCH := x86_64
 #include $(ONL)/make/kmodule.mk
 
-obj-m := accton_as4610_poe_mcu.o
+ifneq ($(CONFIG_SERIAL_DEV_BUS),)
+obj-m += accton_as4610_poe_mcu.o
+endif
+obj-m += accton_as4630_54pe_poe_mcu.o
 
 SRC := $(shell pwd)
 

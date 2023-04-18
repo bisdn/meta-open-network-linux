@@ -4,10 +4,11 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=12f884d2ae1ff87c09e5b7ccc2c4ca7e"
 inherit module
 
 SRC_URI = " \
-	  file://Makefile \
-	  file://accton_as4610_poe_mcu.c \
-	  file://COPYING \
-	  file://poectl \
+          file://Makefile \
+          file://accton_as4610_poe_mcu.c \
+          file://accton_as4630_54pe_poe_mcu.c \
+          file://COPYING \
+          file://poectl \
           "
 
 S = "${WORKDIR}"
