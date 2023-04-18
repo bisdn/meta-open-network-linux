@@ -53,14 +53,6 @@ extern int as4630_54pe_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 #define PSE_4P_DETECT_MODE		0
 #define PSE_4P_PWR_UP_MODE_CL4		1
 
-/* UART message format */
-struct pse_msg {
-	u8 opcode;
-	u8 counter;
-	u8 data[9];
-	u8 csum;
-} __packed;
-
 struct as4630_poe_pse;
 
 #define MCU_CHAN_INVALID	0xffu

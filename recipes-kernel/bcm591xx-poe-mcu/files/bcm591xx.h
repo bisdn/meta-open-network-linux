@@ -8,6 +8,8 @@
 #ifndef __BCM591XX_H
 #define __BCM591XX_H
 
+#include <linux/types.h>
+
 #define COUNTER_AUTO			-1
 
 #define MCU_OP_PSE_EN			0x00
@@ -26,5 +28,31 @@
 #define MCU_OP_PSE_PORT_STATUS		0x21
 #define MCU_OP_PSE_PORT_EXT_CONFIG	0x26
 #define MCU_OP_PSE_PORT_MEASUREMENT	0x30
+
+/* message format */
+struct pse_msg {
+	u8 opcode;
+	u8 counter;
+	u8 data[9];
+	u8 csum;
+} __packed;
+
+struct bcm591xx_pse_mcu;
+struct device;
+
+struct bcm591xx_ops {
+	int (*do_txrx)(struct bcm591xx_pse_mcu *mcu, struct pse_msg *cmd,
+		       struct pse_msg *resp);
+};
+
+struct bcm591xx_pse_mcu {
+	struct device *dev;
+	u8 tx_counter;
+
+	const struct bcm591xx_ops *ops;
+};
+
+extern int bcm591xx_send(struct bcm591xx_pse_mcu *mcu, struct pse_msg *cmd,
+			 struct pse_msg *resp, int counter);
 
 #endif /* __BCM5911X_H */
