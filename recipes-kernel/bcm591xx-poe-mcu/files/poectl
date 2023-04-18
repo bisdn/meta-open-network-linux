@@ -20,7 +20,24 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-systempath=/sys/kernel/debug/serial0-0
+onl_platform="$(cat /etc/onl/platform)"
+
+case "$onl_platform" in
+	arm-accton-as4610-30-r0 |\
+	arm-accton-as4610-54-r0)
+		systempath=/sys/kernel/debug/serial0-0
+		;;
+
+	x86-64-accton-as4630-54pe-r0)
+		systempath=/sys/kernel/debug/16-0020
+		;;
+
+	*)
+		echo "Unsupported platform" >&2
+		exit 1
+		;;
+esac
+
 readonly systempath
 
 if ! [ -d "$systempath" ]; then
