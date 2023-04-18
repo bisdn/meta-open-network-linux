@@ -11,3 +11,7 @@ include cfg/bisdn-linux.scc
 kconf hardware x86_64-intel.cfg
 
 include features/usb/xhci-hcd.scc
+include features/ice/ice.scc
+include features/x2apic/x2apic.scc
+include features/mei/mei-me.scc
+include features/dca/dca.scc
