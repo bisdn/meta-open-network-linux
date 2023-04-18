@@ -31,6 +31,8 @@
 #include <asm/unaligned.h>
 #include <linux/version.h>
 
+#include "bcm591xx.h"
+
 /* TODO: replace these with regmap or something more sane */
 extern int as4630_54pe_cpld_read(unsigned short cpld_addr, u8 reg);
 extern int as4630_54pe_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
@@ -43,23 +45,6 @@ extern int as4630_54pe_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 #define  POE_POWER_BANK_MASK		0x1c
 #define   POE_POWER_1PSU		0x0
 #define   POE_POWER_2PSU		0x2
-
-#define COUNTER_AUTO			-1
-
-#define MCU_OP_PSE_EN			0x00
-#define MCU_OP_PSE_MAP			0x02
-#define MCU_OP_PSE_MAP_RESET		0x03
-#define MCU_OP_PSE_RESET		0x09
-#define MCU_OP_PSE_SETUP_PORT		0x0e
-#define MCU_OP_PSE_PORT_DETECT_TYPE	0x10
-#define MCU_OP_PSE_PORT_DISCONNECT	0x13
-#define MCU_OP_PSE_PORT_POWERUP_MODE	0x1c
-#define MCU_OP_PSE_PORT_POWERUP_MANAGE	0x17
-#define MCU_OP_PSE_SET_GUARDBAND	0x18
-#define MCU_OP_PSE_STATUS		0x20
-#define MCU_OP_PSE_PORT_STATUS		0x21
-#define MCU_OP_PSE_PORT_EXT_CONFIG	0x26
-#define MCU_OP_PSE_PORT_MEASUREMENT	0x30
 
 /* Disable PoE by default for now, 4-Pair ports do not work reliably */
 #define PSE_EN_DEFAULT			0
