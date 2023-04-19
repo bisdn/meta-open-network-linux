@@ -80,13 +80,13 @@ struct as4610_poe_port {
 };
 
 struct as4610_poe_pse {
+	struct bcm591xx_pse_mcu mcu;
 	struct serdev_device *serdev;
 	struct dentry *debugfs;
 
 	struct mutex mutex;
 	struct completion done;
 
-	u8 tx_counter;
 	struct pse_msg *rx_buf;
 
 	int rx_pos;
@@ -98,17 +98,7 @@ struct as4610_poe_pse {
 	struct as4610_poe_port *ports;
 };
 
-static int as4610_poe_pse_csum(const void *data)
-{
-	const u8 *tmp = data;
-	int i;
-	u8 csum = 0;
-
-	for (i = 0; i < sizeof(struct pse_msg) - 1; i++)
-		csum += *tmp++;
-
-	return csum;
-}
+#define to_as4610_poe_pse(d)	container_of(d, struct as4610_poe_pse, mcu)
 
 static int as4610_poe_pse_receive(struct serdev_device *serdev,
 				  const unsigned char *data, size_t count)
@@ -128,10 +118,6 @@ static int as4610_poe_pse_receive(struct serdev_device *serdev,
 
 	msg = (struct pse_msg *)&pse->rx_tmp[0];
 
-	dev_dbg(&serdev->dev, "received message: OP=%02x CNT=%02x DATA=%*ph [csum=%02x %s]\n",
-		 msg->opcode, msg->counter, sizeof(msg->data), msg->data, msg->csum,
-		 msg->csum == as4610_poe_pse_csum(msg) ? "OK" : "NG");
-
 	if (pse->rx_buf)
 		memcpy(pse->rx_buf, msg, sizeof(*msg));
 
@@ -141,26 +127,14 @@ static int as4610_poe_pse_receive(struct serdev_device *serdev,
 	return need;
 }
 
-
-static int as4610_poe_pse_send(struct as4610_poe_pse *pse, struct pse_msg *cmd,
-			       struct pse_msg *resp, int counter)
+static int as4610_poe_pse_do_txrx(struct bcm591xx_pse_mcu *mcu,
+		                  struct pse_msg *cmd, struct pse_msg *resp)
 {
-	int csum, timeout, ret = 0;
+	struct as4610_poe_pse *pse = to_as4610_poe_pse(mcu);
+	int ret, timeout;
 
 	reinit_completion(&pse->done);
 
-	if (counter >= 0) {
-		cmd->counter = counter;
-	} else {
-		cmd->counter = pse->tx_counter++;
-		if (pse->tx_counter == 0xfe)
-			pse->tx_counter = 0x01;
-	}
-
-	cmd->csum = as4610_poe_pse_csum(cmd);
-
-	dev_dbg(&pse->serdev->dev, "sending message: OP=%02x CNT=%02x DATA=%*ph\n",
-		 cmd->opcode, cmd->counter, sizeof(cmd->data), cmd->data);
 
 	pse->rx_buf = resp;
 	ret = serdev_device_write(pse->serdev, (void *)cmd, sizeof(*cmd), HZ);
@@ -172,24 +146,10 @@ static int as4610_poe_pse_send(struct as4610_poe_pse *pse, struct pse_msg *cmd,
 	msleep(40);
 
 	timeout = wait_for_completion_timeout(&pse->done, HZ);
-	if (!timeout) {
-		/* MCU_OP_PSE_RESET may not yield a response */
-		if (cmd->opcode != MCU_OP_PSE_RESET) {
-			dev_err(&pse->serdev->dev, "time out while waiting for response\n");
-			ret = -ETIMEDOUT;
-		}
-		goto out;
-	}
-
-	pse->rx_buf = NULL;
-	if (resp) {
-		csum = resp->csum;
-		resp->csum = 0;
-		resp->csum = as4610_poe_pse_csum(resp);
-		if (resp->csum != csum)
-			ret = -EIO;
-	}
+	if (!timeout)
+		ret = -ETIMEDOUT;
 out:
+	pse->rx_buf = NULL;
 	return ret < 0 ? ret : 0;
 }
 
@@ -206,7 +166,7 @@ static int as4610_poe_pse_enable(struct as4610_poe_pse *pse,
 	cmd.data[1] = enable;
 
 	mutex_lock(&pse->mutex);
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	mutex_unlock(&pse->mutex);
 
 	if (!ret)
@@ -230,7 +190,7 @@ static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
 	cmd.data[6] = p4;
 	cmd.data[7] = PSE_EN_DEFAULT;
 	cmd.data[8] = 0xff;
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	if (ret)
 		return ret;
 
@@ -244,7 +204,7 @@ static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
 	cmd.data[6] = p4;
 	cmd.data[7] = 2;
 	cmd.data[8] = 0xff;
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	if (ret)
 		return ret;
 
@@ -258,7 +218,7 @@ static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
 	cmd.data[6] = p4;
 	cmd.data[7] = 2;
 	cmd.data[8] = 0xff;
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	if (ret)
 		return ret;
 
@@ -272,7 +232,7 @@ static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
 	cmd.data[6] = p4;
 	cmd.data[7] = 2;
 	cmd.data[8] = 0xff;
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	if (ret)
 		return ret;
 
@@ -286,7 +246,7 @@ static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
 	cmd.data[6] = p4;
 	cmd.data[7] = 4;
 	cmd.data[8] = 0xff;
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	if (ret)
 		return ret;
 
@@ -301,7 +261,7 @@ static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
 	cmd.data[6] = p4;
 	cmd.data[7] = 1;
 	cmd.data[8] = 0xff;
-	return as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	return bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 }
 
 static int as4610_poe_init_map(struct as4610_poe_pse *pse)
@@ -313,7 +273,7 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_MAP;
 	cmd.data[0] = 0x01;
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, 0);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
 	if (ret)
 		return ret;
 
@@ -321,7 +281,7 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_STATUS;
 
-	ret = as4610_poe_pse_send(pse, &cmd, &resp, 0);
+	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, 0);
 	if (ret)
 		return ret;
 
@@ -339,7 +299,7 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 
 			cmd.opcode = MCU_OP_PSE_PORT_EXT_CONFIG;
 			cmd.data[0] = i;
-			ret = as4610_poe_pse_send(pse, &cmd, &resp,
+			ret = bcm591xx_send(&pse->mcu, &cmd, &resp,
 						  COUNTER_AUTO);
 			if (ret)
 				return ret;
@@ -374,7 +334,7 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 		cmd.data[0] = 0x02;
 		cmd.data[1] = pse->num_ports;
 
-		ret = as4610_poe_pse_send(pse, &cmd, NULL, 0);
+		ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
 		if (ret)
 			return ret;
 
@@ -401,7 +361,7 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 			}
 
 			cmd.data[8] = 0xff;
-			ret = as4610_poe_pse_send(pse, &cmd, NULL, 0);
+			ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
 			if (ret)
 				return ret;
 		}
@@ -411,7 +371,7 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 		cmd.data[0] = 0x03;
 		cmd.data[1] = pse->num_ports;
 
-		ret = as4610_poe_pse_send(pse, &cmd, NULL, 0);
+		ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
 		if (ret)
 			return ret;
 		msleep(1000);
@@ -435,7 +395,7 @@ static int as4610_poe_set_power_limits(struct as4610_poe_pse *pse,
 	cmd.data[0] = 0;
 	put_unaligned_be16(psu_rating * 10, &cmd.data[1]);
 	put_unaligned_be16(guard * 10, &cmd.data[3]);
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	if (ret)
 		return ret;
 
@@ -445,7 +405,7 @@ static int as4610_poe_set_power_limits(struct as4610_poe_pse *pse,
 	cmd.data[0] = 1;
 	put_unaligned_be16(psu_rating * 10, &cmd.data[1]);
 	put_unaligned_be16(guard * 10, &cmd.data[3]);
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	if (ret)
 		return ret;
 
@@ -455,7 +415,7 @@ static int as4610_poe_set_power_limits(struct as4610_poe_pse *pse,
 	cmd.data[0] = 2;
 	put_unaligned_be16(2 * psu_rating * 10, &cmd.data[1]);
 	put_unaligned_be16(guard * 10, &cmd.data[3]);
-	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 	if (ret)
 		return ret;
 
@@ -463,8 +423,7 @@ static int as4610_poe_set_power_limits(struct as4610_poe_pse *pse,
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_HIGH_POWER_LIMIT;
 	cmd.data[0] = 2; /* 31.2W */
-	return as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
-
+	return bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 }
 
 static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
@@ -604,7 +563,7 @@ static ssize_t read_file_port_status(struct file *file, char __user *user_buf,
 	cmd.opcode = MCU_OP_PSE_PORT_STATUS;
 	cmd.data[0] = port->port_num;
 
-	ret = as4610_poe_pse_send(pse, &cmd, &resp, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
 	mutex_unlock(&pse->mutex);
 	if (ret)
 		return ret;
@@ -636,7 +595,7 @@ static ssize_t read_file_port_measurement(struct file *file, char __user *user_b
 	cmd.opcode = MCU_OP_PSE_PORT_MEASUREMENT;
 	cmd.data[0] = port->port_num;
 
-	ret = as4610_poe_pse_send(pse, &cmd, &resp, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
 	mutex_unlock(&pse->mutex);
 	if (ret)
 		return ret;
@@ -675,7 +634,7 @@ static ssize_t read_file_status(struct file *file, char __user *user_buf,
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_STATUS;
 
-	ret = as4610_poe_pse_send(pse, &cmd, &resp, COUNTER_AUTO);
+	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
 	mutex_unlock(&pse->mutex);
 	if (ret)
 		return ret;
@@ -715,6 +674,10 @@ static void as4610_poe_pse_debugfs_create(struct as4610_poe_pse *pse)
 		debugfs_create_file("measurement", 0200, portdir, &pse->ports[i], &pse_measurement_ops);
 	}
 }
+
+static const struct bcm591xx_ops as4610_poe_pse_ops = {
+	.do_txrx = as4610_poe_pse_do_txrx,
+};
 
 static int as4610_poe_pse_probe(struct serdev_device *serdev)
 {
@@ -809,7 +772,6 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 	}
 
 	pse->serdev = serdev;
-	pse->tx_counter = 1;
 
 	mutex_init(&pse->mutex);
 	init_completion(&pse->done);
@@ -824,6 +786,10 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 	serdev_device_set_rts(serdev, false);
 	serdev_device_set_flow_control(serdev, false);
 	serdev_device_set_baudrate(serdev, 19200);
+
+	pse->mcu.dev = dev;
+	pse->mcu.tx_counter = 1;
+	pse->mcu.ops = &as4610_poe_pse_ops;
 
 	as4610_poe_pse_init(pse);
 
