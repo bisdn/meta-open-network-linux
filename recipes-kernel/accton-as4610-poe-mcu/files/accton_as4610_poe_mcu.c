@@ -854,8 +854,10 @@ static void as4610_poe_pse_remove(struct serdev_device *serdev)
 }
 
 static const struct of_device_id as4610_poe_pse_of_match[] = {
-	{ .compatible = "accton,as4610-poe-pse", }
+	{ .compatible = "accton,as4610-poe-pse", },
+	{ },
 };
+MODULE_DEVICE_TABLE(of, as4610_poe_pse_of_match);
 
 static struct serdev_device_driver as4610_poe_pse_driver = {
 	.probe = as4610_poe_pse_probe,
