@@ -57,6 +57,7 @@ struct bcm591xx_port {
 };
 
 struct bcm591xx_ops {
+	int (*config_check)(struct bcm591xx_pse_mcu *mcu);
 	int (*do_txrx)(struct bcm591xx_pse_mcu *mcu, struct pse_msg *cmd,
 		       struct pse_msg *resp);
 };
