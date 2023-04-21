@@ -40,6 +40,22 @@ struct pse_msg {
 struct bcm591xx_pse_mcu;
 struct device;
 
+struct bcm591xx_port {
+	struct bcm591xx_pse_mcu *parent;
+
+	u8 port_num;
+	u8 device;
+	u8 pri_chan;
+	u8 alt_chan;
+
+	bool pse_en;
+
+	bool fourp_en;
+	u8 fourp_powerup;
+	u8 fourp_detection;
+	u8 fourp_mode;
+};
+
 struct bcm591xx_ops {
 	int (*do_txrx)(struct bcm591xx_pse_mcu *mcu, struct pse_msg *cmd,
 		       struct pse_msg *resp);
@@ -51,6 +67,9 @@ struct bcm591xx_pse_mcu {
 	u8 tx_counter;
 
 	const struct bcm591xx_ops *ops;
+
+	int num_ports;
+	struct bcm591xx_port *ports;
 };
 
 extern int bcm591xx_send(struct bcm591xx_pse_mcu *mcu, struct pse_msg *cmd,
