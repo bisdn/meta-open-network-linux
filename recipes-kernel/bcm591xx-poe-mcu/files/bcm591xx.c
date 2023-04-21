@@ -266,6 +266,39 @@ void bcm591xx_debugfs_create(struct bcm591xx_pse_mcu *mcu)
 }
 EXPORT_SYMBOL_GPL(bcm591xx_debugfs_create);
 
+int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
+			 const struct bcm591xx_ops *ops)
+{
+	struct pse_msg cmd, resp;
+	int ret, i;
+
+	mcu->dev = dev;
+	mcu->tx_counter = 1;
+	mcu->ops = ops;
+	mutex_init(&mcu->mutex);
+
+	memset(cmd.data, 0xff, sizeof(cmd.data));
+	cmd.opcode = MCU_OP_PSE_STATUS;
+	ret = bcm591xx_send(mcu, &cmd, &resp, 0);
+	if (ret)
+		return ret;
+
+	mcu->num_ports = resp.data[1];
+	dev_info(mcu->dev, "Found %i port PoE PSE\n", mcu->num_ports);
+
+	mcu->ports = devm_kcalloc(mcu->dev, sizeof(mcu->ports[0]), mcu->num_ports, GFP_KERNEL);
+	if (mcu->ports)
+		return -ENOMEM;
+
+	for (i = 0; i < mcu->num_ports; i++) {
+		mcu->ports[i].port_num = i;
+		mcu->ports[i].parent = mcu;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(bcm591xx_init);
+
 MODULE_AUTHOR("Jonas Gorski <jonas.gorski@bisdn.de>");
 MODULE_DESCRIPTION("BCM591XX MCU library functions");
 MODULE_LICENSE("GPL");
