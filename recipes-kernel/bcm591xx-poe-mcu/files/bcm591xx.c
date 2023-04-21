@@ -277,6 +277,12 @@ int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 	mcu->ops = ops;
 	mutex_init(&mcu->mutex);
 
+	if (mcu->ops->config_check) {
+		ret = mcu->ops->config_check(mcu);
+		if (ret)
+			return ret;
+	}
+
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_STATUS;
 	ret = bcm591xx_send(mcu, &cmd, &resp, 0);
