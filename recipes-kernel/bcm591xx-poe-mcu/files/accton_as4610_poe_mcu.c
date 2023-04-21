@@ -63,22 +63,6 @@ struct as4610_poe_pse;
 
 #define MCU_CHAN_INVALID	0xffu
 
-struct as4610_poe_port {
-	struct as4610_poe_pse *parent;
-
-	u8 port_num;
-	u8 device;
-	u8 pri_chan;
-	u8 alt_chan;
-
-	bool pse_en;
-
-	bool fourp_en;
-	u8 fourp_powerup;
-	u8 fourp_detection;
-	u8 fourp_mode;
-};
-
 struct as4610_poe_pse {
 	struct bcm591xx_pse_mcu mcu;
 	struct serdev_device *serdev;
@@ -91,10 +75,7 @@ struct as4610_poe_pse {
 	int rx_pos;
 	u8 rx_tmp[12];
 
-	int num_ports;
 	int psu_rating;
-
-	struct as4610_poe_port *ports;
 };
 
 #define to_as4610_poe_pse(d)	container_of(d, struct as4610_poe_pse, mcu)
@@ -153,7 +134,7 @@ out:
 }
 
 static int as4610_poe_pse_enable(struct as4610_poe_pse *pse,
-				 struct as4610_poe_port *port, bool enable)
+				 struct bcm591xx_port *port, bool enable)
 {
 	struct pse_msg cmd;
 	int ret;
@@ -285,15 +266,15 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 		return ret;
 
 	/* port channel configuration needs to be persisted to be effective */
-	if (resp.data[1] != pse->num_ports) {
+	if (resp.data[1] != pse->mcu.num_ports) {
 		dev_dbg(&pse->serdev->dev, "Unexpected number of ports (expected %i, have %i).\n",
-			pse->num_ports, resp.data[1]);
+			pse->mcu.num_ports, resp.data[1]);
 		persist = true;
 	} else {
 		memset(cmd.data, 0xff, sizeof(cmd.data));
 
-		for (i = 0; i < pse->num_ports; i++) {
-			struct as4610_poe_port *port = &pse->ports[i];
+		for (i = 0; i < pse->mcu.num_ports; i++) {
+			struct bcm591xx_port *port = &pse->mcu.ports[i];
 			u8 byte5, byte6;
 
 			cmd.opcode = MCU_OP_PSE_PORT_EXT_CONFIG;
@@ -331,14 +312,14 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 		memset(cmd.data, 0xff, sizeof(cmd.data));
 		cmd.opcode = MCU_OP_PSE_MAP;
 		cmd.data[0] = 0x02;
-		cmd.data[1] = pse->num_ports;
+		cmd.data[1] = pse->mcu.num_ports;
 
 		ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
 		if (ret)
 			return ret;
 
-		for (i = 0; i < pse->num_ports; i++) {
-			struct as4610_poe_port *port = &pse->ports[i];
+		for (i = 0; i < pse->mcu.num_ports; i++) {
+			struct bcm591xx_port *port = &pse->mcu.ports[i];
 
 			cmd.opcode = MCU_OP_PSE_SETUP_PORT;
 			cmd.data[0] = port->port_num;
@@ -368,7 +349,7 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 		memset(cmd.data, 0xff, sizeof(cmd.data));
 		cmd.opcode = MCU_OP_PSE_MAP;
 		cmd.data[0] = 0x03;
-		cmd.data[1] = pse->num_ports;
+		cmd.data[1] = pse->mcu.num_ports;
 
 		ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
 		if (ret)
@@ -457,13 +438,13 @@ static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
 	if (ret)
 		goto out;
 
-	for (i = 0; i < pse->num_ports; i += 4) {
-		struct as4610_poe_port *p1, *p2, *p3, *p4;
+	for (i = 0; i < pse->mcu.num_ports; i += 4) {
+		struct bcm591xx_port *p1, *p2, *p3, *p4;
 
-		p1 = &pse->ports[i];
-		p2 = &pse->ports[i + 1];
-		p3 = &pse->ports[i + 2];
-		p4 = &pse->ports[i + 3];
+		p1 = &pse->mcu.ports[i];
+		p2 = &pse->mcu.ports[i + 1];
+		p3 = &pse->mcu.ports[i + 2];
+		p4 = &pse->mcu.ports[i + 3];
 
 		p1->pse_en = PSE_EN_DEFAULT;
 		p2->pse_en = PSE_EN_DEFAULT;
@@ -505,7 +486,7 @@ static struct serdev_device_ops a4610_poe_pse_serdev_ops = {
 static ssize_t read_file_port_enable(struct file *file, char __user *user_buf,
 				     size_t count, loff_t *ppos)
 {
-	struct as4610_poe_port *port = file->private_data;
+	struct bcm591xx_port *port = file->private_data;
 	unsigned int len;
 	char buf[32];
 
@@ -517,7 +498,7 @@ static ssize_t read_file_port_enable(struct file *file, char __user *user_buf,
 static ssize_t write_file_port_enable(struct file *file, const char __user *user_buf,
 				      size_t count, loff_t *ppos)
 {
-	struct as4610_poe_port *port = file->private_data;
+	struct bcm591xx_port *port = file->private_data;
 	unsigned long enable;
 	unsigned int len;
 	char buf[32];
@@ -534,7 +515,7 @@ static ssize_t write_file_port_enable(struct file *file, const char __user *user
 		return -EINVAL;
 
 	if (port->pse_en != enable)
-		as4610_poe_pse_enable(port->parent, port, enable);
+		as4610_poe_pse_enable(to_as4610_poe_pse(port->parent), port, enable);
 
 	return count;
 }
@@ -550,8 +531,8 @@ static const struct file_operations pse_en_ops = {
 static ssize_t read_file_port_status(struct file *file, char __user *user_buf,
 				     size_t count, loff_t *ppos)
 {
-	struct as4610_poe_port *port = file->private_data;
-	struct as4610_poe_pse *pse = port->parent;
+	struct bcm591xx_port *port = file->private_data;
+	struct as4610_poe_pse *pse = to_as4610_poe_pse(port->parent);
 	struct pse_msg cmd, resp;
 	unsigned int len;
 	char buf[32];
@@ -582,8 +563,8 @@ static const struct file_operations pse_port_status_ops = {
 static ssize_t read_file_port_measurement(struct file *file, char __user *user_buf,
 				          size_t count, loff_t *ppos)
 {
-	struct as4610_poe_port *port = file->private_data;
-	struct as4610_poe_pse *pse = port->parent;
+	struct bcm591xx_port *port = file->private_data;
+	struct as4610_poe_pse *pse = to_as4610_poe_pse(port->parent);
 	struct pse_msg cmd, resp;
 	char buf[64];
 	unsigned int len;
@@ -657,7 +638,7 @@ static void as4610_poe_pse_debugfs_create(struct as4610_poe_pse *pse)
 	pse->debugfs = debugfs_create_dir(dev_name(&pse->serdev->dev), NULL);
 	debugfs_create_file("status", 0200, pse->debugfs, pse, &pse_status_ops);
 
-	for (i = 0; i < pse->num_ports; i++) {
+	for (i = 0; i < pse->mcu.num_ports; i++) {
 		struct dentry *portdir;
 		char dirname[16];
 
@@ -668,9 +649,9 @@ static void as4610_poe_pse_debugfs_create(struct as4610_poe_pse *pse)
 		if (!portdir)
 			return;
 
-		debugfs_create_file("enable", 0600, portdir, &pse->ports[i], &pse_en_ops);
-		debugfs_create_file("status", 0200, portdir, &pse->ports[i], &pse_port_status_ops);
-		debugfs_create_file("measurement", 0200, portdir, &pse->ports[i], &pse_measurement_ops);
+		debugfs_create_file("enable", 0600, portdir, &pse->mcu.ports[i], &pse_en_ops);
+		debugfs_create_file("status", 0200, portdir, &pse->mcu.ports[i], &pse_port_status_ops);
+		debugfs_create_file("measurement", 0200, portdir, &pse->mcu.ports[i], &pse_measurement_ops);
 	}
 }
 
@@ -740,20 +721,20 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 	pse = devm_kzalloc(dev, sizeof(*pse), GFP_KERNEL);
 	if (!pse)
 		return -ENOMEM;
-	pse->ports = devm_kcalloc(dev, sizeof(pse->ports[0]), num_ports, GFP_KERNEL);
-	if (!pse->ports)
+	pse->mcu.ports = devm_kcalloc(dev, sizeof(pse->mcu.ports[0]), num_ports, GFP_KERNEL);
+	if (!pse->mcu.ports)
 		return -ENOMEM;
 
-	pse->num_ports = num_ports;
+	pse->mcu.num_ports = num_ports;
 	pse->psu_rating = psu_rating;
 
 	child = NULL;
 	while ((child = of_get_next_child(np, child)) != NULL) {
-		struct as4610_poe_port *port;
+		struct bcm591xx_port *port;
 		u32 reg, device, pri_chan = 0, alt_chan = 0;
 
 		of_property_read_u32(child, "reg", &reg);
-		port = &pse->ports[reg];
+		port = &pse->mcu.ports[reg];
 
 		of_property_read_u32(child, "brcm,device", &device);
 		of_property_read_u32(child, "brcm,primary-channel", &pri_chan);
@@ -767,7 +748,7 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 		else
 			port->alt_chan = MCU_CHAN_INVALID;
 
-		port->parent = pse;
+		port->parent = &pse->mcu;
 	}
 
 	pse->serdev = serdev;
@@ -794,7 +775,7 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 
 	as4610_poe_pse_debugfs_create(pse);
 
-	dev_info(dev, "Found %i port PoE PSE\n", pse->num_ports);
+	dev_info(dev, "Found %i port PoE PSE\n", pse->mcu.num_ports);
 
 	return 0;
 }
