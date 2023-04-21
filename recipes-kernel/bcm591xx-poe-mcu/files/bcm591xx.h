@@ -64,6 +64,7 @@ struct bcm591xx_ops {
 struct bcm591xx_pse_mcu {
 	struct device *dev;
 	struct mutex mutex;
+	struct dentry *debugfs;
 	u8 tx_counter;
 
 	const struct bcm591xx_ops *ops;
@@ -74,5 +75,6 @@ struct bcm591xx_pse_mcu {
 
 extern int bcm591xx_send(struct bcm591xx_pse_mcu *mcu, struct pse_msg *cmd,
 			 struct pse_msg *resp, int counter);
+extern void bcm591xx_debugfs_create(struct bcm591xx_pse_mcu *mcu);
 
 #endif /* __BCM5911X_H */
