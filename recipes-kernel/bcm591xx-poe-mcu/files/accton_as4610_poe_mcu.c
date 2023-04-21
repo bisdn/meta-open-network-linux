@@ -66,7 +66,6 @@ struct as4610_poe_pse;
 struct as4610_poe_pse {
 	struct bcm591xx_pse_mcu mcu;
 	struct serdev_device *serdev;
-	struct dentry *debugfs;
 
 	struct completion done;
 
@@ -131,27 +130,6 @@ static int as4610_poe_pse_do_txrx(struct bcm591xx_pse_mcu *mcu,
 out:
 	pse->rx_buf = NULL;
 	return ret < 0 ? ret : 0;
-}
-
-static int as4610_poe_pse_enable(struct as4610_poe_pse *pse,
-				 struct bcm591xx_port *port, bool enable)
-{
-	struct pse_msg cmd;
-	int ret;
-
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-
-	cmd.opcode = MCU_OP_PSE_EN;
-	cmd.data[0] = port->port_num;
-	cmd.data[1] = enable;
-
-	mutex_lock(&pse->mcu.mutex);
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	mutex_unlock(&pse->mcu.mutex);
-
-	if (!ret)
-		port->pse_en = enable;
-	return ret;
 }
 
 static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
@@ -483,178 +461,6 @@ static struct serdev_device_ops a4610_poe_pse_serdev_ops = {
 	.write_wakeup = as4610_poe_pse_wakeup,
 };
 
-static ssize_t read_file_port_enable(struct file *file, char __user *user_buf,
-				     size_t count, loff_t *ppos)
-{
-	struct bcm591xx_port *port = file->private_data;
-	unsigned int len;
-	char buf[32];
-
-	len = sprintf(buf, "%d\n", port->pse_en);
-
-	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
-}
-
-static ssize_t write_file_port_enable(struct file *file, const char __user *user_buf,
-				      size_t count, loff_t *ppos)
-{
-	struct bcm591xx_port *port = file->private_data;
-	unsigned long enable;
-	unsigned int len;
-	char buf[32];
-
-	len = min(count, sizeof(buf) - 1);
-	if (copy_from_user(buf, user_buf, len))
-		return -EFAULT;
-
-	buf[len] = '\0';
-	if (kstrtoul(buf, 0, &enable))
-		return -EINVAL;
-
-	if (enable != 0 && enable != 1)
-		return -EINVAL;
-
-	if (port->pse_en != enable)
-		as4610_poe_pse_enable(to_as4610_poe_pse(port->parent), port, enable);
-
-	return count;
-}
-
-static const struct file_operations pse_en_ops = {
-	.read = read_file_port_enable,
-	.write = write_file_port_enable,
-	.open = simple_open,
-	.owner = THIS_MODULE,
-	.llseek = default_llseek,
-};
-
-static ssize_t read_file_port_status(struct file *file, char __user *user_buf,
-				     size_t count, loff_t *ppos)
-{
-	struct bcm591xx_port *port = file->private_data;
-	struct as4610_poe_pse *pse = to_as4610_poe_pse(port->parent);
-	struct pse_msg cmd, resp;
-	unsigned int len;
-	char buf[32];
-	int ret;
-
-	mutex_lock(&pse->mcu.mutex);
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-	cmd.opcode = MCU_OP_PSE_PORT_STATUS;
-	cmd.data[0] = port->port_num;
-
-	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
-	mutex_unlock(&pse->mcu.mutex);
-	if (ret)
-		return ret;
-
-	len = sprintf(buf, "%*ph\n", sizeof(resp.data), resp.data);
-
-	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
-}
-
-static const struct file_operations pse_port_status_ops = {
-	.read = read_file_port_status,
-	.open = simple_open,
-	.owner = THIS_MODULE,
-	.llseek = default_llseek,
-};
-
-static ssize_t read_file_port_measurement(struct file *file, char __user *user_buf,
-				          size_t count, loff_t *ppos)
-{
-	struct bcm591xx_port *port = file->private_data;
-	struct as4610_poe_pse *pse = to_as4610_poe_pse(port->parent);
-	struct pse_msg cmd, resp;
-	char buf[64];
-	unsigned int len;
-	int ret, voltage, curr, temp, power;
-
-	mutex_lock(&pse->mcu.mutex);
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-	cmd.opcode = MCU_OP_PSE_PORT_MEASUREMENT;
-	cmd.data[0] = port->port_num;
-
-	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
-	mutex_unlock(&pse->mcu.mutex);
-	if (ret)
-		return ret;
-
-	voltage = DIV_ROUND_CLOSEST(get_unaligned_be16(&resp.data[1]) * 6445, 1000);
-	curr = get_unaligned_be16(&resp.data[3]);
-	temp = ((get_unaligned_be16(&resp.data[5]) - 120) * -125) + 12500;
-	power = get_unaligned_be16(&resp.data[7]);
-
-	len = sprintf(buf, "%i.%02iV\n%i.%03iA\n%i.%02iC\n%i.%01iW\n",
-		      voltage / 100, voltage % 100,
-		      curr / 1000, curr % 1000,
-		      temp / 100, temp % 100,
-		      power / 10, power % 10);
-
-	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
-}
-
-static const struct file_operations pse_measurement_ops = {
-	.read = read_file_port_measurement,
-	.open = simple_open,
-	.owner = THIS_MODULE,
-	.llseek = default_llseek,
-};
-
-static ssize_t read_file_status(struct file *file, char __user *user_buf,
-				size_t count, loff_t *ppos)
-{
-	struct as4610_poe_pse *pse = file->private_data;
-	struct pse_msg cmd, resp;
-	unsigned int len;
-	char buf[32];
-	int ret;
-
-	mutex_lock(&pse->mcu.mutex);
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-	cmd.opcode = MCU_OP_PSE_STATUS;
-
-	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
-	mutex_unlock(&pse->mcu.mutex);
-	if (ret)
-		return ret;
-
-	len = sprintf(buf, "%*ph\n", sizeof(resp.data), resp.data);
-
-	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
-}
-
-static const struct file_operations pse_status_ops = {
-	.read = read_file_status,
-	.open = simple_open,
-	.owner = THIS_MODULE,
-	.llseek = default_llseek,
-};
-
-static void as4610_poe_pse_debugfs_create(struct as4610_poe_pse *pse)
-{
-	int i;
-
-	pse->debugfs = debugfs_create_dir(dev_name(&pse->serdev->dev), NULL);
-	debugfs_create_file("status", 0200, pse->debugfs, pse, &pse_status_ops);
-
-	for (i = 0; i < pse->mcu.num_ports; i++) {
-		struct dentry *portdir;
-		char dirname[16];
-
-		sprintf(dirname, "port%d", i);
-
-		portdir = debugfs_create_dir(dirname, pse->debugfs);
-
-		if (!portdir)
-			return;
-
-		debugfs_create_file("enable", 0600, portdir, &pse->mcu.ports[i], &pse_en_ops);
-		debugfs_create_file("status", 0200, portdir, &pse->mcu.ports[i], &pse_port_status_ops);
-		debugfs_create_file("measurement", 0200, portdir, &pse->mcu.ports[i], &pse_measurement_ops);
-	}
-}
-
 static const struct bcm591xx_ops as4610_poe_pse_ops = {
 	.do_txrx = as4610_poe_pse_do_txrx,
 };
@@ -773,7 +579,7 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 
 	as4610_poe_pse_init(pse);
 
-	as4610_poe_pse_debugfs_create(pse);
+	bcm591xx_debugfs_create(&pse->mcu);
 
 	dev_info(dev, "Found %i port PoE PSE\n", pse->mcu.num_ports);
 
@@ -785,7 +591,7 @@ static void as4610_poe_pse_remove(struct serdev_device *serdev)
 	struct as4610_poe_pse *pse = serdev_device_get_drvdata(serdev);
 	int reg;
 
-	debugfs_remove_recursive(pse->debugfs);
+	debugfs_remove_recursive(pse->mcu.debugfs);
 
 	/* disable power to ports */
 	reg = as4610_54_cpld_read(AS4610_CPLD_ADDRESS,
