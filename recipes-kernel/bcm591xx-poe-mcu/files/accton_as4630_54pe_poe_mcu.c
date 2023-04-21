@@ -57,32 +57,12 @@ struct as4630_poe_pse;
 
 #define MCU_CHAN_INVALID	0xffu
 
-struct as4630_poe_port {
-	struct as4630_poe_pse *parent;
-
-	u8 port_num;
-	u8 device;
-	u8 pri_chan;
-	u8 alt_chan;
-
-	bool pse_en;
-
-	bool fourp_en;
-	u8 fourp_powerup;
-	u8 fourp_detection;
-	u8 fourp_mode;
-};
-
 struct as4630_poe_pse {
 	struct bcm591xx_pse_mcu mcu;
 	struct i2c_client *client;
 	struct dentry *debugfs;
 
 	struct mutex mutex;
-
-	int num_ports;
-
-	struct as4630_poe_port *ports;
 };
 
 #define to_as4630_poe_pse(d)    container_of(d, struct as4630_poe_pse, mcu)
@@ -113,7 +93,7 @@ static int as4630_poe_pse_do_txrx(struct bcm591xx_pse_mcu *mcu,
 }
 
 static int as4630_poe_pse_enable(struct as4630_poe_pse *pse,
-				 struct as4630_poe_port *port, bool enable)
+				 struct bcm591xx_port *port, bool enable)
 {
 	struct pse_msg cmd;
 	int ret;
@@ -163,18 +143,18 @@ static int as4630_poe_pse_init(struct as4630_poe_pse *pse)
 
 	mutex_lock(&pse->mcu.mutex);
 
-	for (i = 0; i < pse->num_ports; i += 4) {
-		struct as4630_poe_port *p1, *p2, *p3, *p4;
+	for (i = 0; i < pse->mcu.num_ports; i += 4) {
+		struct bcm591xx_port *p1, *p2, *p3, *p4;
 
-		p1 = &pse->ports[i];
-		p2 = &pse->ports[i + 1];
-		p3 = &pse->ports[i + 2];
-		p4 = &pse->ports[i + 3];
+		p1 = &pse->mcu.ports[i];
+		p2 = &pse->mcu.ports[i + 1];
+		p3 = &pse->mcu.ports[i + 2];
+		p4 = &pse->mcu.ports[i + 3];
 
-		p1->parent = pse;
-		p2->parent = pse;
-		p3->parent = pse;
-		p4->parent = pse;
+		p1->parent = &pse->mcu;
+		p2->parent = &pse->mcu;
+		p3->parent = &pse->mcu;
+		p4->parent = &pse->mcu;
 
 		p1->port_num = i;
 		p2->port_num = i + 1;
@@ -205,7 +185,7 @@ out:
 static ssize_t read_file_port_enable(struct file *file, char __user *user_buf,
 				     size_t count, loff_t *ppos)
 {
-	struct as4630_poe_port *port = file->private_data;
+	struct bcm591xx_port *port = file->private_data;
 	unsigned int len;
 	char buf[32];
 
@@ -217,7 +197,7 @@ static ssize_t read_file_port_enable(struct file *file, char __user *user_buf,
 static ssize_t write_file_port_enable(struct file *file, const char __user *user_buf,
 				      size_t count, loff_t *ppos)
 {
-	struct as4630_poe_port *port = file->private_data;
+	struct bcm591xx_port *port = file->private_data;
 	unsigned long enable;
 	unsigned int len;
 	char buf[32];
@@ -234,7 +214,7 @@ static ssize_t write_file_port_enable(struct file *file, const char __user *user
 		return -EINVAL;
 
 	if (port->pse_en != enable)
-		as4630_poe_pse_enable(port->parent, port, enable);
+		as4630_poe_pse_enable(to_as4630_poe_pse(port->parent), port, enable);
 
 	return count;
 }
@@ -250,8 +230,8 @@ static const struct file_operations pse_en_ops = {
 static ssize_t read_file_port_status(struct file *file, char __user *user_buf,
 				     size_t count, loff_t *ppos)
 {
-	struct as4630_poe_port *port = file->private_data;
-	struct as4630_poe_pse *pse = port->parent;
+	struct bcm591xx_port *port = file->private_data;
+	struct as4630_poe_pse *pse = to_as4630_poe_pse(port->parent);
 	struct pse_msg cmd, resp;
 	unsigned int len;
 	char buf[32];
@@ -282,8 +262,8 @@ static const struct file_operations pse_port_status_ops = {
 static ssize_t read_file_port_measurement(struct file *file, char __user *user_buf,
 				          size_t count, loff_t *ppos)
 {
-	struct as4630_poe_port *port = file->private_data;
-	struct as4630_poe_pse *pse = port->parent;
+	struct bcm591xx_port *port = file->private_data;
+	struct as4630_poe_pse *pse = to_as4630_poe_pse(port->parent);
 	struct pse_msg cmd, resp;
 	char buf[64];
 	unsigned int len;
@@ -357,7 +337,7 @@ static void as4630_poe_pse_debugfs_create(struct as4630_poe_pse *pse)
 	pse->debugfs = debugfs_create_dir(dev_name(&pse->client->dev), NULL);
 	debugfs_create_file("status", 0200, pse->debugfs, pse, &pse_status_ops);
 
-	for (i = 0; i < pse->num_ports; i++) {
+	for (i = 0; i < pse->mcu.num_ports; i++) {
 		struct dentry *portdir;
 		char dirname[16];
 
@@ -368,9 +348,9 @@ static void as4630_poe_pse_debugfs_create(struct as4630_poe_pse *pse)
 		if (!portdir)
 			return;
 
-		debugfs_create_file("enable", 0600, portdir, &pse->ports[i], &pse_en_ops);
-		debugfs_create_file("status", 0200, portdir, &pse->ports[i], &pse_port_status_ops);
-		debugfs_create_file("measurement", 0200, portdir, &pse->ports[i], &pse_measurement_ops);
+		debugfs_create_file("enable", 0600, portdir, &pse->mcu.ports[i], &pse_en_ops);
+		debugfs_create_file("status", 0200, portdir, &pse->mcu.ports[i], &pse_port_status_ops);
+		debugfs_create_file("measurement", 0200, portdir, &pse->mcu.ports[i], &pse_measurement_ops);
 	}
 }
 
@@ -405,11 +385,11 @@ static int as4630_poe_pse_probe(struct i2c_client *client, const struct i2c_devi
 	if (ret)
 		return ret;
 
-	pse->num_ports = resp.data[1];
-	dev_info(&client->dev, "Found %i port PoE PSE\n", pse->num_ports);
+	pse->mcu.num_ports = resp.data[1];
+	dev_info(&client->dev, "Found %i port PoE PSE\n", pse->mcu.num_ports);
 
-	pse->ports = devm_kcalloc(&client->dev, sizeof(pse->ports[0]), pse->num_ports, GFP_KERNEL);
-	if (!pse->ports)
+	pse->mcu.ports = devm_kcalloc(&client->dev, sizeof(pse->mcu.ports[0]), pse->mcu.num_ports, GFP_KERNEL);
+	if (!pse->mcu.ports)
 		return -ENOMEM;
 
 	as4630_poe_pse_init(pse);
