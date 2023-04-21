@@ -130,16 +130,6 @@ static int as4630_poe_pse_init(struct as4630_poe_pse *pse)
 		p3 = &pse->mcu.ports[i + 2];
 		p4 = &pse->mcu.ports[i + 3];
 
-		p1->parent = &pse->mcu;
-		p2->parent = &pse->mcu;
-		p3->parent = &pse->mcu;
-		p4->parent = &pse->mcu;
-
-		p1->port_num = i;
-		p2->port_num = i + 1;
-		p3->port_num = i + 2;
-		p4->port_num = i + 3;
-
 		p1->pse_en = PSE_EN_DEFAULT;
 		p2->pse_en = PSE_EN_DEFAULT;
 		p3->pse_en = PSE_EN_DEFAULT;
@@ -167,9 +157,8 @@ static const struct bcm591xx_ops as4630_poe_pse_ops = {
 
 static int as4630_poe_pse_probe(struct i2c_client *client, const struct i2c_device_id *dev_id)
 {
-	int num_ports = 0, ret, reg, psu_rating;
+	int ret, reg, psu_rating;
 	struct as4630_poe_pse *pse;
-	struct pse_msg cmd, resp;
 
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_I2C_BLOCK))
 		return -EIO;
@@ -179,25 +168,12 @@ static int as4630_poe_pse_probe(struct i2c_client *client, const struct i2c_devi
 		return -ENOMEM;
 
 	i2c_set_clientdata(client, pse);
-	mutex_init(&pse->mcu.mutex);
 
 	pse->client = client;
-	pse->mcu.dev = &client->dev;
-	pse->mcu.tx_counter = 1;
-	pse->mcu.ops = &as4630_poe_pse_ops,
 
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-	cmd.opcode = MCU_OP_PSE_STATUS;
-	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, 0);
+	ret = bcm591xx_init(&pse->mcu, &client->dev, &as4630_poe_pse_ops);
 	if (ret)
 		return ret;
-
-	pse->mcu.num_ports = resp.data[1];
-	dev_info(&client->dev, "Found %i port PoE PSE\n", pse->mcu.num_ports);
-
-	pse->mcu.ports = devm_kcalloc(&client->dev, sizeof(pse->mcu.ports[0]), pse->mcu.num_ports, GFP_KERNEL);
-	if (!pse->mcu.ports)
-		return -ENOMEM;
 
 	as4630_poe_pse_init(pse);
 
