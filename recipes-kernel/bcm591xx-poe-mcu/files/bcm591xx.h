@@ -75,6 +75,10 @@ struct bcm591xx_pse_mcu {
 
 extern int bcm591xx_send(struct bcm591xx_pse_mcu *mcu, struct pse_msg *cmd,
 			 struct pse_msg *resp, int counter);
+
 extern void bcm591xx_debugfs_create(struct bcm591xx_pse_mcu *mcu);
+
+extern int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
+			 const struct bcm591xx_ops *ops);
 
 #endif /* __BCM5911X_H */
