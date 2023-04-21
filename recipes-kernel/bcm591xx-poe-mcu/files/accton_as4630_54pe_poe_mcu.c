@@ -124,9 +124,9 @@ static int as4630_poe_pse_enable(struct as4630_poe_pse *pse,
 	cmd.data[0] = port->port_num;
 	cmd.data[1] = enable;
 
-	mutex_lock(&pse->mutex);
+	mutex_lock(&pse->mcu.mutex);
 	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	mutex_unlock(&pse->mutex);
+	mutex_unlock(&pse->mcu.mutex);
 
 	if (!ret)
 		port->pse_en = enable;
@@ -161,7 +161,7 @@ static int as4630_poe_pse_init(struct as4630_poe_pse *pse)
 	if (reg < 0)
 		return reg;
 
-	mutex_lock(&pse->mutex);
+	mutex_lock(&pse->mcu.mutex);
 
 	for (i = 0; i < pse->num_ports; i += 4) {
 		struct as4630_poe_port *p1, *p2, *p3, *p4;
@@ -192,7 +192,7 @@ static int as4630_poe_pse_init(struct as4630_poe_pse *pse)
 			goto out;
 	}
 out:
-	mutex_unlock(&pse->mutex);
+	mutex_unlock(&pse->mcu.mutex);
 
 	/* enable power to ports */
 	if (!ret)
@@ -257,13 +257,13 @@ static ssize_t read_file_port_status(struct file *file, char __user *user_buf,
 	char buf[32];
 	int ret;
 
-	mutex_lock(&pse->mutex);
+	mutex_lock(&pse->mcu.mutex);
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_PORT_STATUS;
 	cmd.data[0] = port->port_num;
 
 	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
-	mutex_unlock(&pse->mutex);
+	mutex_unlock(&pse->mcu.mutex);
 	if (ret)
 		return ret;
 
@@ -289,13 +289,13 @@ static ssize_t read_file_port_measurement(struct file *file, char __user *user_b
 	unsigned int len;
 	int ret, voltage, curr, temp, power;
 
-	mutex_lock(&pse->mutex);
+	mutex_lock(&pse->mcu.mutex);
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_PORT_MEASUREMENT;
 	cmd.data[0] = port->port_num;
 
 	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
-	mutex_unlock(&pse->mutex);
+	mutex_unlock(&pse->mcu.mutex);
 	if (ret)
 		return ret;
 
@@ -329,12 +329,12 @@ static ssize_t read_file_status(struct file *file, char __user *user_buf,
 	char buf[32];
 	int ret;
 
-	mutex_lock(&pse->mutex);
+	mutex_lock(&pse->mcu.mutex);
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_STATUS;
 
 	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, COUNTER_AUTO);
-	mutex_unlock(&pse->mutex);
+	mutex_unlock(&pse->mcu.mutex);
 	if (ret)
 		return ret;
 
@@ -392,7 +392,7 @@ static int as4630_poe_pse_probe(struct i2c_client *client, const struct i2c_devi
 		return -ENOMEM;
 
 	i2c_set_clientdata(client, pse);
-	mutex_init(&pse->mutex);
+	mutex_init(&pse->mcu.mutex);
 
 	pse->client = client;
 	pse->mcu.dev = &client->dev;
