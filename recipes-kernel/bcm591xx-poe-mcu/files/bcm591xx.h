@@ -47,6 +47,7 @@ struct bcm591xx_ops {
 
 struct bcm591xx_pse_mcu {
 	struct device *dev;
+	struct mutex mutex;
 	u8 tx_counter;
 
 	const struct bcm591xx_ops *ops;
