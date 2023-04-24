@@ -59,6 +59,7 @@ extern int as4610_54_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 #define MCU_OP_PSE_SETUP_PORT		0x0e
 #define MCU_OP_PSE_PORT_DETECT_TYPE	0x10
 #define MCU_OP_PSE_PORT_DISCONNECT	0x13
+#define MCU_OP_PSE_PORT_PWR_LIMIT_TYPE	0x15
 #define MCU_OP_PSE_PORT_POWERUP_MODE	0x1c
 #define MCU_OP_PSE_PORT_POWERUP_MANAGE	0x17
 #define MCU_OP_PSE_SET_GUARDBAND	0x18
@@ -308,6 +309,21 @@ static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
 	cmd.data[5] = 4;
 	cmd.data[6] = p4;
 	cmd.data[7] = 4;
+	cmd.data[8] = 0xff;
+	ret = as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
+	if (ret)
+		return ret;
+
+	/* Enable class-based low/high power device classification */
+	cmd.opcode = MCU_OP_PSE_PORT_PWR_LIMIT_TYPE;
+	cmd.data[0] = p1;
+	cmd.data[1] = 1;
+	cmd.data[2] = p2;
+	cmd.data[3] = 1;
+	cmd.data[4] = p3;
+	cmd.data[5] = 1;
+	cmd.data[6] = p4;
+	cmd.data[7] = 1;
 	cmd.data[8] = 0xff;
 	return as4610_poe_pse_send(pse, &cmd, NULL, COUNTER_AUTO);
 }
