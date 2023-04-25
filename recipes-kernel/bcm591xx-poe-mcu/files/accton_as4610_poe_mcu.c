@@ -222,16 +222,19 @@ static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
 	return bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 }
 
-static int as4610_poe_init_map(struct as4610_poe_pse *pse)
+static int as4610_config_check(struct bcm591xx_pse_mcu *mcu)
 {
+	struct device_node *np = mcu->dev->of_node, *child = NULL;
 	struct pse_msg cmd, resp;
+	int ret = 0, num_ports;
 	bool persist = false;
-	int i, ret = 0;
+
+	num_ports = of_get_child_count(np);
 
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_MAP;
 	cmd.data[0] = 0x01;
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
+	ret = bcm591xx_send(mcu, &cmd, NULL, 0);
 	if (ret)
 		return ret;
 
@@ -239,45 +242,52 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 	cmd.opcode = MCU_OP_PSE_STATUS;
 
-	ret = bcm591xx_send(&pse->mcu, &cmd, &resp, 0);
+	ret = bcm591xx_send(mcu, &cmd, &resp, 0);
 	if (ret)
 		return ret;
 
 	/* port channel configuration needs to be persisted to be effective */
-	if (resp.data[1] != pse->mcu.num_ports) {
-		dev_dbg(&pse->serdev->dev, "Unexpected number of ports (expected %i, have %i).\n",
-			pse->mcu.num_ports, resp.data[1]);
+	if (resp.data[1] != num_ports) {
+		dev_dbg(mcu->dev, "Unexpected number of ports (expected %i, have %i).\n",
+			num_ports, resp.data[1]);
 		persist = true;
 	} else {
 		memset(cmd.data, 0xff, sizeof(cmd.data));
 
-		for (i = 0; i < pse->mcu.num_ports; i++) {
-			struct bcm591xx_port *port = &pse->mcu.ports[i];
+		while ((child = of_get_next_child(np, child)) != NULL) {
+			u32 reg, device, pri_chan = 0, alt_chan = 0;
 			u8 byte5, byte6;
 
+			of_property_read_u32(child, "reg", &reg);
+
+			of_property_read_u32(child, "brcm,device", &device);
+			of_property_read_u32(child, "brcm,primary-channel", &pri_chan);
+
+			if (of_property_read_u32(child, "brcm,alternative-channel", &alt_chan))
+				alt_chan = MCU_CHAN_INVALID;
+
 			cmd.opcode = MCU_OP_PSE_PORT_EXT_CONFIG;
-			cmd.data[0] = i;
-			ret = bcm591xx_send(&pse->mcu, &cmd, &resp,
-						  COUNTER_AUTO);
+			cmd.data[0] = reg;
+			ret = bcm591xx_send(mcu, &cmd, &resp, COUNTER_AUTO);
 			if (ret)
 				return ret;
 
 			/* setup expected values */
-			byte5 = (port->device << 3) | (port->pri_chan);
-			if (port->alt_chan != MCU_CHAN_INVALID) {
+			byte5 = (device << 3) | (pri_chan);
+			if (alt_chan != MCU_CHAN_INVALID) {
 				byte5 |= BIT(7);
-				byte6 = port->alt_chan;
+				byte6 = alt_chan;
 				byte6 |= (PSE_4P_PWR_UP_MODE << 3);
 				byte6 |= (PSE_4P_DETECT_MODE << 5);
 				byte6 |= (PSE_4P_PWR_UP_MODE_CL4 << 7);
 			} else {
-				byte6 = port->pri_chan;
+				byte6 = pri_chan;
 			}
 
 			if (resp.data[5] != byte5 ||
 			    resp.data[6] != byte6) {
-				dev_dbg(&pse->serdev->dev, "Port %i configuration wrong (expected [%02x %02x], have [%02x %02x]).\n",
-					i, byte5, byte6, resp.data[5], resp.data[6]);
+				dev_dbg(mcu->dev, "Port %i configuration wrong (expected [%02x %02x], have [%02x %02x]).\n",
+					reg, byte5, byte6, resp.data[5], resp.data[6]);
 				persist = true;
 				break;
 			}
@@ -285,41 +295,49 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 	}
 
 	if (persist) {
-		dev_err(&pse->serdev->dev, "Persistent port configuration needs to be updated.\n");
+		dev_err(mcu->dev, "Persistent port configuration needs to be updated.\n");
 
 		memset(cmd.data, 0xff, sizeof(cmd.data));
 		cmd.opcode = MCU_OP_PSE_MAP;
 		cmd.data[0] = 0x02;
-		cmd.data[1] = pse->mcu.num_ports;
+		cmd.data[1] = num_ports;
 
-		ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
+		ret = bcm591xx_send(mcu, &cmd, NULL, 0);
 		if (ret)
 			return ret;
 
-		for (i = 0; i < pse->mcu.num_ports; i++) {
-			struct bcm591xx_port *port = &pse->mcu.ports[i];
+		while ((child = of_get_next_child(np, child)) != NULL) {
+			u32 reg, device, pri_chan = 0, alt_chan = 0;
+
+			of_property_read_u32(child, "reg", &reg);
+
+			of_property_read_u32(child, "brcm,device", &device);
+			of_property_read_u32(child, "brcm,primary-channel", &pri_chan);
+
+			if (of_property_read_u32(child, "brcm,alternative-channel", &alt_chan))
+				alt_chan = MCU_CHAN_INVALID;
 
 			cmd.opcode = MCU_OP_PSE_SETUP_PORT;
-			cmd.data[0] = port->port_num;
-			cmd.data[2] = port->device;
-			cmd.data[3] = port->pri_chan;
+			cmd.data[0] = reg;
+			cmd.data[2] = device;
+			cmd.data[3] = pri_chan;
 
-			if (port->alt_chan != MCU_CHAN_INVALID) {
+			if (alt_chan != MCU_CHAN_INVALID) {
 				cmd.data[1] = 1;
-				cmd.data[4] = port->alt_chan;
+				cmd.data[4] = alt_chan;
 				cmd.data[5] = PSE_4P_PWR_UP_MODE;
 				cmd.data[6] = PSE_4P_DETECT_MODE;
 				cmd.data[7] = PSE_4P_PWR_UP_MODE_CL4;
 			} else {
 				cmd.data[1] = 0;
-				cmd.data[4] = port->pri_chan;
+				cmd.data[4] = pri_chan;
 				cmd.data[5] = 0;
 				cmd.data[6] = 0;
 				cmd.data[7] = 0;
 			}
 
 			cmd.data[8] = 0xff;
-			ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
+			ret = bcm591xx_send(mcu, &cmd, NULL, 0);
 			if (ret)
 				return ret;
 		}
@@ -327,15 +345,15 @@ static int as4610_poe_init_map(struct as4610_poe_pse *pse)
 		memset(cmd.data, 0xff, sizeof(cmd.data));
 		cmd.opcode = MCU_OP_PSE_MAP;
 		cmd.data[0] = 0x03;
-		cmd.data[1] = pse->mcu.num_ports;
+		cmd.data[1] = num_ports;
 
-		ret = bcm591xx_send(&pse->mcu, &cmd, NULL, 0);
+		ret = bcm591xx_send(mcu, &cmd, NULL, 0);
 		if (ret)
 			return ret;
 		msleep(1000);
-		dev_err(&pse->serdev->dev, "Finished updating persistent port configuration.\n");
+		dev_err(mcu->dev, "Finished updating persistent port configuration.\n");
 	} else {
-		dev_info(&pse->serdev->dev, "Persistent port configuration does not need updating.\n");
+		dev_info(mcu->dev, "Persistent port configuration does not need updating.\n");
 	}
 
 	return 0;
@@ -386,7 +404,6 @@ static int as4610_poe_set_power_limits(struct as4610_poe_pse *pse,
 
 static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
 {
-	struct pse_msg cmd;
 	int i, ret = 0, reg;
 
 	reg = as4610_54_cpld_read(AS4610_CPLD_ADDRESS,
@@ -411,10 +428,6 @@ static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
 
 
 	mutex_lock(&pse->mcu.mutex);
-
-	ret = as4610_poe_init_map(pse);
-	if (ret)
-		goto out;
 
 	for (i = 0; i < pse->mcu.num_ports; i += 4) {
 		struct bcm591xx_port *p1, *p2, *p3, *p4;
@@ -462,6 +475,7 @@ static struct serdev_device_ops a4610_poe_pse_serdev_ops = {
 };
 
 static const struct bcm591xx_ops as4610_poe_pse_ops = {
+	.config_check = as4610_config_check,
 	.do_txrx = as4610_poe_pse_do_txrx,
 };
 
@@ -527,39 +541,10 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 	pse = devm_kzalloc(dev, sizeof(*pse), GFP_KERNEL);
 	if (!pse)
 		return -ENOMEM;
-	pse->mcu.ports = devm_kcalloc(dev, sizeof(pse->mcu.ports[0]), num_ports, GFP_KERNEL);
-	if (!pse->mcu.ports)
-		return -ENOMEM;
 
-	pse->mcu.num_ports = num_ports;
 	pse->psu_rating = psu_rating;
-
-	child = NULL;
-	while ((child = of_get_next_child(np, child)) != NULL) {
-		struct bcm591xx_port *port;
-		u32 reg, device, pri_chan = 0, alt_chan = 0;
-
-		of_property_read_u32(child, "reg", &reg);
-		port = &pse->mcu.ports[reg];
-
-		of_property_read_u32(child, "brcm,device", &device);
-		of_property_read_u32(child, "brcm,primary-channel", &pri_chan);
-
-		port->port_num = reg;
-		port->device = device;
-		port->pri_chan = pri_chan;
-
-		if (!of_property_read_u32(child, "brcm,alternative-channel", &alt_chan))
-			port->alt_chan = alt_chan;
-		else
-			port->alt_chan = MCU_CHAN_INVALID;
-
-		port->parent = &pse->mcu;
-	}
-
 	pse->serdev = serdev;
 
-	mutex_init(&pse->mcu.mutex);
 	init_completion(&pse->done);
 
 	serdev_device_set_drvdata(serdev, pse);
@@ -573,15 +558,15 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 	serdev_device_set_flow_control(serdev, false);
 	serdev_device_set_baudrate(serdev, 19200);
 
-	pse->mcu.dev = dev;
-	pse->mcu.tx_counter = 1;
-	pse->mcu.ops = &as4610_poe_pse_ops;
+	ret = bcm591xx_init(&pse->mcu, dev, &as4610_poe_pse_ops);
+	if (ret) {
+		serdev_device_close(pse->serdev);
+		return ret;
+	}
 
 	as4610_poe_pse_init(pse);
 
 	bcm591xx_debugfs_create(&pse->mcu);
-
-	dev_info(dev, "Found %i port PoE PSE\n", pse->mcu.num_ports);
 
 	return 0;
 }
