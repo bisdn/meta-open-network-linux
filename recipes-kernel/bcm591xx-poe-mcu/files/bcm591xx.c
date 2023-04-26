@@ -72,22 +72,57 @@ int bcm591xx_send(struct bcm591xx_pse_mcu *mcu, struct pse_msg *cmd,
 }
 EXPORT_SYMBOL_GPL(bcm591xx_send);
 
-static int bcm591xx_port_enable(struct bcm591xx_pse_mcu *mcu,
-				struct bcm591xx_port *port, bool enable)
+static int bcm591xx_multi_port_cmd(struct bcm591xx_pse_mcu *mcu, u8 opcode,
+				   u8 val, u8 p1, u8 p2, u8 p3, u8 p4)
 {
 	struct pse_msg cmd;
 	int ret;
 
 	memset(cmd.data, 0xff, sizeof(cmd.data));
 
-	cmd.opcode = MCU_OP_PSE_EN;
-	cmd.data[0] = port->port_num;
-	cmd.data[1] = enable;
+	cmd.opcode = opcode;
+
+	if (p1 != MCU_PORT_UNSET) {
+		cmd.data[0] = p1;
+		cmd.data[1] = val;
+	}
+
+	if (p2 != MCU_PORT_UNSET) {
+		cmd.data[2] = p2;
+		cmd.data[3] = val;
+	}
+
+	if (p3 != MCU_PORT_UNSET) {
+		cmd.data[4] = p3;
+		cmd.data[5] = val;
+	}
+
+	if (p4 != MCU_PORT_UNSET) {
+		cmd.data[6] = p4;
+		cmd.data[7] = val;
+	}
 
 	mutex_lock(&mcu->mutex);
 	ret = bcm591xx_send(mcu, &cmd, NULL, COUNTER_AUTO);
 	mutex_unlock(&mcu->mutex);
 
+	return ret;
+}
+
+static int bcm591xx_port_cmd(struct bcm591xx_pse_mcu *mcu, u8 opcode, u8 val,
+			     u8 port_num)
+{
+	return bcm591xx_multi_port_cmd(mcu, opcode, val, port_num,
+			               MCU_PORT_UNSET, MCU_PORT_UNSET,
+				       MCU_PORT_UNSET);
+}
+
+static int bcm591xx_port_enable(struct bcm591xx_pse_mcu *mcu,
+				struct bcm591xx_port *port, bool enable)
+{
+	int ret;
+
+	ret = bcm591xx_port_cmd(mcu, MCU_OP_PSE_EN, enable, port->port_num);
 	if (!ret)
 		port->pse_en = enable;
 	return ret;
