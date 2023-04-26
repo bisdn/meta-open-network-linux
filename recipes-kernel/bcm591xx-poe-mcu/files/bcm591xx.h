@@ -29,6 +29,9 @@
 #define MCU_OP_PSE_PORT_EXT_CONFIG	0x26
 #define MCU_OP_PSE_PORT_MEASUREMENT	0x30
 
+
+#define MCU_PORT_UNSET			0xff
+
 /* message format */
 struct pse_msg {
 	u8 opcode;
