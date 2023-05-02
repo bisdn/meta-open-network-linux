@@ -310,7 +310,7 @@ static const struct file_operations bcm591xx_status_ops = {
 	.llseek = default_llseek,
 };
 
-void bcm591xx_debugfs_create(struct bcm591xx_pse_mcu *mcu)
+static void bcm591xx_debugfs_create(struct bcm591xx_pse_mcu *mcu)
 {
 	int i;
 
@@ -333,7 +333,6 @@ void bcm591xx_debugfs_create(struct bcm591xx_pse_mcu *mcu)
 		debugfs_create_file("measurement", 0200, portdir, &mcu->ports[i], &bcm591xx_port_measurement_ops);
 	}
 }
-EXPORT_SYMBOL_GPL(bcm591xx_debugfs_create);
 
 int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 			 const struct bcm591xx_ops *ops)
@@ -382,6 +381,8 @@ int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 		}
 	}
 
+	bcm591xx_debugfs_create(mcu);
+
 	return 0;
 }
 EXPORT_SYMBOL_GPL(bcm591xx_init);
@@ -389,6 +390,8 @@ EXPORT_SYMBOL_GPL(bcm591xx_init);
 void bcm591xx_remove(struct bcm591xx_pse_mcu *mcu)
 {
 	int i;
+
+	debugfs_remove_recursive(mcu->debugfs);
 
 	if (mcu->ops->set_power)
 		mcu->ops->set_power(mcu, false);

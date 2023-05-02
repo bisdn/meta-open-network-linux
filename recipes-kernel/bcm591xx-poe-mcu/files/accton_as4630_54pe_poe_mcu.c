@@ -128,21 +128,13 @@ static int as4630_poe_pse_probe(struct i2c_client *client, const struct i2c_devi
 
 	pse->client = client;
 
-	ret = bcm591xx_init(&pse->mcu, &client->dev, &as4630_poe_pse_ops);
-	if (ret)
-		return ret;
-
-	bcm591xx_debugfs_create(&pse->mcu);
-
-	return 0;
+	return bcm591xx_init(&pse->mcu, &client->dev, &as4630_poe_pse_ops);
 }
 
 static int as4630_poe_pse_remove(struct i2c_client *client)
 {
 	struct as4630_poe_pse *pse = i2c_get_clientdata(client);
 	int reg;
-
-	debugfs_remove_recursive(pse->mcu.debugfs);
 
 	bcm591xx_remove(&pse->mcu);
 
