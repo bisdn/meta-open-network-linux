@@ -160,6 +160,8 @@ static int as4630_poe_pse_remove(struct i2c_client *client)
 	else
 		dev_warn(&client->dev, "failed to access CPLD: %i\n", reg);
 
+	bcm591xx_remove(&pse->mcu);
+
 	return 0;
 }
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
