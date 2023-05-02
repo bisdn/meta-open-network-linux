@@ -311,12 +311,7 @@ static int as4610_poe_set_power_limits(struct as4610_poe_pse *pse,
 
 static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
 {
-	int i, ret = 0, reg;
-
-	reg = as4610_54_cpld_read(AS4610_CPLD_ADDRESS,
-				  AS4610_CPLD_POE_CONTROL_REG);
-	if (reg < 0)
-		return reg;
+	int i, ret = 0;
 
 #if 0
 	/* reset MCU to get a clear state */
@@ -335,19 +330,27 @@ static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
 
 
 	mutex_lock(&pse->mcu.mutex);
-
 	ret = as4610_poe_set_power_limits(pse, pse->psu_rating, 20);
-	if (ret)
-		goto out;
-out:
 	mutex_unlock(&pse->mcu.mutex);
-
-	/* enable power to ports */
-	if (!ret)
-		as4610_54_cpld_write(AS4610_CPLD_ADDRESS,
-				     AS4610_CPLD_POE_CONTROL_REG,
-				     reg | POE_CONTROL_EN);
 	return ret;
+}
+
+static int as4610_poe_pse_set_power(struct bcm591xx_pse_mcu *mcu, bool on)
+{
+	int reg;
+
+	reg = as4610_54_cpld_read(AS4610_CPLD_ADDRESS,
+				  AS4610_CPLD_POE_CONTROL_REG);
+	if (reg < 0)
+		return reg;
+
+	if (on)
+		reg |= POE_CONTROL_EN;
+	else
+		reg &= ~POE_CONTROL_EN;
+
+	return as4610_54_cpld_write(AS4610_CPLD_ADDRESS,
+				    AS4610_CPLD_POE_CONTROL_REG, reg);
 }
 
 static void as4610_poe_pse_wakeup(struct serdev_device *serdev)
@@ -363,6 +366,7 @@ static struct serdev_device_ops a4610_poe_pse_serdev_ops = {
 };
 
 static const struct bcm591xx_ops as4610_poe_pse_ops = {
+	.set_power = as4610_poe_pse_set_power,
 	.config_check = as4610_config_check,
 	.do_txrx = as4610_poe_pse_do_txrx,
 };
@@ -465,16 +469,6 @@ static void as4610_poe_pse_remove(struct serdev_device *serdev)
 	int reg;
 
 	debugfs_remove_recursive(pse->mcu.debugfs);
-
-	/* disable power to ports */
-	reg = as4610_54_cpld_read(AS4610_CPLD_ADDRESS,
-				  AS4610_CPLD_POE_CONTROL_REG);
-	if (reg >= 0)
-		as4610_54_cpld_write(AS4610_CPLD_ADDRESS,
-				     AS4610_CPLD_POE_CONTROL_REG,
-				     reg & ~POE_CONTROL_EN);
-	else
-		dev_warn(&pse->serdev->dev, "failed to access CPLD: %i\n", reg);
 
 	bcm591xx_remove(&pse->mcu);
 
