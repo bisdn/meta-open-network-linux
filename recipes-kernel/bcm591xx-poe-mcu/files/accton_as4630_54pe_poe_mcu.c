@@ -46,9 +46,6 @@ extern int as4630_54pe_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 #define   POE_POWER_1PSU		0x0
 #define   POE_POWER_2PSU		0x2
 
-/* Disable PoE by default for now, 4-Pair ports do not work reliably */
-#define PSE_EN_DEFAULT			0
-
 #define PSE_4P_PWR_UP_MODE		0
 #define PSE_4P_DETECT_MODE		0
 #define PSE_4P_PWR_UP_MODE_CL4		1
@@ -92,25 +89,6 @@ static int as4630_poe_pse_do_txrx(struct bcm591xx_pse_mcu *mcu,
 	return 0;
 }
 
-static int as4630_poe_pse_init_ports(struct as4630_poe_pse *pse,
-				     int p1, int p2, int p3, int p4)
-{
-	struct pse_msg cmd;
-
-	cmd.opcode = MCU_OP_PSE_EN;
-	cmd.data[0] = p1;
-	cmd.data[1] = PSE_EN_DEFAULT;
-	cmd.data[2] = p2;
-	cmd.data[3] = PSE_EN_DEFAULT;
-	cmd.data[4] = p3;
-	cmd.data[5] = PSE_EN_DEFAULT;
-	cmd.data[6] = p4;
-	cmd.data[7] = PSE_EN_DEFAULT;
-	cmd.data[8] = 0xff;
-
-	return bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-}
-
 static int as4630_poe_pse_init(struct as4630_poe_pse *pse)
 {
 	int i, ret = 0, reg;
@@ -119,29 +97,6 @@ static int as4630_poe_pse_init(struct as4630_poe_pse *pse)
 				    AS4630_CPLD_POE_CONTROL_REG);
 	if (reg < 0)
 		return reg;
-
-	mutex_lock(&pse->mcu.mutex);
-
-	for (i = 0; i < pse->mcu.num_ports; i += 4) {
-		struct bcm591xx_port *p1, *p2, *p3, *p4;
-
-		p1 = &pse->mcu.ports[i];
-		p2 = &pse->mcu.ports[i + 1];
-		p3 = &pse->mcu.ports[i + 2];
-		p4 = &pse->mcu.ports[i + 3];
-
-		p1->pse_en = PSE_EN_DEFAULT;
-		p2->pse_en = PSE_EN_DEFAULT;
-		p3->pse_en = PSE_EN_DEFAULT;
-		p4->pse_en = PSE_EN_DEFAULT;
-
-		ret = as4630_poe_pse_init_ports(pse, p1->port_num, p2->port_num,
-						p3->port_num, p4->port_num);
-		if (ret)
-			goto out;
-	}
-out:
-	mutex_unlock(&pse->mcu.mutex);
 
 	/* enable power to ports */
 	if (!ret)
