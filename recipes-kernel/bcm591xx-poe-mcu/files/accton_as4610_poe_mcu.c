@@ -52,9 +52,6 @@ extern int as4610_54_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 #define   POE_POWER_1PSU		0x0
 #define   POE_POWER_2PSU		0x4
 
-/* Disable PoE by default for now, 4-Pair ports do not work reliably */
-#define PSE_EN_DEFAULT			0
-
 #define PSE_4P_PWR_UP_MODE		0
 #define PSE_4P_DETECT_MODE		0
 #define PSE_4P_PWR_UP_MODE_CL4		1
@@ -130,96 +127,6 @@ static int as4610_poe_pse_do_txrx(struct bcm591xx_pse_mcu *mcu,
 out:
 	pse->rx_buf = NULL;
 	return ret < 0 ? ret : 0;
-}
-
-static int as4610_poe_pse_init_ports(struct as4610_poe_pse *pse,
-				     int p1, int p2, int p3, int p4)
-{
-	struct pse_msg cmd;
-	int ret;
-
-	cmd.opcode = MCU_OP_PSE_EN;
-	cmd.data[0] = p1;
-	cmd.data[1] = PSE_EN_DEFAULT;
-	cmd.data[2] = p2;
-	cmd.data[3] = PSE_EN_DEFAULT;
-	cmd.data[4] = p3;
-	cmd.data[5] = PSE_EN_DEFAULT;
-	cmd.data[6] = p4;
-	cmd.data[7] = PSE_EN_DEFAULT;
-	cmd.data[8] = 0xff;
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	if (ret)
-		return ret;
-
-	cmd.opcode = MCU_OP_PSE_PORT_DETECT_TYPE;
-	cmd.data[0] = p1;
-	cmd.data[1] = 2;
-	cmd.data[2] = p2;
-	cmd.data[3] = 2;
-	cmd.data[4] = p3;
-	cmd.data[5] = 2;
-	cmd.data[6] = p4;
-	cmd.data[7] = 2;
-	cmd.data[8] = 0xff;
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	if (ret)
-		return ret;
-
-	cmd.opcode = MCU_OP_PSE_PORT_DISCONNECT;
-	cmd.data[0] = p1;
-	cmd.data[1] = 2;
-	cmd.data[2] = p2;
-	cmd.data[3] = 2;
-	cmd.data[4] = p3;
-	cmd.data[5] = 2;
-	cmd.data[6] = p4;
-	cmd.data[7] = 2;
-	cmd.data[8] = 0xff;
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	if (ret)
-		return ret;
-
-	cmd.opcode = MCU_OP_PSE_PORT_POWERUP_MODE;
-	cmd.data[0] = p1;
-	cmd.data[1] = 2;
-	cmd.data[2] = p2;
-	cmd.data[3] = 2;
-	cmd.data[4] = p3;
-	cmd.data[5] = 2;
-	cmd.data[6] = p4;
-	cmd.data[7] = 2;
-	cmd.data[8] = 0xff;
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	if (ret)
-		return ret;
-
-	cmd.opcode = MCU_OP_PSE_PORT_POWERUP_MANAGE;
-	cmd.data[0] = p1;
-	cmd.data[1] = 4;
-	cmd.data[2] = p2;
-	cmd.data[3] = 4;
-	cmd.data[4] = p3;
-	cmd.data[5] = 4;
-	cmd.data[6] = p4;
-	cmd.data[7] = 4;
-	cmd.data[8] = 0xff;
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	if (ret)
-		return ret;
-
-	/* Enable class-based low/high power device classification */
-	cmd.opcode = MCU_OP_PSE_PORT_PWR_LIMIT_TYPE;
-	cmd.data[0] = p1;
-	cmd.data[1] = 1;
-	cmd.data[2] = p2;
-	cmd.data[3] = 1;
-	cmd.data[4] = p3;
-	cmd.data[5] = 1;
-	cmd.data[6] = p4;
-	cmd.data[7] = 1;
-	cmd.data[8] = 0xff;
-	return bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
 }
 
 static int as4610_config_check(struct bcm591xx_pse_mcu *mcu)
@@ -428,25 +335,6 @@ static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
 
 
 	mutex_lock(&pse->mcu.mutex);
-
-	for (i = 0; i < pse->mcu.num_ports; i += 4) {
-		struct bcm591xx_port *p1, *p2, *p3, *p4;
-
-		p1 = &pse->mcu.ports[i];
-		p2 = &pse->mcu.ports[i + 1];
-		p3 = &pse->mcu.ports[i + 2];
-		p4 = &pse->mcu.ports[i + 3];
-
-		p1->pse_en = PSE_EN_DEFAULT;
-		p2->pse_en = PSE_EN_DEFAULT;
-		p3->pse_en = PSE_EN_DEFAULT;
-		p4->pse_en = PSE_EN_DEFAULT;
-
-		ret = as4610_poe_pse_init_ports(pse, p1->port_num, p2->port_num,
-						p3->port_num, p4->port_num);
-		if (ret)
-			goto out;
-	}
 
 	ret = as4610_poe_set_power_limits(pse, pse->psu_rating, 20);
 	if (ret)

@@ -128,6 +128,40 @@ static int bcm591xx_port_enable(struct bcm591xx_pse_mcu *mcu,
 	return ret;
 }
 
+static int bcm591xx_init_ports(struct bcm591xx_pse_mcu *mcu)
+{
+	int i, ret;
+
+	for (i = 0; i < mcu->num_ports; i += 4) {
+		ret = bcm591xx_multi_port_cmd(mcu, MCU_OP_PSE_PORT_DETECT_TYPE,
+					      2, i, i + 1, i + 2, i + 3);
+		if (ret)
+			return ret;
+		ret = bcm591xx_multi_port_cmd(mcu, MCU_OP_PSE_PORT_DISCONNECT,
+					      2, i, i + 1, i + 2, i + 3);
+		if (ret)
+			return ret;
+
+		ret = bcm591xx_multi_port_cmd(mcu, MCU_OP_PSE_PORT_POWERUP_MODE,
+					      2, i, i + 1, i + 2, i + 3);
+		if (ret)
+			return ret;
+
+		ret = bcm591xx_multi_port_cmd(mcu, MCU_OP_PSE_PORT_POWERUP_MANAGE,
+					      4, i, i + 1, i + 2, i + 3);
+		if (ret)
+			return ret;
+
+		/* Enable class-based low/high power device classification */
+		ret = bcm591xx_multi_port_cmd(mcu, MCU_OP_PSE_PORT_PWR_LIMIT_TYPE,
+					      1, i, i + 1, i + 2, i + 3);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 static ssize_t read_file_port_enable(struct file *file, char __user *user_buf,
 				     size_t count, loff_t *ppos)
 {
@@ -336,7 +370,7 @@ int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 		mcu->ports[i].parent = mcu;
 	}
 
-	return 0;
+	return bcm591xx_init_ports(mcu);
 }
 EXPORT_SYMBOL_GPL(bcm591xx_init);
 
