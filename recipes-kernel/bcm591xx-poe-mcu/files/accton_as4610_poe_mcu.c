@@ -458,8 +458,6 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 
 	as4610_poe_pse_init(pse);
 
-	bcm591xx_debugfs_create(&pse->mcu);
-
 	return 0;
 }
 
@@ -467,8 +465,6 @@ static void as4610_poe_pse_remove(struct serdev_device *serdev)
 {
 	struct as4610_poe_pse *pse = serdev_device_get_drvdata(serdev);
 	int reg;
-
-	debugfs_remove_recursive(pse->mcu.debugfs);
 
 	bcm591xx_remove(&pse->mcu);
 
