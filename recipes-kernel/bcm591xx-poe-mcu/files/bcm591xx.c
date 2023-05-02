@@ -370,13 +370,28 @@ int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 		mcu->ports[i].parent = mcu;
 	}
 
-	return bcm591xx_init_ports(mcu);
+	ret = bcm591xx_init_ports(mcu);
+	if (ret)
+		return ret;
+
+	if (mcu->ops->set_power) {
+		ret = mcu->ops->set_power(mcu, true);
+		if (ret) {
+			bcm591xx_remove(mcu);
+			return ret;
+		}
+	}
+
+	return 0;
 }
 EXPORT_SYMBOL_GPL(bcm591xx_init);
 
 void bcm591xx_remove(struct bcm591xx_pse_mcu *mcu)
 {
 	int i;
+
+	if (mcu->ops->set_power)
+		mcu->ops->set_power(mcu, false);
 
 	/* disable all ports */
 	for (i = 0; i < mcu->num_ports; i += 4) {
