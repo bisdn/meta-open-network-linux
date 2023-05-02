@@ -88,25 +88,27 @@ static int as4630_poe_pse_do_txrx(struct bcm591xx_pse_mcu *mcu,
 
 	return 0;
 }
-
-static int as4630_poe_pse_init(struct as4630_poe_pse *pse)
+static int as4630_poe_pse_set_power(struct bcm591xx_pse_mcu *mcu, bool on)
 {
-	int i, ret = 0, reg;
+	int reg;
 
 	reg = as4630_54pe_cpld_read(AS4630_CPLD_ADDRESS,
 				    AS4630_CPLD_POE_CONTROL_REG);
 	if (reg < 0)
 		return reg;
 
-	/* enable power to ports */
-	if (!ret)
-		as4630_54pe_cpld_write(AS4630_CPLD_ADDRESS,
-				       AS4630_CPLD_POE_CONTROL_REG,
-				       reg | POE_CONTROL_EN);
-	return ret;
+	if (on)
+		reg |= POE_CONTROL_EN;
+	else
+		reg &= ~POE_CONTROL_EN;
+
+
+	return as4630_54pe_cpld_write(AS4630_CPLD_ADDRESS,
+				      AS4630_CPLD_POE_CONTROL_REG, reg);
 }
 
 static const struct bcm591xx_ops as4630_poe_pse_ops = {
+	.set_power = as4630_poe_pse_set_power,
 	.do_txrx = as4630_poe_pse_do_txrx,
 };
 
@@ -130,8 +132,6 @@ static int as4630_poe_pse_probe(struct i2c_client *client, const struct i2c_devi
 	if (ret)
 		return ret;
 
-	as4630_poe_pse_init(pse);
-
 	bcm591xx_debugfs_create(&pse->mcu);
 
 	return 0;
@@ -149,16 +149,6 @@ static int as4630_poe_pse_remove(struct i2c_client *client)
 	int reg;
 
 	debugfs_remove_recursive(pse->mcu.debugfs);
-
-	/* disable power to ports */
-	reg = as4630_54pe_cpld_read(AS4630_CPLD_ADDRESS,
-				    AS4630_CPLD_POE_CONTROL_REG);
-	if (reg >= 0)
-		as4630_54pe_cpld_write(AS4630_CPLD_ADDRESS,
-				       AS4630_CPLD_POE_CONTROL_REG,
-				       reg & ~POE_CONTROL_EN);
-	else
-		dev_warn(&client->dev, "failed to access CPLD: %i\n", reg);
 
 	bcm591xx_remove(&pse->mcu);
 
