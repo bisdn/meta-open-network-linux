@@ -374,6 +374,18 @@ int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 }
 EXPORT_SYMBOL_GPL(bcm591xx_init);
 
+void bcm591xx_remove(struct bcm591xx_pse_mcu *mcu)
+{
+	int i;
+
+	/* disable all ports */
+	for (i = 0; i < mcu->num_ports; i += 4) {
+		bcm591xx_multi_port_cmd(mcu, MCU_OP_PSE_EN, 0, i, i + 1, i + 2,
+				        i + 3);
+	}
+}
+EXPORT_SYMBOL_GPL(bcm591xx_remove);
+
 MODULE_AUTHOR("Jonas Gorski <jonas.gorski@bisdn.de>");
 MODULE_DESCRIPTION("BCM591XX MCU library functions");
 MODULE_LICENSE("GPL");
