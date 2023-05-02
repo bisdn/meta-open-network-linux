@@ -476,6 +476,8 @@ static void as4610_poe_pse_remove(struct serdev_device *serdev)
 	else
 		dev_warn(&pse->serdev->dev, "failed to access CPLD: %i\n", reg);
 
+	bcm591xx_remove(&pse->mcu);
+
 	serdev_device_close(pse->serdev);
 }
 
