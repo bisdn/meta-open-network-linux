@@ -75,6 +75,8 @@ struct bcm591xx_pse_mcu {
 
 	const struct bcm591xx_ops *ops;
 
+	int psu_power_rating;
+
 	int num_ports;
 	struct bcm591xx_port *ports;
 };
