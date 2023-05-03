@@ -70,8 +70,6 @@ struct as4610_poe_pse {
 
 	int rx_pos;
 	u8 rx_tmp[12];
-
-	int psu_rating;
 };
 
 #define to_as4610_poe_pse(d)	container_of(d, struct as4610_poe_pse, mcu)
@@ -266,75 +264,6 @@ static int as4610_config_check(struct bcm591xx_pse_mcu *mcu)
 	return 0;
 }
 
-static int as4610_poe_set_power_limits(struct as4610_poe_pse *pse,
-				       int psu_rating, int guard)
-{
-	struct pse_msg cmd;
-	int ret;
-
-	/* 1 working PSU */
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-	cmd.opcode = MCU_OP_PSE_SET_GUARDBAND;
-	cmd.data[0] = 0;
-	put_unaligned_be16(psu_rating * 10, &cmd.data[1]);
-	put_unaligned_be16(guard * 10, &cmd.data[3]);
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	if (ret)
-		return ret;
-
-	/* ??? */
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-	cmd.opcode = MCU_OP_PSE_SET_GUARDBAND;
-	cmd.data[0] = 1;
-	put_unaligned_be16(psu_rating * 10, &cmd.data[1]);
-	put_unaligned_be16(guard * 10, &cmd.data[3]);
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	if (ret)
-		return ret;
-
-	/* 2 working PSUs */
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-	cmd.opcode = MCU_OP_PSE_SET_GUARDBAND;
-	cmd.data[0] = 2;
-	put_unaligned_be16(2 * psu_rating * 10, &cmd.data[1]);
-	put_unaligned_be16(guard * 10, &cmd.data[3]);
-	ret = bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-	if (ret)
-		return ret;
-
-	/* Set High Power Device limit */
-	memset(cmd.data, 0xff, sizeof(cmd.data));
-	cmd.opcode = MCU_OP_PSE_HIGH_POWER_LIMIT;
-	cmd.data[0] = 2; /* 31.2W */
-	return bcm591xx_send(&pse->mcu, &cmd, NULL, COUNTER_AUTO);
-}
-
-static int as4610_poe_pse_init(struct as4610_poe_pse *pse)
-{
-	int i, ret = 0;
-
-#if 0
-	/* reset MCU to get a clear state */
-	/* FIXME: currently hangs the MCU - wrong delay? */
-	as4610_54_cpld_write(AS4610_CPLD_ADDRESS,
-			     AS4610_CPLD_POE_CONTROL_REG,
-			     reg | POE_RESET_MCU);
-
-	msleep(100);
-
-	as4610_54_cpld_write(AS4610_CPLD_ADDRESS,
-			     AS4610_CPLD_POE_CONTROL_REG,
-			     reg);
-	msleep(100);
-#endif
-
-
-	mutex_lock(&pse->mcu.mutex);
-	ret = as4610_poe_set_power_limits(pse, pse->psu_rating, 20);
-	mutex_unlock(&pse->mcu.mutex);
-	return ret;
-}
-
 static int as4610_poe_pse_set_power(struct bcm591xx_pse_mcu *mcu, bool on)
 {
 	int reg;
@@ -434,7 +363,7 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 	if (!pse)
 		return -ENOMEM;
 
-	pse->psu_rating = psu_rating;
+	pse->mcu.psu_power_rating = psu_rating;
 	pse->serdev = serdev;
 
 	init_completion(&pse->done);
@@ -455,8 +384,6 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 		serdev_device_close(pse->serdev);
 		return ret;
 	}
-
-	as4610_poe_pse_init(pse);
 
 	return 0;
 }
