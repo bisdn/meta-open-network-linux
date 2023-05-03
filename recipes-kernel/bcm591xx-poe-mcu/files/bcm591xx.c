@@ -333,6 +333,50 @@ static void bcm591xx_debugfs_create(struct bcm591xx_pse_mcu *mcu)
 		debugfs_create_file("measurement", 0200, portdir, &mcu->ports[i], &bcm591xx_port_measurement_ops);
 	}
 }
+static int bcm591xx_set_power_limits(struct bcm591xx_pse_mcu *mcu)
+{
+	struct pse_msg cmd;
+	int guard = 20; /* 20W */
+	int ret;
+
+	if (mcu->psu_power_rating > 0) {
+		/* 1 working PSU */
+		memset(cmd.data, 0xff, sizeof(cmd.data));
+		cmd.opcode = MCU_OP_PSE_SET_GUARDBAND;
+		cmd.data[0] = 0;
+		put_unaligned_be16(mcu->psu_power_rating * 10, &cmd.data[1]);
+		put_unaligned_be16(guard * 10, &cmd.data[3]);
+		ret = bcm591xx_send(mcu, &cmd, NULL, COUNTER_AUTO);
+		if (ret)
+			return ret;
+
+		/* ??? */
+		memset(cmd.data, 0xff, sizeof(cmd.data));
+		cmd.opcode = MCU_OP_PSE_SET_GUARDBAND;
+		cmd.data[0] = 1;
+		put_unaligned_be16(mcu->psu_power_rating * 10, &cmd.data[1]);
+		put_unaligned_be16(guard * 10, &cmd.data[3]);
+		ret = bcm591xx_send(mcu, &cmd, NULL, COUNTER_AUTO);
+		if (ret)
+			return ret;
+
+		/* 2 working PSUs */
+		memset(cmd.data, 0xff, sizeof(cmd.data));
+		cmd.opcode = MCU_OP_PSE_SET_GUARDBAND;
+		cmd.data[0] = 2;
+		put_unaligned_be16(2 * mcu->psu_power_rating * 10, &cmd.data[1]);
+		put_unaligned_be16(guard * 10, &cmd.data[3]);
+		ret = bcm591xx_send(mcu, &cmd, NULL, COUNTER_AUTO);
+		if (ret)
+			return ret;
+	}
+
+	/* Set High Power Device limit */
+	memset(cmd.data, 0xff, sizeof(cmd.data));
+	cmd.opcode = MCU_OP_PSE_HIGH_POWER_LIMIT;
+	cmd.data[0] = 2; /* 31.2W */
+	return bcm591xx_send(mcu, &cmd, NULL, COUNTER_AUTO);
+}
 
 int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 			 const struct bcm591xx_ops *ops)
@@ -368,6 +412,10 @@ int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 		mcu->ports[i].port_num = i;
 		mcu->ports[i].parent = mcu;
 	}
+
+	ret = bcm591xx_set_power_limits(mcu);
+	if (ret)
+		return ret;
 
 	ret = bcm591xx_init_ports(mcu);
 	if (ret)
