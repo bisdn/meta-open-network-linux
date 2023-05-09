@@ -80,9 +80,6 @@ def onl_arch_map(arch, tune):
 ONL_BUILD_ARCH = "${@onl_arch_map(d.getVar('TARGET_ARCH'), d.getVar('TUNE_FEATURES'))}"
 ONL_DEBIAN_SUITE = "buster"
 
-ONL_PLATFORMS_BUILD = "${ONL_PLATFORM_SUPPORT}"
-ONL_PLATFORMS_BUILD:remove = "${ONL_PLATFORMS_IGNORE}"
-
 ###
 # TODO CFLAGS?
 EXTRA_OEMAKE = "\
@@ -149,7 +146,7 @@ do_compile() {
       V=1 VERBOSE=1 oe_runmake -C ${MODULES_DIR}/builds modules ARCH=${ARCH} KERNELS=${STAGING_KERNEL_BUILDDIR}
   done
 
-  for vendor in ${ONL_MODULE_VENDORS}; do
+  for vendor in ${ONL_MODULE_VENDORS_BUILD}; do
       MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-vendor-${vendor}-modules:${ONL_BUILD_ARCH})
       V=1 VERBOSE=1 oe_runmake -C ${MODULES_DIR}/builds modules ARCH=${ARCH} KERNELS=${STAGING_KERNEL_BUILDDIR}
   done
@@ -203,7 +200,7 @@ do_install() {
   done
 
   # install vendor modules
-  for vendor in ${ONL_MODULE_VENDORS}; do
+  for vendor in ${ONL_MODULE_VENDORS_BUILD}; do
       MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-vendor-${vendor}-modules:${ONL_BUILD_ARCH})
       cp -r ${MODULES_DIR}/builds/${nonarch_base_libdir}/modules ${D}${nonarch_base_libdir}
   done
