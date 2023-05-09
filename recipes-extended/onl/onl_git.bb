@@ -93,8 +93,20 @@ FILES:${PN} = " \
   ${libdir}/libonlp*.so.1 \
 "
 
-# ONIE platforms that should not be built
-ONL_PLATFORMS_IGNORE = ""
+ONL_PLATFORMS_BUILD:arm = " \
+    arm-accton_as4610_30-r0 \
+    arm-accton_as4610_54-r0 \
+"
 
-# delta_ag5648v1 is an alias for delta_ag5648
-ONL_PLATFORMS_IGNORE += "x86_64-delta_ag5648v1-r0"
+ONL_PLATFORMS_BUILD:x86-64 = " \
+    x86_64-accton_as4630_54pe-r0 \
+    x86_64-accton_as4630_54te-r0 \
+    x86_64-accton_as7726_32x-r0 \
+    x86_64-accton_as5835_54x-r0 \
+    x86_64-delta_ag5648-r0 \
+    x86_64-delta_ag7648-r0 \
+    x86_64-cel_questone_2a-r0 \
+"
+
+# delta-ag5648's i2c-cpld is part of delta's common vendor modules
+ONL_MODULE_VENDORS_BUILD:x86-64 = "delta"
