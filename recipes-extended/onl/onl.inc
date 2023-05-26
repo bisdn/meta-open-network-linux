@@ -36,6 +36,30 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 PROVIDES += "libonlp libonlp-platform libonlp-platform-defaults"
 INSANE_SKIP:${PN} = "file-rdeps"
 
+PACKAGES_DYNAMIC = "^libonlp-.*"
+
+python populate_packages:prepend () {
+    # ONL uses dashes in the ARCH name
+    arch=d.getVar('TRANSLATED_TARGET_ARCH')
+    name_prefix='libonlp-' + arch
+
+    # prevent Yocto from being "helpful" and renaming packages based on the
+    # included lib's filename
+    def debian_noautoname(file, pkg, pattern, format, basename):
+        d.setVar('DEBIAN_NOAUTONAME:%s' % pkg, "1")
+
+    # only split out platform libraries (having arch in their name)
+    do_split_packages(
+        d, '${libdir}', name_prefix + '-(.*).so.1', name_prefix + '-%s',
+        'libonlp (' + arch + '-%s)', prepend=True, hook=debian_noautoname)
+    # create -dev packages as well for the .so symlink, else onl-dev will depend
+    # on everything
+    do_split_packages(
+        d, '${libdir}', name_prefix + '-(.*).so$', name_prefix + '-%s-dev',
+        'libonlp (' + arch + '-%s) - Development files', prepend=True,
+        allow_links=True)
+}
+
 #### TODO onl.bbclass?
 ONL = "${S}"
 

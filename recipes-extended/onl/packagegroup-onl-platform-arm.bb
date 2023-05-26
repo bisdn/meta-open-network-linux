@@ -16,4 +16,6 @@ RDEPENDS:${PN}-accton-as4610 = "\
     kernel-module-accton-as4610-psu \
     kernel-module-optoe \
     kernel-module-ym2651y \
+    libonlp-arm-accton-as4610-30 \
+    libonlp-arm-accton-as4610-54 \
 "
