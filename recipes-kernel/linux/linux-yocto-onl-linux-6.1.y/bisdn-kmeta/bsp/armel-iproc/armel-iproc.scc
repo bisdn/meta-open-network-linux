@@ -4,6 +4,8 @@ define KARCH arm
 
 # submitted upstream
 
+patch 09-01-i2c-iproc-reset-bus-after-timeout-if-START_BUSY-is-s.patch
+
 # platform support
 
 patch 10-01-soc-xgs_iproc-drivers.patch
