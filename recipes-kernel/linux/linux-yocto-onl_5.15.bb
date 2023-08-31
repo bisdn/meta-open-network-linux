@@ -1,6 +1,7 @@
 KBRANCH ?= "linux-5.15.y"
 
 require linux-yocto-onl.inc
+include cve-exclusion_5.15.inc
 
 KCONF_BSP_AUDIT_LEVEL = "1"
 
