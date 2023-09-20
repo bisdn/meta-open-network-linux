@@ -1,7 +1,8 @@
-From 40cdd20bf474905924c141ff3d87553a9dbf0239 Mon Sep 17 00:00:00 2001
+From be03c11f9ea6ab5c5bb7a7aa5e757ad5142ae97e Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 11 Oct 2022 16:42:23 +0200
-Subject: [PATCH] delta-ag7648: do not reset QSFP modules when IRQ is asserted
+Subject: [PATCH 11/13] delta-ag7648: do not reset QSFP modules when IRQ is
+ asserted
 
 The IntL signal may also be asserted when the module finished initializing:
 
@@ -111,5 +112,5 @@ index d42daee20770..339c0071fb5d 100755
  			// read first
  			//res = ctrl_adap->algo->smbus_xfer(ctrl_adap, mux->data.cpld_addr, flags,
 -- 
-2.37.3
+2.42.0
 

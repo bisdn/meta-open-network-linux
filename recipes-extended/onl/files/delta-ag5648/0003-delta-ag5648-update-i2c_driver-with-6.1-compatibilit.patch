@@ -1,7 +1,7 @@
-From 4e0bf723e6c4c5beac6f3ccc74905fc9f14dd0eb Mon Sep 17 00:00:00 2001
+From 06f927ed53eebe9bf07ec81280d5f3303aeec7de Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 15 Nov 2022 14:53:49 +0100
-Subject: [PATCH 7/7] delta-ag5648: update i2c_driver with 6.1 compatibility
+Subject: [PATCH 3/3] delta-ag5648: update i2c_driver with 6.1 compatibility
 
 i2c_remove changes its return type from int to void, so we need to
 provide different versions based on kernel version.
@@ -210,5 +210,5 @@ index bf368a781dc9..159f05a4f926 100755
  };
  
 -- 
-2.38.1
+2.42.0
 

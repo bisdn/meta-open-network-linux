@@ -1,7 +1,7 @@
-From 7bd9ca8fc5bf7eaeb3cc7e1b5b79518b35be32fd Mon Sep 17 00:00:00 2001
+From 48c8d336dd30ca23698beaf68032ee53e384876b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:22:19 +0200
-Subject: [PATCH 3/5] accton-as4610: let CPLD handle the FAN device
+Subject: [PATCH 6/10] accton-as4610: let CPLD handle the FAN device
 
 The FAN device directly depends on the CPLD device, so let it be created
 by the CPLD driver. This allows us to convert the FAN driver to a simple
@@ -18,7 +18,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  2 files changed, 42 insertions(+), 71 deletions(-)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
-index 767bdd11ecd5..967d087fa34b 100644
+index 69645c4df148..ed36e041e7f0 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 @@ -34,6 +34,7 @@
@@ -207,5 +207,5 @@ index 9b134e56922d..2e14798a9721 100644
  MODULE_AUTHOR("Brandon Chuang <brandon_chuang@accton.com.tw>");
  MODULE_DESCRIPTION("as4610_fan driver");
 -- 
-2.37.2
+2.42.0
 

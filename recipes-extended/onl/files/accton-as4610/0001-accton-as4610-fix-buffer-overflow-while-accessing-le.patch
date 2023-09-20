@@ -1,7 +1,7 @@
-From 8545f9bf59ec43a016e8dade0eeec9f400c2d680 Mon Sep 17 00:00:00 2001
+From 434a7cbd5d0f41bbce895b5ff5740f626e4d4771 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 23 Feb 2021 20:24:26 +0100
-Subject: [PATCH] accton-as4610: fix buffer overflow while accessing led
+Subject: [PATCH 1/10] accton-as4610: fix buffer overflow while accessing led
  states
 
 The led bridgeness path is constructed of a prefix
@@ -59,7 +59,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
-index d165e960..52d1580f 100644
+index d165e96032d1..52d1580fce8b 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
 @@ -25,6 +25,7 @@
@@ -127,5 +127,5 @@ index d165e960..52d1580f 100644
      /* Create output file descriptor */
      fd = open(fullpath, O_WRONLY | O_CREAT, 0644);
 -- 
-2.31.0
+2.42.0
 

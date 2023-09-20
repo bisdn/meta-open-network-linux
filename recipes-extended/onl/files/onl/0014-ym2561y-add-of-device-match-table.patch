@@ -1,7 +1,7 @@
-From e4d145132b2dc3922af537c2f8cf87661d04be6f Mon Sep 17 00:00:00 2001
+From e7ce73b790ce3044501632b30054d436213861b0 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 11:49:20 +0200
-Subject: [PATCH 2/2] ym2561y: add of device match table
+Subject: [PATCH 14/16] ym2561y: add of device match table
 
 For on-demand loading to work the kernel needs to know which compatibles
 are handled by the driver, so add an appropriate table.
@@ -13,7 +13,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 14 insertions(+)
 
 diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
-index 5964e28afc3e..ef89ef22db86 100755
+index aaff463c8eb8..1f641ab7a619 100755
 --- a/packages/base/any/kernels/modules/ym2651y.c
 +++ b/packages/base/any/kernels/modules/ym2651y.c
 @@ -33,6 +33,7 @@
@@ -24,7 +24,7 @@ index 5964e28afc3e..ef89ef22db86 100755
  #include <linux/version.h>
  
  #define MAX_FAN_DUTY_CYCLE      100
-@@ -601,10 +602,23 @@ static const struct i2c_device_id ym2651y_id[] = {
+@@ -611,10 +612,23 @@ static const struct i2c_device_id ym2651y_id[] = {
  };
  MODULE_DEVICE_TABLE(i2c, ym2651y_id);
  
@@ -49,5 +49,5 @@ index 5964e28afc3e..ef89ef22db86 100755
      .probe    = ym2651y_probe,
      .remove   = ym2651y_remove,
 -- 
-2.37.2
+2.42.0
 

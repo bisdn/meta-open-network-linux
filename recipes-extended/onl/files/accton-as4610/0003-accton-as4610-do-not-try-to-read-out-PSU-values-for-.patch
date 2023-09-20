@@ -1,7 +1,7 @@
-From 6c7966147b9289da2305a4808c55266fead401fa Mon Sep 17 00:00:00 2001
+From 53461bbe1947891cac882033959434553d8343a9 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 17 May 2022 10:22:52 +0200
-Subject: [PATCH] accton-as4610: do not try to read out PSU values for YM-1921
+Subject: [PATCH 3/10] accton-as4610: do not try to read out PSU values for YM-1921
 
 Reading PSU output values on YM-1921 seems to be unreliable and can
 lockup the I2C bus, which causes system hangs and ultimately resets by
@@ -17,7 +17,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 4 insertions(+)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
-index 93400410..f18875ea 100644
+index 934004108bc2..f18875ea7ef6 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
 @@ -109,6 +109,10 @@ psu_caps_get(int pid, onlp_psu_info_t* info)
@@ -32,5 +32,5 @@ index 93400410..f18875ea 100644
      if (psu_pmbus_info_get(pid, "psu_v_out", &val) == 0) {
          info->mvout = val;
 -- 
-2.35.1
+2.42.0
 

@@ -1,7 +1,7 @@
-From 33fc087611498552845f5d27b149798609296257 Mon Sep 17 00:00:00 2001
+From a24a53d0080505b97b78302fc09fac5621589346 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 19 Apr 2021 16:52:16 +0200
-Subject: [PATCH] accton-as4610: fix value truncation when accessing leds
+Subject: [PATCH 2/10] accton-as4610: fix value truncation when accessing leds
 
 Some leds, namely PSU1/2 and FAN support the mode
 LED_MODE_AUTO_BLINKING. This mode has the numeric value of 10, which
@@ -67,7 +67,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 8 insertions(+), 5 deletions(-)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
-index 52d1580f..0b5ff5af 100644
+index 52d1580fce8b..0b5ff5afe98d 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/ledi.c
 @@ -342,8 +342,8 @@ onlp_ledi_oid_to_internal_id(onlp_oid_t id)
@@ -112,5 +112,5 @@ index 52d1580f..0b5ff5af 100644
      /* Create output file descriptor */
      fd = open(fullpath, O_WRONLY | O_CREAT, 0644);
 -- 
-2.31.1
+2.42.0
 

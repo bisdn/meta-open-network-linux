@@ -1,19 +1,20 @@
-From 0e1991ee2bb881b89cafd8d50fbbfe3ec467a1c3 Mon Sep 17 00:00:00 2001
+From 91b4f03a0d6283f43761eb26caec608400d5fe01 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 17 Jan 2020 14:29:42 +0000
-Subject: [PATCH] ag5648: update modules to compile and work on recent kernels
+Subject: [PATCH 2/3] ag5648: update modules to compile and work on recent
+ kernels
 
 Still require a lot of love to get them in a nice state.
 
 Upstream-Status: Unsubmitted [needs cleanup, older kernel compat]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
- .../x86-64/ag5648/modules/builds/dni_ag5648_psu.c            |  2 +-
- .../platforms/delta/x86-64/ag5648/modules/builds/i2c_cpld.c  | 65 +++++++------------
- 2 files changed, 32 insertions(+), 41 deletions(-)
+ .../ag5648/modules/builds/dni_ag5648_psu.c    |  2 +-
+ .../delta/x86-64/modules/builds/i2c_cpld.c    | 65 +++++++------------
+ 2 files changed, 26 insertions(+), 41 deletions(-)
 
-diff --git a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c b/packages/platforms/delta/x86-64/ag5648/modules/dni_ag5648_psu.c
-index a6bc521eb9fe..1a25071a090a 100644
+diff --git a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c b/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c
+index a6bc521eb9fe..1a25071a090a 100755
 --- a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c
 +++ b/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c
 @@ -373,7 +373,7 @@ static SENSOR_DEVICE_ATTR(psu_temp1_input,	\
@@ -25,8 +26,8 @@ index a6bc521eb9fe..1a25071a090a 100644
  		for_linear_data, set_fan_duty_cycle, PSU_FAN1_DUTY_CYCLE);
  static SENSOR_DEVICE_ATTR(psu_fan1_speed_rpm, 	\
  		S_IRUGO, for_linear_data,	NULL, PSU_FAN1_SPEED);
-diff --git a/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c b/packages/platforms/delta/x86-64/modules/i2c_cpld.c
-index cd77cb36c7b2..bf368a781dc9 100644
+diff --git a/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c b/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c
+index cd77cb36c7b2..bf368a781dc9 100755
 --- a/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c
 +++ b/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c
 @@ -70,7 +70,7 @@ enum cpld_mux_type
@@ -172,5 +173,5 @@ index cd77cb36c7b2..bf368a781dc9 100644
  
    return 0;
 -- 
-2.37.1
+2.42.0
 

@@ -1,7 +1,7 @@
-From 99ab29f6b8979289c26437e20daa399868955cbd Mon Sep 17 00:00:00 2001
+From 66bb1d6e763576bb50880486f71cc0988e2b9f46 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 15 Nov 2022 14:51:21 +0100
-Subject: [PATCH 2/7] accton-as4610: update i2c_driver with 6.1 compatibility
+Subject: [PATCH 10/10] accton-as4610: update i2c_driver with 6.1 compatibility
 
 i2c_remove changes its return type from int to void, so we need to
 provide different versions based on kernel version.
@@ -85,7 +85,7 @@ index d5a400075481..5daf36423729 100644
  };
  
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
-index c29b9350ee7f..9915b9c3d168 100644
+index 50cc2ac1cea4..ec3c75a51153 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
 @@ -34,6 +34,7 @@
@@ -96,7 +96,7 @@ index c29b9350ee7f..9915b9c3d168 100644
  
  #define MAX_MODEL_NAME 11
  #define MAX_SERIAL_NUMBER 18
-@@ -191,6 +192,12 @@ static int as4610_psu_remove(struct i2c_client *client)
+@@ -190,6 +191,12 @@ static int as4610_psu_remove(struct i2c_client *client)
  
  	return 0;
  }
@@ -109,7 +109,7 @@ index c29b9350ee7f..9915b9c3d168 100644
  
  enum psu_index
  {
-@@ -219,7 +226,11 @@ static struct i2c_driver as4610_psu_driver = {
+@@ -218,7 +225,11 @@ static struct i2c_driver as4610_psu_driver = {
  		.of_match_table = as4610_psu_of_id,
  	},
  	.probe		  = as4610_psu_probe,
@@ -122,5 +122,5 @@ index c29b9350ee7f..9915b9c3d168 100644
  	.address_list = normal_i2c,
  };
 -- 
-2.38.1
+2.42.0
 

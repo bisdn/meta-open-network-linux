@@ -1,7 +1,7 @@
-From 021d1ff88ab9d27eb441547fac098a8c29ac4ca0 Mon Sep 17 00:00:00 2001
+From 1a1ae46290b3b1cff0fd40a86ff9d0103140b65d Mon Sep 17 00:00:00 2001
 From: Rubens Figueiredo <rubens.figueiredo@bisdn.de>
 Date: Thu, 25 Nov 2021 14:55:51 +0100
-Subject: [PATCH] accton-as4630-54pe: Avoid undefined behaviour
+Subject: [PATCH 2/3] accton-as4630-54pe: Avoid undefined behaviour
 
 memsetting a null pointer is undefined behaviour. This causes gcc to
 assume that a variable is non null for execution and compiles away all
@@ -31,7 +31,7 @@ Signed-off-by: Rubens Figueiredo <rubens.figueiredo@bisdn.de>
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c b/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
-index 5f51e1cc..950c9fa5 100755
+index 5f51e1cc1d22..950c9fa5811f 100755
 --- a/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
 +++ b/packages/platforms/accton/x86-64/as4630-54pe/onlp/builds/x86_64_accton_as4630_54pe/module/src/platform_lib.c
 @@ -101,7 +101,10 @@ psu_type_t get_psu_type(int id, char* modelname, int modelname_len)
@@ -47,5 +47,5 @@ index 5f51e1cc..950c9fa5 100755
          
          return PSU_TYPE_UNKNOWN;
 -- 
-2.31.1
+2.42.0
 

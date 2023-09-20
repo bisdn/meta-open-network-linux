@@ -1,7 +1,7 @@
-From 364e5d7f6bb5abda04ed269579b928d9fe25f8b4 Mon Sep 17 00:00:00 2001
+From e3313c3800b976033a8cb4f61eca5937e3b08c1f Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 22 Nov 2022 13:50:02 +0100
-Subject: [PATCH 2/5] accton-as4610: do not call
+Subject: [PATCH 9/10] accton-as4610: do not call
  hwmon_device_register_with_info() with NULL chip
 
 hwmon_device_register_with_info() is supposed to require hwmon_chip_info
@@ -56,5 +56,5 @@ index c29b9350ee7f..50cc2ac1cea4 100644
  		status = PTR_ERR(data->hwmon_dev);
  		goto exit_remove;
 -- 
-2.38.1
+2.42.0
 

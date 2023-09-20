@@ -1,7 +1,7 @@
-From 8af85840361e6d7b69eaf29feef6a90962557ec8 Mon Sep 17 00:00:00 2001
+From 29fe5458d27189072ac1bf4a35b8d95dec240e52 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 2 Dec 2022 11:26:07 +0100
-Subject: [PATCH] delta-ag7648: prevent potential deadlock on probe
+Subject: [PATCH 13/13] delta-ag7648: prevent potential deadlock on probe
 
 When the i2c-ismt and pca954x modules are already loaded, there
 will be a deadlock due to recursive locking:
@@ -117,5 +117,5 @@ index cedfa4e3da62..3a0dfb591aad 100644
  
  err_destroy_dta_switch:
 -- 
-2.38.1
+2.42.0
 

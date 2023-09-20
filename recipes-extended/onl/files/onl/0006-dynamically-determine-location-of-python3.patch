@@ -1,7 +1,7 @@
-From 080972cf6aa93ba071c27e1b35e592b805ecd9c4 Mon Sep 17 00:00:00 2001
+From 996cf13c0506b88549bb30f43d2bf52f8d91dc37 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 16 Jun 2022 10:32:16 +0200
-Subject: [PATCH 2/2] dynamically determine location of python3
+Subject: [PATCH 06/16] dynamically determine location of python3
 
 To allow running the scripts within a distro context with custom python
 search paths, replace the hardcoded location of the python3 binary with
@@ -57,7 +57,7 @@ index 85d29974c944..b91dcbe5077d 100755
  #
  # Flat Image Tree Generator
 diff --git a/tools/make-versions.py b/tools/make-versions.py
-index be779c4a7cdc..88699ce021f5 100755
+index 4086425fd8c5..b77398ab6d72 100755
 --- a/tools/make-versions.py
 +++ b/tools/make-versions.py
 @@ -1,4 +1,4 @@
@@ -67,7 +67,7 @@ index be779c4a7cdc..88699ce021f5 100755
  import os
  import sys
 diff --git a/tools/mkinstaller.py b/tools/mkinstaller.py
-index df8e400b9e4f..610444dc0380 100755
+index 5893d5809ea5..579930b25642 100755
 --- a/tools/mkinstaller.py
 +++ b/tools/mkinstaller.py
 @@ -1,4 +1,4 @@
@@ -117,7 +117,7 @@ index db4625da53c7..a46a77711582 100755
  #
  # ONL Package Management
 diff --git a/tools/onlrfs.py b/tools/onlrfs.py
-index 18aca0f62f1f..18d89ad250b5 100755
+index f077789a0c48..640dd04b33d7 100755
 --- a/tools/onlrfs.py
 +++ b/tools/onlrfs.py
 @@ -1,4 +1,4 @@
@@ -127,7 +127,7 @@ index 18aca0f62f1f..18d89ad250b5 100755
  #
  # ONL Root Filesystem Generator
 diff --git a/tools/onlu.py b/tools/onlu.py
-index 438aa3061b6f..9e147d875399 100644
+index 522dc27f6e78..318494fe763a 100644
 --- a/tools/onlu.py
 +++ b/tools/onlu.py
 @@ -1,4 +1,4 @@
@@ -137,7 +137,7 @@ index 438aa3061b6f..9e147d875399 100644
  #
  # Common utilities for the ONL python tools.
 diff --git a/tools/onlyaml.py b/tools/onlyaml.py
-index d80cff2f019d..95a8ef3a0e24 100755
+index 2a9c0e935563..bfb00336de76 100755
 --- a/tools/onlyaml.py
 +++ b/tools/onlyaml.py
 @@ -1,4 +1,4 @@
@@ -167,5 +167,5 @@ index d30e23766228..21e058900dc3 100755
  # <bsn.cl fy=2013 v=none>
  #
 -- 
-2.36.1
+2.42.0
 

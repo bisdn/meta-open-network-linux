@@ -1,7 +1,7 @@
-From 52cb47c5981d7d226361329668b23abb05391fe0 Mon Sep 17 00:00:00 2001
+From 19a0c4e9d37a58bf39765a10def62256263143d8 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 19 Mar 2021 12:07:35 +0100
-Subject: [PATCH] platform_manager: do not ignore write return value
+Subject: [PATCH 02/16] platform_manager: do not ignore write return value
 
 If the write fails, the other thread will not be notified, so we should
 not try to wait for it.
@@ -22,7 +22,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/packages/base/any/onlp/src/onlp/module/src/platform_manager.c b/packages/base/any/onlp/src/onlp/module/src/platform_manager.c
-index 0e7b8c00..d3d08c08 100644
+index 0e7b8c0076fd..d3d08c08e078 100644
 --- a/packages/base/any/onlp/src/onlp/module/src/platform_manager.c
 +++ b/packages/base/any/onlp/src/onlp/module/src/platform_manager.c
 @@ -264,7 +264,8 @@ onlp_sys_platform_manage_stop(int block)
@@ -36,5 +36,5 @@ index 0e7b8c00..d3d08c08 100644
          if(block) {
              onlp_sys_platform_manage_join();
 -- 
-2.31.0
+2.42.0
 

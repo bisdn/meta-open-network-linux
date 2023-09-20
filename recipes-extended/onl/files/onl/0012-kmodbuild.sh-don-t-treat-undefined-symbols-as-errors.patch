@@ -1,7 +1,7 @@
-From 62c127e3bb7d707293555ee1958d062915159cf1 Mon Sep 17 00:00:00 2001
+From 998766c329dc8b387d6bd7208c1283876e320506 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@gmail.com>
 Date: Thu, 19 May 2022 10:09:04 +0200
-Subject: [PATCH] kmodbuild.sh: don't treat undefined symbols as errors
+Subject: [PATCH 12/16] kmodbuild.sh: don't treat undefined symbols as errors
 
 Modern kernels treat undefined symbols as errors, but when building
 modules individually, inter-module dependencies cannot be properly
@@ -30,5 +30,5 @@ index d5586b70fcc4..8fc07a6f405e 100755
  }
  
 -- 
-2.37.2
+2.42.0
 

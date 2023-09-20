@@ -1,7 +1,7 @@
-From f894f605bc0785620a55cfb3b1661646de593dc6 Mon Sep 17 00:00:00 2001
+From 9013e00f506f73b45a560c161881c98c05a6bd78 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 28 Jun 2022 11:00:16 +0200
-Subject: [PATCH] tools: replace yaml.load with yaml.full_load
+Subject: [PATCH 10/16] tools: replace yaml.load with yaml.full_load
 
 yaml.load without loader is deprecated and unsafe [1], and was removed
 with PyYAML 6.0.
@@ -23,7 +23,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  4 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/tools/flat-image-tree.py b/tools/flat-image-tree.py
-index b91dcbe5077d..ba787671966a 100755
+index b91dcbe5077d..823f65badab6 100755
 --- a/tools/flat-image-tree.py
 +++ b/tools/flat-image-tree.py
 @@ -208,7 +208,7 @@ class FlatImageTree(object):
@@ -36,7 +36,7 @@ index b91dcbe5077d..ba787671966a 100755
  
      def add_platform_package(self, package):
 diff --git a/tools/onlrfs.py b/tools/onlrfs.py
-index 18d89ad250b5..d7cb62a3efee 100755
+index 640dd04b33d7..470891a2074a 100755
 --- a/tools/onlrfs.py
 +++ b/tools/onlrfs.py
 @@ -567,7 +567,7 @@ rm -f /usr/sbin/policy-rc.d
@@ -49,7 +49,7 @@ index 18d89ad250b5..d7cb62a3efee 100755
                          md['platforms'] = fields['platforms'].split(',')
  
 diff --git a/tools/onlyaml.py b/tools/onlyaml.py
-index bfb00336de76..883447794d90 100755
+index bfb00336de76..058356375217 100755
 --- a/tools/onlyaml.py
 +++ b/tools/onlyaml.py
 @@ -102,7 +102,7 @@ def loadf(fname, vard={}):
@@ -71,7 +71,7 @@ index bfb00336de76..883447794d90 100755
          raise e
      except Exception as e:
 diff --git a/tools/sjson.py b/tools/sjson.py
-index 3385e821df39..a3aecfc02e07 100755
+index 3385e821df39..3602698eac59 100755
 --- a/tools/sjson.py
 +++ b/tools/sjson.py
 @@ -49,7 +49,7 @@ g_data={}
@@ -96,5 +96,5 @@ index 3385e821df39..a3aecfc02e07 100755
  
  if ops.kv:
 -- 
-2.36.1
+2.42.0
 

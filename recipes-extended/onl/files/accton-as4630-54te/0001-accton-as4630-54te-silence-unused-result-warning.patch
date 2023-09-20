@@ -1,7 +1,7 @@
-From 58e424e6e1223ef05078c02b834d53e43b378197 Mon Sep 17 00:00:00 2001
+From cfd9869dbbb1c6e5271980f8317c9f5c80f32f6c Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 15 Aug 2022 14:41:52 +0200
-Subject: [PATCH] accton-as4630-54te: silence unused result warning
+Subject: [PATCH 1/4] accton-as4630-54te: silence unused result warning
 
 Fixes the following build warning:
 | ../x86_64_accton_as4630_54pe/module/src/sysi.c: In function 'onlp_sysi_platform_manage_fans':
@@ -29,5 +29,5 @@ index 941c9501099e..8f9e3bdac50d 100644
  
      if (current_state != ori_state) {
 -- 
-2.37.2
+2.42.0
 

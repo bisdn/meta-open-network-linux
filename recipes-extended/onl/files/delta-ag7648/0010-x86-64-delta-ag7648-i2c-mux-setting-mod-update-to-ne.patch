@@ -1,8 +1,8 @@
-From 0c87b081876e10614a77a330a85e73f5bc0cec8b Mon Sep 17 00:00:00 2001
+From 3a2d684dcb6b91fd1610cb6c9e39692bda4d005a Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 14 Dec 2020 16:34:18 +0100
-Subject: [PATCH 8/8] x86-64-delta-ag7648-i2c-mux-setting-mod: update to newer
- I2C API
+Subject: [PATCH 10/13] x86-64-delta-ag7648-i2c-mux-setting-mod: update to
+ newer I2C API
 
 * i2c_new_client_device was added in 5.4, i2c_new_device dropped in 5.8
 * i2c_new_probed_device was replaced with i2c_new_scanned_device in 5.7
@@ -101,5 +101,5 @@ index 3f8d2045a743..206094fbc5a1 100644
  
  static bool delta_switch_match_adapter_devid(struct device *dev, u32 devid)
 -- 
-2.37.1
+2.42.0
 

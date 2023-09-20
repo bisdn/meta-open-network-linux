@@ -1,7 +1,8 @@
-From c93de5cc415e211f6c2079616701ab4be019b4dd Mon Sep 17 00:00:00 2001
+From 509f7a7325348408e6b2b1d92ece1224c19e1056 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 23 Jun 2022 11:13:22 +0200
-Subject: [PATCH 3/3] onlpm: allow overriding the dist codename from environment
+Subject: [PATCH 09/16] onlpm: allow overriding the dist codename from
+ environment
 
 Yocto does not provide a lsb_release module, so add support for
 overriding the dist codename, and only try to use lsb_release if unset.
@@ -13,7 +14,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/tools/onlpm.py b/tools/onlpm.py
-index d4403c0d3b65..ce0913e154f9 100755
+index e810ab7ec76a..f11763ca1d95 100755
 --- a/tools/onlpm.py
 +++ b/tools/onlpm.py
 @@ -21,11 +21,13 @@ import onlu
@@ -33,5 +34,5 @@ index d4403c0d3b65..ce0913e154f9 100755
  logger = onlu.init_logging('onlpm', logging.INFO)
  
 -- 
-2.36.1
+2.42.0
 
