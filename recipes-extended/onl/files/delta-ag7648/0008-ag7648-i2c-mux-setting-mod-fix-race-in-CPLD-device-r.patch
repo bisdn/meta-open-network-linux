@@ -1,7 +1,7 @@
-From 86ff576c690d08716b769c9bfb1cca9cc810a78e Mon Sep 17 00:00:00 2001
+From 3071f65b9472a17995d292ad5d8c2f93edb3e458 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 23 Jan 2020 16:21:05 +0000
-Subject: [PATCH 6/8] ag7648-i2c-mux-setting-mod: fix race in CPLD device
+Subject: [PATCH 8/13] ag7648-i2c-mux-setting-mod: fix race in CPLD device
  registration
 
 Registering the device and attaching platform data in two steps is racy
@@ -15,7 +15,7 @@ behind the CPLDs.
 Upstream-Status: Inappropriate [code not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
- .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c   | 15 ++++++---------
+ .../builds/x86-64-delta-ag7648-i2c-mux-setting.c  | 15 ++++++---------
  1 file changed, 6 insertions(+), 9 deletions(-)
 
 diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
@@ -55,5 +55,5 @@ index b4fc055d20d9..e8298b5731d8 100644
  }
  static struct i2c_peripheral delta_ag7648_peripherals[] __initdata = {
 -- 
-2.37.1
+2.42.0
 

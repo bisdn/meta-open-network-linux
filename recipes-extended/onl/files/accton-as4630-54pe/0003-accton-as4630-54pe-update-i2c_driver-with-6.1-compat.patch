@@ -1,7 +1,7 @@
-From fedd998baed3fa5c3ebb4bf49833205bf5d3edc8 Mon Sep 17 00:00:00 2001
+From d61a91125a64f4e180056662e6a4daaadbab84e3 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 15 Nov 2022 14:52:06 +0100
-Subject: [PATCH 3/7] accton-as4630-54pe: update i2c_driver with 6.1
+Subject: [PATCH 3/3] accton-as4630-54pe: update i2c_driver with 6.1
  compatibility
 
 i2c_remove changes its return type from int to void, so we need to
@@ -57,10 +57,10 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  2 files changed, 21 insertions(+)
 
 diff --git a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
-index d6d3cba0ff5f..ed1236f0519f 100755
+index 97e49402f031..d2b689942f57 100755
 --- a/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
 +++ b/packages/platforms/accton/x86-64/as4630-54pe/modules/builds/x86-64-accton-as4630-54pe-cpld.c
-@@ -749,6 +749,12 @@ static int as4630_54pe_cpld_remove(struct i2c_client *client)
+@@ -748,6 +748,12 @@ static int as4630_54pe_cpld_remove(struct i2c_client *client)
  
      return 0;
  }
@@ -73,7 +73,7 @@ index d6d3cba0ff5f..ed1236f0519f 100755
  
  static int as4630_54pe_cpld_read_internal(struct i2c_client *client, u8 reg)
  {
-@@ -840,7 +846,11 @@ static struct i2c_driver as4630_54pe_cpld_driver = {
+@@ -839,7 +845,11 @@ static struct i2c_driver as4630_54pe_cpld_driver = {
  		.owner	= THIS_MODULE,
  	},
  	.probe		= as4630_54pe_cpld_probe,
@@ -123,5 +123,5 @@ index 73f1e672e52c..f3351b56c4a1 100755
      .address_list = normal_i2c,
  };
 -- 
-2.38.1
+2.42.0
 

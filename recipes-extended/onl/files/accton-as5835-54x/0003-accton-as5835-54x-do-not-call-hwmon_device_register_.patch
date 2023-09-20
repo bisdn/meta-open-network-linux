@@ -1,7 +1,7 @@
-From 61b0270d056c5eba4ae9a284ad6871c42e37aa72 Mon Sep 17 00:00:00 2001
+From 4c98f1a625e607f94b2841bea435a8966279a906 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 22 Nov 2022 13:50:28 +0100
-Subject: [PATCH 3/5] accton-as5835-54x: do not call
+Subject: [PATCH 3/4] accton-as5835-54x: do not call
  hwmon_device_register_with_info() with NULL chip
 
 hwmon_device_register_with_info() is supposed to require hwmon_chip_info
@@ -56,5 +56,5 @@ index 4fa736a40da4..81000e42abd0 100644
  		status = PTR_ERR(data->hwmon_dev);
  		goto exit_remove;
 -- 
-2.38.1
+2.42.0
 

@@ -1,7 +1,7 @@
-From cc75588a7aa5e3f580148e4339ebb1caaefea889 Mon Sep 17 00:00:00 2001
+From f6851f93820bb0cf7b586534e123cc5874e3326a Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 19 Mar 2021 12:00:28 +0100
-Subject: [PATCH] file_uds: silence unused result warnings
+Subject: [PATCH 01/16] file_uds: silence unused result warnings
 
 We don't seem to care if these fail, so silence them in a way that works
 with GCC.
@@ -26,7 +26,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/packages/base/any/onlp/src/onlplib/module/src/file_uds.c b/packages/base/any/onlp/src/onlplib/module/src/file_uds.c
-index bd344d89..55e7a479 100644
+index bd344d890608..55e7a4799588 100644
 --- a/packages/base/any/onlp/src/onlplib/module/src/file_uds.c
 +++ b/packages/base/any/onlp/src/onlplib/module/src/file_uds.c
 @@ -54,13 +54,13 @@ static void
@@ -46,5 +46,5 @@ index bd344d89..55e7a479 100644
  
  
 -- 
-2.31.0
+2.42.0
 

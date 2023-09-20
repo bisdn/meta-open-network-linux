@@ -1,7 +1,7 @@
-From 7b062d300dc4e9371a9d8f0fae8141d709e0207d Mon Sep 17 00:00:00 2001
+From 058f63c5ed4f3154555a1ff75fbe8ba986861cda Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 28 Oct 2022 15:21:49 +0200
-Subject: [PATCH] accton-as4630-54te: do not acccess PSU via pmbus
+Subject: [PATCH 2/4] accton-as4630-54te: do not acccess PSU via pmbus
 
 Accessing the PSUs via pmbus seems to have a chance of locking up the
 I2C bus. After that, any I2C access fail:
@@ -52,5 +52,5 @@ index 5bf35ff66da4..6f061e3e0f47 100644
      get_psu_eeprom_str(index, info->serial, sizeof(info->serial), "psu_serial_number");
  
 -- 
-2.37.3
+2.42.0
 

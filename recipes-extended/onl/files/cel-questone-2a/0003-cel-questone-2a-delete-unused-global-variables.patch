@@ -1,7 +1,7 @@
-From 3cb8c084ef56c3724842b87b115e8dab20de0d57 Mon Sep 17 00:00:00 2001
+From b6fc4dab5010566ca09ba77b526d4504bd3edffa Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 1 Jul 2022 16:01:24 +0200
-Subject: [PATCH] cel-questone-2a: delete unused global variables
+Subject: [PATCH 3/6] cel-questone-2a: delete unused global variables
 
 Delete unused global variables to avoid the following build error:
 
@@ -31,5 +31,5 @@ index 1aaebbbe5b80..b54ada96ce8e 100644
  static int cel_questone_2a_qsfp_sfp_node_read_int(char *path, int *value, int data_len)
  {
 -- 
-2.36.1
+2.42.0
 

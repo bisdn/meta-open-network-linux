@@ -1,7 +1,7 @@
-From ccf52b835ec13e478a7b9e78967dd6126270c4ec Mon Sep 17 00:00:00 2001
+From 8ce7773513d851f609e486ce844690940243da2b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:10:23 +0200
-Subject: [PATCH 2/5] accton_as4610_psu: add of device match table
+Subject: [PATCH 5/10] accton_as4610_psu: add of device match table
 
 For on-demand loading to work the kernel needs to know which compatibles
 are handled by the driver, so add an appropriate table.
@@ -44,5 +44,5 @@ index 9a579e79aec9..c29b9350ee7f 100644
  	.probe		  = as4610_psu_probe,
  	.remove		  = as4610_psu_remove,
 -- 
-2.37.2
+2.42.0
 

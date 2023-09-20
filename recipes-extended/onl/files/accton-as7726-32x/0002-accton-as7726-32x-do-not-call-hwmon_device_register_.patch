@@ -1,7 +1,7 @@
-From b940d498a36174e22a11f1e418d7356dd7e22c5d Mon Sep 17 00:00:00 2001
+From a02c95b1278b4fe98af8e9d7d812ab21ba57db10 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 22 Nov 2022 13:50:47 +0100
-Subject: [PATCH 4/5] accton-as7726-32x: do not call
+Subject: [PATCH 2/3] accton-as7726-32x: do not call
  hwmon_device_register_with_info() with NULL chip
 
 hwmon_device_register_with_info() is supposed to require hwmon_chip_info
@@ -28,10 +28,10 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  2 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
-index 78e5309c621e..9b6d64e01fc8 100755
+index d84f9743cb44..0b20e1436c6b 100755
 --- a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
 +++ b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
-@@ -434,8 +434,7 @@ static int as7726_32x_fan_probe(struct i2c_client *client,
+@@ -569,8 +569,7 @@ static int as7726_32x_fan_probe(struct i2c_client *client,
          goto exit_free;
      }
  
@@ -42,10 +42,10 @@ index 78e5309c621e..9b6d64e01fc8 100755
          status = PTR_ERR(data->hwmon_dev);
          goto exit_remove;
 diff --git a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
-index 2b93b6728ee3..0dfc42655d5a 100755
+index f835b5fc04ba..4f2bd7cff8bc 100755
 --- a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
 +++ b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
-@@ -184,8 +184,7 @@ static int as7726_32x_psu_probe(struct i2c_client *client,
+@@ -185,8 +185,7 @@ static int as7726_32x_psu_probe(struct i2c_client *client,
          goto exit_free;
      }
  
@@ -56,5 +56,5 @@ index 2b93b6728ee3..0dfc42655d5a 100755
          status = PTR_ERR(data->hwmon_dev);
          goto exit_remove;
 -- 
-2.38.1
+2.42.0
 

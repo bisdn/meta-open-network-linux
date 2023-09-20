@@ -1,8 +1,8 @@
-From c6e73fdc63fabcbfd222ad3204f966e8db7fd06d Mon Sep 17 00:00:00 2001
+From 34eed5fdd431a040b3982d2800bfc3897802fce5 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 30 Nov 2022 10:21:21 +0100
-Subject: [PATCH] delta-ag7648: make sure i2c-i801 is loaded before creating
- devices
+Subject: [PATCH 12/13] delta-ag7648: make sure i2c-i801 is loaded before
+ creating devices
 
 Make sure i2c-i801 is loaded before we create devices so that the
 pca954x mux will use busses 2-9 and not claim the one of i2c-i801.
@@ -39,5 +39,5 @@ index 206094fbc5a1..cedfa4e3da62 100644
  	if (IS_ERR(dta_switch))
  		return PTR_ERR(dta_switch);
 -- 
-2.38.1
+2.42.0
 

@@ -8,10 +8,10 @@ require onl.inc
 
 LIC_FILES_CHECKSUM += "file://LICENSE;beginline=14;md5=7e6d108802170df125adb4f452c3c9dd"
 
-SRCREV_onl ?= "dd61cc1792290a459c394c5b7bdf4d4a27b6f651"
+SRCREV_onl ?= "f97b185a8722b343e9a0b44d786f29bbd936cb6f"
 URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git;protocol=https;branch=master"
 # commit date (UTC) of ${SRCREV_onl}
-PV = "2022-04-08+git${SRCPV}"
+PV = "2023-09-13+git${SRCPV}"
 
 # submodules are checked out individually to support license file checking
 SRC_URI += " \
@@ -49,19 +49,14 @@ SRC_URI += " \
            file://accton-as4610/0008-accton-as4610-let-CPLD-handle-the-LED-device.patch \
            file://accton-as4610/0009-accton-as4610-do-not-call-hwmon_device_register_with.patch \
            file://accton-as4610/0010-accton-as4610-update-i2c_driver-with-6.1-compatibili.patch \
-           file://accton-as4630-54pe/0001-as4630-54pe-Add-SFP-reset-sysfs-and-fix-Led-drv.patch \
-           file://accton-as4630-54pe/0002-Add-rest-lpmode-code-to-sfpi_control-set-get-api.patch \
-           file://accton-as4630-54pe/0003-Fix-fan-direction-api.patch \
-           file://accton-as4630-54pe/0004-accton-as4630-54pe-silence-error.patch \
-           file://accton-as4630-54pe/0005-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
-           file://accton-as4630-54pe/0006-accton-as4630-54pe-update-i2c_driver-with-6.1-compat.patch \
+           file://accton-as4630-54pe/0001-accton-as4630-54pe-silence-error.patch \
+           file://accton-as4630-54pe/0002-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
+           file://accton-as4630-54pe/0003-accton-as4630-54pe-update-i2c_driver-with-6.1-compat.patch \
            file://accton-as4630-54te/0001-accton-as4630-54te-silence-unused-result-warning.patch \
-           file://accton-as4630-54te/0002-Edgecore-as4630_54te-Update-thermal-threshold.patch \
-           file://accton-as4630-54te/0003-Edgecore-as4630_54te-Support-YM-1151F-power-supply.patch \
-           file://accton-as4630-54te/0004-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
-           file://accton-as4630-54te/0005-accton-as4610-54te-do-not-call-hwmon_device_register.patch \
-           file://accton-as4630-54te/0006-accton-as4630-54te-update-i2c_driver-with-6.1-compat.patch \
-           file://accton-as5835-54x/0001-AS5835-54x-Support-psu_fan_dir-sysfs-for-YM-1401A-PS.patch \
+           file://accton-as4630-54te/0002-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
+           file://accton-as4630-54te/0003-accton-as4610-54te-do-not-call-hwmon_device_register.patch \
+           file://accton-as4630-54te/0004-accton-as4630-54te-update-i2c_driver-with-6.1-compat.patch \
+           file://accton-as5835-54x/0001-Support-psu_fan_dir-sysfs-for-YM-1401A-PSU.patch \
            file://accton-as5835-54x/0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
            file://accton-as5835-54x/0003-accton-as5835-54x-do-not-call-hwmon_device_register_.patch \
            file://accton-as5835-54x/0004-accton-as5835-54x-update-i2c_driver-with-6.1-compati.patch \
@@ -75,7 +70,7 @@ SRC_URI += " \
            file://cel-questone-2a/0005-cel-questone-2a-do-not-build-optoe.patch \
            file://cel-questone-2a/0006-cel-questone-2a-update-i2c_drivers-with-6.1-compatib.patch \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
-           file://delta-ag5648/0002-delta-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
+           file://delta-ag5648/0002-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
            file://delta-ag5648/0003-delta-ag5648-update-i2c_driver-with-6.1-compatibilit.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \

@@ -1,7 +1,7 @@
-From 2a1a11da6a992a200530af6bc6e27c8cbe92ea28 Mon Sep 17 00:00:00 2001
+From ee37a8e8d190759b77c22dff0745c3f2d3c54bf6 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 24 Jan 2020 10:18:11 +0100
-Subject: [PATCH 7/8] ag7648-i2c-mux-setting-mod: force mux bus numbers
+Subject: [PATCH 9/13] ag7648-i2c-mux-setting-mod: force mux bus numbers
 
 Newer kernels allow parallel probing of the CPLDs, so mux bus number
 assignment will become interleaved. Fix this by forcing the mux bus
@@ -10,7 +10,7 @@ numbers to their expected values.
 Upstream-Status: Inappropriate [code not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
- .../ag7648/x86-64-delta-ag7648-i2c-mux-setting.c                 | 2 ++
+ .../ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c | 2 ++
  1 file changed, 2 insertions(+)
 
 diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c
@@ -34,5 +34,5 @@ index e8298b5731d8..3f8d2045a743 100644
  
  static struct platform_device *delta_ag7648_cpld1_init(void)
 -- 
-2.37.1
+2.42.0
 

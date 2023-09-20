@@ -1,7 +1,7 @@
-From d154afe881f2497a8c323a9934693939dc3c9598 Mon Sep 17 00:00:00 2001
+From ec80a0578cb99389104cf02dfa7b98511ded5c40 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 15 Nov 2022 14:48:11 +0100
-Subject: [PATCH 1/7] modules: update i2c_driver with 6.1 compatibility
+Subject: [PATCH 16/16] modules: update i2c_driver with 6.1 compatibility
 
 i2c_remove changes its return type from int to void, so we need to
 provide different versions based on kernel version.
@@ -60,10 +60,10 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  6 files changed, 57 insertions(+), 2 deletions(-)
 
 diff --git a/packages/base/any/kernels/modules/accton_i2c_psu.c b/packages/base/any/kernels/modules/accton_i2c_psu.c
-index 279ffd9d541c..d3b769b347b8 100755
+index 3dcf9f51a623..1550ac1381ee 100755
 --- a/packages/base/any/kernels/modules/accton_i2c_psu.c
 +++ b/packages/base/any/kernels/modules/accton_i2c_psu.c
-@@ -367,6 +367,12 @@ static int accton_i2c_psu_remove(struct i2c_client *client)
+@@ -366,6 +366,12 @@ static int accton_i2c_psu_remove(struct i2c_client *client)
      
      return 0;
  }
@@ -76,7 +76,7 @@ index 279ffd9d541c..d3b769b347b8 100755
  /* Support psu moduel
   */
  static const struct i2c_device_id accton_i2c_psu_id[] = {
-@@ -382,7 +388,11 @@ static struct i2c_driver accton_i2c_psu_driver = {
+@@ -381,7 +387,11 @@ static struct i2c_driver accton_i2c_psu_driver = {
          .name     = "accton_i2c_psu",
      },
      .probe        = accton_i2c_psu_probe,
@@ -89,10 +89,10 @@ index 279ffd9d541c..d3b769b347b8 100755
      .address_list = normal_i2c,
  };
 diff --git a/packages/base/any/kernels/modules/cpr_4011_4mxx.c b/packages/base/any/kernels/modules/cpr_4011_4mxx.c
-index cfb58ee4d0cd..e67833a0cc26 100644
+index ee51c94bf352..d29e3660e6ff 100644
 --- a/packages/base/any/kernels/modules/cpr_4011_4mxx.c
 +++ b/packages/base/any/kernels/modules/cpr_4011_4mxx.c
-@@ -280,6 +280,12 @@ static int cpr_4011_4mxx_remove(struct i2c_client *client)
+@@ -279,6 +279,12 @@ static int cpr_4011_4mxx_remove(struct i2c_client *client)
      
      return 0;
  }
@@ -105,7 +105,7 @@ index cfb58ee4d0cd..e67833a0cc26 100644
  
  static const struct i2c_device_id cpr_4011_4mxx_id[] = {
      { "cpr_4011_4mxx", 0 },
-@@ -293,7 +299,11 @@ static struct i2c_driver cpr_4011_4mxx_driver = {
+@@ -292,7 +298,11 @@ static struct i2c_driver cpr_4011_4mxx_driver = {
          .name     = "cpr_4011_4mxx",
      },
      .probe        = cpr_4011_4mxx_probe,
@@ -118,10 +118,10 @@ index cfb58ee4d0cd..e67833a0cc26 100644
      .address_list = normal_i2c,
  };
 diff --git a/packages/base/any/kernels/modules/dps850.c b/packages/base/any/kernels/modules/dps850.c
-index cb7c1d8f5560..de33815344a1 100755
+index 8a3fd99d8c3a..c5493b5db573 100755
 --- a/packages/base/any/kernels/modules/dps850.c
 +++ b/packages/base/any/kernels/modules/dps850.c
-@@ -289,7 +289,13 @@ static int dps850_remove(struct i2c_client *client)
+@@ -288,7 +288,13 @@ static int dps850_remove(struct i2c_client *client)
  	kfree(data);
  
  	return 0;
@@ -136,7 +136,7 @@ index cb7c1d8f5560..de33815344a1 100755
  
  static const struct i2c_device_id dps850_id[] = {
  	{ "dps850", DPS850 },
-@@ -303,7 +309,12 @@ static struct i2c_driver dps850_driver = {
+@@ -302,7 +308,12 @@ static struct i2c_driver dps850_driver = {
  		.name	= "dps850",
  	},
  	.probe	  = dps850_probe,
@@ -196,10 +196,10 @@ index dae5e5b5d5f9..869b7eff887b 100644
  };
  
 diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
-index aacda0fd45c5..c9b16550e29b 100755
+index 17dfb6f99af8..180136da0f6f 100755
 --- a/packages/base/any/kernels/modules/ym2651y.c
 +++ b/packages/base/any/kernels/modules/ym2651y.c
-@@ -591,6 +591,12 @@ static int ym2651y_remove(struct i2c_client *client)
+@@ -600,6 +600,12 @@ static int ym2651y_remove(struct i2c_client *client)
  
      return 0;
  }
@@ -212,7 +212,7 @@ index aacda0fd45c5..c9b16550e29b 100755
  
  static const struct i2c_device_id ym2651y_id[] = {
      { "ym2651", YM2651 },
-@@ -621,7 +627,11 @@ static struct i2c_driver ym2651y_driver = {
+@@ -630,7 +636,11 @@ static struct i2c_driver ym2651y_driver = {
          .of_match_table = of_match_ptr(ym2651y_of_id),
      },
      .probe    = ym2651y_probe,
@@ -225,5 +225,5 @@ index aacda0fd45c5..c9b16550e29b 100755
      .address_list = normal_i2c,
  };
 -- 
-2.38.1
+2.42.0
 
