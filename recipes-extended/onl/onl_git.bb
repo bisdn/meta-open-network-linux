@@ -10,6 +10,8 @@ LIC_FILES_CHECKSUM += "file://LICENSE;beginline=14;md5=7e6d108802170df125adb4f45
 
 SRCREV_onl ?= "dd61cc1792290a459c394c5b7bdf4d4a27b6f651"
 URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git;protocol=https;branch=master"
+# commit date (UTC) of ${SRCREV_onl}
+PV = "2022-04-08+git${SRCPV}"
 
 # submodules are checked out individually to support license file checking
 SRC_URI += " \
