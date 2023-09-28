@@ -130,10 +130,7 @@ do_compile() {
   ${S}/tools/scripts/kmodbuild.sh "${STAGING_KERNEL_BUILDDIR}" "$mods" "onl/onl/common"
   cd -
 
-  for onie_platform in ${ONL_PLATFORMS_BUILD}; do
-      # onl uses dashes instead of undescores for platforms
-      platform="$(echo $onie_platform | tr '_' '-')"
-
+  for platform in ${ONL_PLATFORMS_BUILD}; do
       # get the path to the platform
       ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${platform}:${ONL_BUILD_ARCH})
 
@@ -182,9 +179,7 @@ do_install() {
   mkdir -p ${D}${nonarch_base_libdir}/modules
   cp -r onl-modules/lib/modules ${D}${nonarch_base_libdir}
 
-  for onie_platform in ${ONL_PLATFORMS_BUILD}; do
-      # onl uses dashes instead of undescores for platforms
-      platform="$(echo $onie_platform | tr '_' '-')"
+  for platform in ${ONL_PLATFORMS_BUILD}; do
       # get the path to the platform
       ONLP_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onlp-${platform}:${ONL_BUILD_ARCH})
 

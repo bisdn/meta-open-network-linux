@@ -94,18 +94,18 @@ FILES:${PN} = " \
 "
 
 ONL_PLATFORMS_BUILD:arm = " \
-    arm-accton_as4610_30-r0 \
-    arm-accton_as4610_54-r0 \
+    arm-accton-as4610-30-r0 \
+    arm-accton-as4610-54-r0 \
 "
 
 ONL_PLATFORMS_BUILD:x86-64 = " \
-    x86_64-accton_as4630_54pe-r0 \
-    x86_64-accton_as4630_54te-r0 \
-    x86_64-accton_as7726_32x-r0 \
-    x86_64-accton_as5835_54x-r0 \
-    x86_64-delta_ag5648-r0 \
-    x86_64-delta_ag7648-r0 \
-    x86_64-cel_questone_2a-r0 \
+    x86-64-accton-as4630-54pe-r0 \
+    x86-64-accton-as4630-54te-r0 \
+    x86-64-accton-as7726-32x-r0 \
+    x86-64-accton-as5835-54x-r0 \
+    x86-64-delta-ag5648-r0 \
+    x86-64-delta-ag7648-r0 \
+    x86-64-cel-questone-2a-r0 \
 "
 
 # delta-ag5648's i2c-cpld is part of delta's common vendor modules
