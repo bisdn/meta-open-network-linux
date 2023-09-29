@@ -1,7 +1,7 @@
 From 57868d941546cbe28a0db9d7d4d3db60fa29fa2b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 13 May 2022 12:24:11 +0200
-Subject: [PATCH 04/16] ym2651y: fix update when MFR_MODEL_OPTION is
+Subject: [PATCH 04/17] ym2651y: fix update when MFR_MODEL_OPTION is
  uninmplemented
 
 Not every PSU implements the MFR_MODEL_OPTION register. If it does not

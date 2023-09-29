@@ -31,6 +31,7 @@ SRC_URI += " \
            file://onl/0014-ym2561y-add-of-device-match-table.patch \
            file://onl/0015-modules-do-not-call-hwmon_device_register_with_info-.patch \
            file://onl/0016-modules-update-i2c_driver-with-6.1-compatibility.patch \
+           file://onl/0017-optoe-fix-race-in-sysfs-registraton-on-probe.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \

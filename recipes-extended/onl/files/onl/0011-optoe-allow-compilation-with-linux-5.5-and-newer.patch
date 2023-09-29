@@ -1,7 +1,7 @@
 From 7cf9dead170ea3269903a131e503b9aea2b376c2 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 20 May 2022 10:44:58 +0200
-Subject: [PATCH 11/16] optoe: allow compilation with linux 5.5 and newer
+Subject: [PATCH 11/17] optoe: allow compilation with linux 5.5 and newer
 
 i2c_new_dummy was dropped in linux in favour of i2c_new_dummy_device,
 which was introduced in 5.3.
