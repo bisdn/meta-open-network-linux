@@ -13,6 +13,3 @@ ONL_PLATFORM="${@'${ONIE_ARCH}-${ONIE_MACHINE}'.replace('_', '-')}"
 
 # list of platforms in ONIE format for which to include support
 ONL_PLATFORM_SUPPORT ?= "${ONIE_PLATFORM}"
-
-# some platforms require common vendor modules
-ONL_MODULE_VENDORS ?= ""
