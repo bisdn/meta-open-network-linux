@@ -1,0 +1,141 @@
+From 21c1dbb7292fa4db62a91fdffb1b6ffcc4d0dacb Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 29 Sep 2023 11:26:41 +0200
+Subject: [PATCH 17/17] optoe: fix race in sysfs registration on probe
+
+The optoe first creates the sysfs entries and then calls
+i2c_set_clientdata(), but a very fast userspace may already try to
+access the sysfs entries before the clientdata was set. This then leads
+to a NULL pointer access, crashing the kernel.
+
+Fix this by ensuring the sysfs entries are only registered after
+clientdata is populated.
+
+Fixes the following crash observed on boot:
+Sep 28 18:59:33 accton-as4630-54pe kernel: i2c i2c-18: new_device: Instantiated device optoe2 at 0x50
+Sep 28 18:59:33 accton-as4630-54pe kernel: BUG: kernel NULL pointer dereference, address: 0000000000000048
+Sep 28 18:59:33 accton-as4630-54pe kernel: optoe 18-0050: 33152 byte optoe2 EEPROM, read/write
+Sep 28 18:59:33 accton-as4630-54pe kernel: #PF: supervisor write access in kernel mode
+Sep 28 18:59:33 accton-as4630-54pe kernel: #PF: error_code(0x0002) - not-present page
+Sep 28 18:59:33 accton-as4630-54pe kernel: PGD 0 P4D 0
+Sep 28 18:59:33 accton-as4630-54pe kernel: Oops: 0002 [#1] PREEMPT SMP NOPTI
+Sep 28 18:59:33 accton-as4630-54pe kernel: CPU: 1 PID: 1733 Comm: platform-onl-in Tainted: G           O       6.1.47-yocto-standard-onl #1
+Sep 28 18:59:33 accton-as4630-54pe kernel: Hardware name: Accton AS4630-54PE/AS4630-54PE, BIOS v47.01.01.00 03/14/2021
+Sep 28 18:59:33 accton-as4630-54pe kernel: RIP: 0010:mutex_lock+0x19/0x30
+Sep 28 18:59:33 accton-as4630-54pe kernel: Code: 00 0f 1f 44 00 00 be 02 00 00 00 e9 e1 f7 ff ff 90 0f 1f 44 00 00 55 48 89 fd e8 e2 de ff ff 31 c0 65 48 8b 14 25 00 ad 01 00 <f0> 48 0f b1 55 00 75 02 5d c3 48 89 ef 5d eb c7 0f 1f 80 00 00 00
+Sep 28 18:59:33 accton-as4630-54pe kernel: RSP: 0018:ffffc900002a7df0 EFLAGS: 00010246
+Sep 28 18:59:33 accton-as4630-54pe kernel: RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffff888102e11d93
+Sep 28 18:59:33 accton-as4630-54pe kernel: RDX: ffff888102c26e40 RSI: ffffffffa02c339f RDI: 0000000000000048
+Sep 28 18:59:33 accton-as4630-54pe kernel: RBP: 0000000000000048 R08: 0000000000000013 R09: 0000000000000001
+Sep 28 18:59:33 accton-as4630-54pe kernel: R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000048
+Sep 28 18:59:33 accton-as4630-54pe kernel: R13: fffffffffffffff2 R14: ffff888104406540 R15: ffff888104406560
+Sep 28 18:59:33 accton-as4630-54pe kernel: FS:  00007f7346004740(0000) GS:ffff88846fc80000(0000) knlGS:0000000000000000
+Sep 28 18:59:33 accton-as4630-54pe kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+Sep 28 18:59:33 accton-as4630-54pe kernel: CR2: 0000000000000048 CR3: 000000010113c000 CR4: 00000000003506e0
+Sep 28 18:59:33 accton-as4630-54pe kernel: Call Trace:
+Sep 28 18:59:33 accton-as4630-54pe kernel:  <TASK>
+Sep 28 18:59:33 accton-as4630-54pe kernel:  ? __die_body.cold+0x1a/0x1f
+Sep 28 18:59:33 accton-as4630-54pe kernel:  ? page_fault_oops+0xae/0x260
+Sep 28 18:59:33 accton-as4630-54pe kernel:  ? do_truncate+0x93/0xd0
+Sep 28 18:59:33 accton-as4630-54pe kernel:  ? do_user_addr_fault+0x61/0x570
+Sep 28 18:59:33 accton-as4630-54pe kernel:  ? exc_page_fault+0x5d/0x120
+Sep 28 18:59:33 accton-as4630-54pe kernel:  ? asm_exc_page_fault+0x22/0x30
+Sep 28 18:59:33 accton-as4630-54pe kernel:  ? mutex_lock+0x19/0x30
+Sep 28 18:59:33 accton-as4630-54pe kernel:  set_port_name+0x4c/0x90 [optoe]
+Sep 28 18:59:33 accton-as4630-54pe kernel:  kernfs_fop_write_iter+0x10c/0x1a0
+Sep 28 18:59:33 accton-as4630-54pe kernel:  vfs_write+0x2b4/0x3b0
+Sep 28 18:59:33 accton-as4630-54pe kernel:  ksys_write+0x5f/0xe0
+Sep 28 18:59:33 accton-as4630-54pe kernel:  do_syscall_64+0x35/0x80
+Sep 28 18:59:33 accton-as4630-54pe kernel:  entry_SYSCALL_64_after_hwframe+0x63/0xcd
+Sep 28 18:59:33 accton-as4630-54pe kernel: RIP: 0033:0x7f7346103377
+Sep 28 18:59:33 accton-as4630-54pe kernel: Code: 0f 00 f7 d8 64 89 02 48 c7 c0 ff ff ff ff eb b7 0f 1f 00 f3 0f 1e fa 64 8b 04 25 18 00 00 00 85 c0 75 10 b8 01 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 51 c3 48 83 ec 28 48 89 54 24 18 48 89 74 24
+Sep 28 18:59:33 accton-as4630-54pe kernel: RSP: 002b:00007ffe849c05b8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+Sep 28 18:59:33 accton-as4630-54pe kernel: RAX: ffffffffffffffda RBX: 0000000000000007 RCX: 00007f7346103377
+Sep 28 18:59:33 accton-as4630-54pe kernel: RDX: 0000000000000007 RSI: 000055e3a50ca6b0 RDI: 0000000000000001
+Sep 28 18:59:33 accton-as4630-54pe kernel: RBP: 000055e3a50ca6b0 R08: 00007f73461b23e0 R09: 0000000000000000
+Sep 28 18:59:33 accton-as4630-54pe kernel: R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000007
+Sep 28 18:59:33 accton-as4630-54pe kernel: R13: 00007f73461f85a0 R14: 0000000000000007 R15: 00007f73461f87a0
+Sep 28 18:59:33 accton-as4630-54pe kernel:  </TASK>
+Sep 28 18:59:33 accton-as4630-54pe kernel: Modules linked in: optoe(O) ym2651y(O) x86_64_accton_as4630_54pe_leds(O) x86_64_accton_as4630_54pe_psu(O) x86_64_accton_as4630_54pe_cpld(O) i2c_ismt i2c_i801 i2c_smbus iptable_filter linux_user_bde(O) linux_bcm_knet(O) linux_kernel_bde(O) openvswitch nsh nf_nat
+Sep 28 18:59:33 accton-as4630-54pe kernel: CR2: 0000000000000048
+Sep 28 18:59:33 accton-as4630-54pe kernel: ---[ end trace 0000000000000000 ]---
+Sep 28 18:59:33 accton-as4630-54pe kernel: RIP: 0010:mutex_lock+0x19/0x30
+Sep 28 18:59:33 accton-as4630-54pe kernel: Code: 00 0f 1f 44 00 00 be 02 00 00 00 e9 e1 f7 ff ff 90 0f 1f 44 00 00 55 48 89 fd e8 e2 de ff ff 31 c0 65 48 8b 14 25 00 ad 01 00 <f0> 48 0f b1 55 00 75 02 5d c3 48 89 ef 5d eb c7 0f 1f 80 00 00 00
+Sep 28 18:59:33 accton-as4630-54pe kernel: RSP: 0018:ffffc900002a7df0 EFLAGS: 00010246
+Sep 28 18:59:33 accton-as4630-54pe kernel: RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffff888102e11d93
+Sep 28 18:59:33 accton-as4630-54pe kernel: RDX: ffff888102c26e40 RSI: ffffffffa02c339f RDI: 0000000000000048
+Sep 28 18:59:33 accton-as4630-54pe kernel: RBP: 0000000000000048 R08: 0000000000000013 R09: 0000000000000001
+Sep 28 18:59:33 accton-as4630-54pe kernel: R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000048
+Sep 28 18:59:33 accton-as4630-54pe kernel: R13: fffffffffffffff2 R14: ffff888104406540 R15: ffff888104406560
+Sep 28 18:59:33 accton-as4630-54pe kernel: FS:  00007f7346004740(0000) GS:ffff88846fc80000(0000) knlGS:0000000000000000
+Sep 28 18:59:33 accton-as4630-54pe kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+Sep 28 18:59:33 accton-as4630-54pe kernel: CR2: 0000000000000048 CR3: 000000010113c000 CR4: 00000000003506e0
+Sep 28 18:59:33 accton-as4630-54pe kernel: note: platform-onl-in[1733] exited with irqs disabled
+
+Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/956]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ packages/base/any/kernels/modules/optoe.c | 31 ++++++++++++-----------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
+
+diff --git a/packages/base/any/kernels/modules/optoe.c b/packages/base/any/kernels/modules/optoe.c
+index 869b7eff887b..f5bcc6a91b46 100644
+--- a/packages/base/any/kernels/modules/optoe.c
++++ b/packages/base/any/kernels/modules/optoe.c
+@@ -1133,19 +1133,6 @@ static int optoe_probe(struct i2c_client *client,
+ 		}
+ 	}
+ 
+-	/* create the sysfs eeprom file */
+-	err = sysfs_create_bin_file(&client->dev.kobj, &optoe->bin);
+-	if (err)
+-		goto err_struct;
+-
+-	optoe->attr_group = optoe_attr_group;
+-
+-	err = sysfs_create_group(&client->dev.kobj, &optoe->attr_group);
+-	if (err) {
+-		dev_err(&client->dev, "failed to create sysfs attribute group.\n");
+-		goto err_struct;
+-	}
+-
+ #ifdef EEPROM_CLASS
+ 	optoe->eeprom_dev = eeprom_device_register(&client->dev,
+ 							chip.eeprom_data);
+@@ -1158,6 +1145,19 @@ static int optoe_probe(struct i2c_client *client,
+ 
+ 	i2c_set_clientdata(client, optoe);
+ 
++	/* create the sysfs eeprom file */
++	err = sysfs_create_bin_file(&client->dev.kobj, &optoe->bin);
++	if (err)
++		goto err_eeprom_cleanup;
++
++	optoe->attr_group = optoe_attr_group;
++
++	err = sysfs_create_group(&client->dev.kobj, &optoe->attr_group);
++	if (err) {
++		dev_err(&client->dev, "failed to create sysfs attribute group.\n");
++		goto err_sysfs_cleanup;
++	}
++
+ 	dev_info(&client->dev, "%zu byte %s EEPROM, %s\n",
+ 		optoe->bin.size, client->name,
+ 		optoe->bin.write ? "read/write" : "read-only");
+@@ -1171,10 +1171,11 @@ static int optoe_probe(struct i2c_client *client,
+ 
+ 	return 0;
+ 
+-#ifdef EEPROM_CLASS
+ err_sysfs_cleanup:
+-	sysfs_remove_group(&client->dev.kobj, &optoe->attr_group);
+ 	sysfs_remove_bin_file(&client->dev.kobj, &optoe->bin);
++err_eeprom_cleanup:
++#ifdef EEPROM_CLASS
++	eeprom_device_unregister(optoe->eeprom_dev);
+ #endif
+ 
+ err_struct:
+-- 
+2.42.0
+
