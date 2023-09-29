@@ -53,7 +53,6 @@ SRC_URI += " \
            file://accton-as4630-54pe/0002-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
            file://accton-as4630-54pe/0003-accton-as4630-54pe-update-i2c_driver-with-6.1-compat.patch \
            file://accton-as4630-54te/0001-accton-as4630-54te-silence-unused-result-warning.patch \
-           file://accton-as4630-54te/0002-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
            file://accton-as4630-54te/0003-accton-as4610-54te-do-not-call-hwmon_device_register.patch \
            file://accton-as4630-54te/0004-accton-as4630-54te-update-i2c_driver-with-6.1-compat.patch \
            file://accton-as5835-54x/0001-Support-psu_fan_dir-sysfs-for-YM-1401A-PSU.patch \
