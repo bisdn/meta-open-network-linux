@@ -1,7 +1,7 @@
-From 7ae57ab6d3ab2d8df54f50d8ef2e8f59e6b13ed4 Mon Sep 17 00:00:00 2001
+From 015a60ac275f5dbd658523389ed23f754b96bcab Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:09:49 +0200
-Subject: [PATCH 4/10] accton_as4610_cpld: add of device match table
+Subject: [PATCH 4/8] accton_as4610_cpld: add of device match table
 
 For on-demand loading to work the kernel needs to know which compatibles
 are handled by the driver, so add an appropriate table.
@@ -13,7 +13,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 8 insertions(+)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
-index 2ee2d1631095..69645c4df148 100644
+index db5a70f234eb..c327f54ff0bd 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 @@ -33,6 +33,7 @@
@@ -37,14 +37,14 @@ index 2ee2d1631095..69645c4df148 100644
  #define TRANSCEIVER_PRESENT_ATTR_ID(index)   	MODULE_PRESENT_##index
  #define TRANSCEIVER_TXDISABLE_ATTR_ID(index)   	MODULE_TXDISABLE_##index
  #define TRANSCEIVER_RXLOS_ATTR_ID(index)   		MODULE_RXLOS_##index
-@@ -601,6 +608,7 @@ static struct i2c_driver as4610_54_cpld_driver = {
+@@ -607,6 +614,7 @@ static struct i2c_driver as4610_54_cpld_driver = {
  	.driver		= {
  		.name	= "as4610_54_cpld",
  		.owner	= THIS_MODULE,
 +		.of_match_table = as4610_54_cpld_of_id,
  	},
  	.probe		= as4610_54_cpld_probe,
- 	.remove		= as4610_54_cpld_remove,
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
 -- 
 2.42.0
 

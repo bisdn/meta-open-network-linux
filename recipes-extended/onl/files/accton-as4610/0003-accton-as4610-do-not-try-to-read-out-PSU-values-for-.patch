@@ -1,7 +1,7 @@
 From 53461bbe1947891cac882033959434553d8343a9 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 17 May 2022 10:22:52 +0200
-Subject: [PATCH 3/10] accton-as4610: do not try to read out PSU values for YM-1921
+Subject: [PATCH 3/8] accton-as4610: do not try to read out PSU values for YM-1921
 
 Reading PSU output values on YM-1921 seems to be unreliable and can
 lockup the I2C bus, which causes system hangs and ultimately resets by

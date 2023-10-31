@@ -1,7 +1,7 @@
 From 434a7cbd5d0f41bbce895b5ff5740f626e4d4771 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 23 Feb 2021 20:24:26 +0100
-Subject: [PATCH 1/10] accton-as4610: fix buffer overflow while accessing led
+Subject: [PATCH 1/8] accton-as4610: fix buffer overflow while accessing led
  states
 
 The led bridgeness path is constructed of a prefix

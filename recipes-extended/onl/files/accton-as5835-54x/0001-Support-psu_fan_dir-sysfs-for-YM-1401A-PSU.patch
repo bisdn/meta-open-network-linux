@@ -1,7 +1,7 @@
 From 7653b4c4a9e7199c18b675228a1d8fe16e675e8e Mon Sep 17 00:00:00 2001
 From: Jostar Yang <jostar_yang@accton.com.tw>
 Date: Tue, 3 May 2022 11:37:44 +0800
-Subject: [PATCH 1/4] Support psu_fan_dir sysfs for YM-1401A PSU
+Subject: [PATCH 1/2] Support psu_fan_dir sysfs for YM-1401A PSU
 
 Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/884]
 Signed-off-by: Jostar Yang <jostar_yang@accton.com.tw>

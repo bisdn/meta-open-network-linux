@@ -1,7 +1,7 @@
-From 4e4dfb701e7f1473cc6c8cecbd3e8eab49369fd8 Mon Sep 17 00:00:00 2001
+From 31b24beb4569542800638b74ca9b91dc0d17a4b5 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
-Date: Tue, 22 Nov 2022 13:48:48 +0100
-Subject: [PATCH 14/16] modules: do not call hwmon_device_register_with_info()
+Date: Tue, 31 Oct 2023 14:35:01 +0100
+Subject: [PATCH 14/16] modules: do not call  hwmon_device_register_with_info()
  with NULL chip
 
 hwmon_device_register_with_info() is supposed to require hwmon_chip_info
@@ -23,14 +23,98 @@ expression E1,E2;
 
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
- packages/base/any/kernels/modules/accton_i2c_psu.c | 3 +--
- packages/base/any/kernels/modules/cpr_4011_4mxx.c  | 3 +--
- packages/base/any/kernels/modules/dps850.c         | 3 +--
- packages/base/any/kernels/modules/ym2651y.c        | 3 +--
- 4 files changed, 4 insertions(+), 8 deletions(-)
+ packages/base/any/kernels/modules/accton_i2c_psu.c            | 3 +--
+ packages/base/any/kernels/modules/cpr_4011_4mxx.c             | 3 +--
+ packages/base/any/kernels/modules/dps850.c                    | 3 +--
+ packages/base/any/kernels/modules/ym2651y.c                   | 3 +--
+ .../armxx/arm-accton-as4610/modules/accton_as4610_fan.c       | 3 +--
+ .../armxx/arm-accton-as4610/modules/accton_as4610_psu.c       | 3 +--
+ .../modules/builds/x86-64-accton-as4630-54te-psu.c            | 3 +--
+ .../as5512-54x/modules/builds/x86-64-accton-as5512-54x-fan.c  | 3 +--
+ .../as5512-54x/modules/builds/x86-64-accton-as5512-54x-psu.c  | 3 +--
+ .../as5712-54x/modules/builds/x86-64-accton-as5712-54x-fan.c  | 3 +--
+ .../as5712-54x/modules/builds/x86-64-accton-as5712-54x-psu.c  | 3 +--
+ .../as5812-54t/modules/builds/x86-64-accton-as5812-54t-cpld.c | 3 +--
+ .../as5812-54t/modules/builds/x86-64-accton-as5812-54t-fan.c  | 3 +--
+ .../as5812-54t/modules/builds/x86-64-accton-as5812-54t-psu.c  | 3 +--
+ .../as5812-54x/modules/builds/x86-64-accton-as5812-54x-fan.c  | 3 +--
+ .../as5812-54x/modules/builds/x86-64-accton-as5812-54x-psu.c  | 3 +--
+ .../as5822-54x/modules/builds/x86-64-accton-as5822-54x-fan.c  | 3 +--
+ .../as5822-54x/modules/builds/x86-64-accton-as5822-54x-psu.c  | 3 +--
+ .../as5835-54t/modules/builds/x86-64-accton-as5835-54t-fan.c  | 3 +--
+ .../as5835-54t/modules/builds/x86-64-accton-as5835-54t-psu.c  | 3 +--
+ .../as5835-54x/modules/builds/x86-64-accton-as5835-54x-fan.c  | 3 +--
+ .../as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c  | 3 +--
+ .../as5912-54x/modules/builds/x86-64-accton-as5912-54x-fan.c  | 3 +--
+ .../as5912-54x/modules/builds/x86-64-accton-as5912-54x-psu.c  | 3 +--
+ .../modules/builds/x86-64-accton-as5912-54xk-fan.c            | 3 +--
+ .../modules/builds/x86-64-accton-as5912-54xk-psu.c            | 3 +--
+ .../as5915-18x/modules/builds/x86-64-accton-as5915-18x-fan.c  | 3 +--
+ .../as5915-18x/modules/builds/x86-64-accton-as5915-18x-psu.c  | 3 +--
+ .../as5916-54x/modules/builds/x86-64-accton-as5916-54x-fan.c  | 3 +--
+ .../as5916-54x/modules/builds/x86-64-accton-as5916-54x-psu.c  | 3 +--
+ .../modules/builds/x86-64-accton-as5916-54xk-fan.c            | 3 +--
+ .../modules/builds/x86-64-accton-as5916-54xk-psu.c            | 3 +--
+ .../modules/builds/x86-64-accton-as5916-54xm-fan.c            | 3 +--
+ .../modules/builds/x86-64-accton-as5916-54xm-psu.c            | 3 +--
+ .../as6712-32x/modules/builds/x86-64-accton-as6712-32x-fan.c  | 3 +--
+ .../as6712-32x/modules/builds/x86-64-accton-as6712-32x-psu.c  | 3 +--
+ .../as6812-32x/modules/builds/x86-64-accton-as6812-32x-fan.c  | 3 +--
+ .../as6812-32x/modules/builds/x86-64-accton-as6812-32x-psu.c  | 3 +--
+ .../as7112-54x/modules/builds/x86-64-accton-as7112-54x-fan.c  | 3 +--
+ .../as7112-54x/modules/builds/x86-64-accton-as7112-54x-psu.c  | 3 +--
+ .../as7312-54x/modules/builds/x86-64-accton-as7312-54x-fan.c  | 3 +--
+ .../as7312-54x/modules/builds/x86-64-accton-as7312-54x-psu.c  | 3 +--
+ .../modules/builds/x86-64-accton-as7312-54xs-fan.c            | 3 +--
+ .../modules/builds/x86-64-accton-as7312-54xs-psu.c            | 3 +--
+ .../as7315-27xb/modules/builds/accton_as7315_27xb_fan.c       | 3 +--
+ .../modules/builds/x86-64-accton-as7315-27xb-psu.c            | 3 +--
+ .../modules/builds/x86-64-accton-as7315-30x-fan-eeprom.c      | 3 +--
+ .../as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan.c  | 3 +--
+ .../as7315-30x/modules/builds/x86-64-accton-as7315-30x-psu.c  | 3 +--
+ .../as7326-56x/modules/builds/x86-64-accton-as7326-56x-fan.c  | 3 +--
+ .../as7326-56x/modules/builds/x86-64-accton-as7326-56x-psu.c  | 3 +--
+ .../as7512-32x/modules/builds/x86-64-accton-as7512-32x-fan.c  | 3 +--
+ .../as7512-32x/modules/builds/x86-64-accton-as7512-32x-psu.c  | 3 +--
+ .../modules/builds/x86-64-accton-as7712-32x-cpld1.c           | 3 +--
+ .../as7712-32x/modules/builds/x86-64-accton-as7712-32x-fan.c  | 3 +--
+ .../as7712-32x/modules/builds/x86-64-accton-as7712-32x-psu.c  | 3 +--
+ .../modules/builds/x86-64-accton-as7716-24sc-expansion_card.c | 3 +--
+ .../modules/builds/x86-64-accton-as7716-24sc-fan.c            | 3 +--
+ .../modules/builds/x86-64-accton-as7716-24sc-psu.c            | 3 +--
+ .../modules/builds/x86-64-accton-as7716-24xc-expansion_card.c | 3 +--
+ .../modules/builds/x86-64-accton-as7716-24xc-fan.c            | 3 +--
+ .../modules/builds/x86-64-accton-as7716-24xc-psu.c            | 3 +--
+ .../modules/builds/x86-64-accton-as7716-32x-cpld1.c           | 3 +--
+ .../as7716-32x/modules/builds/x86-64-accton-as7716-32x-fan.c  | 3 +--
+ .../as7716-32x/modules/builds/x86-64-accton-as7716-32x-psu.c  | 3 +--
+ .../as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c  | 3 +--
+ .../as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c  | 3 +--
+ .../modules/builds/x86-64-accton-as7816-64x-cpld1.c           | 3 +--
+ .../as7816-64x/modules/builds/x86-64-accton-as7816-64x-fan.c  | 3 +--
+ .../modules/builds/x86-64-accton-as7926-40xfb-cpld.c          | 4 +---
+ .../modules/builds/x86-64-accton-as7926-40xke-cpld.c          | 2 +-
+ .../modules/builds/x86-64-accton-as7926-40xke-fan.c           | 2 +-
+ .../modules/builds/x86-64-accton-as7926-40xke-psu.c           | 3 +--
+ .../modules/builds/x86-64-accton-as7926-80xk-psu.c            | 3 +--
+ .../modules/builds/x86-64-accton-as7946-30xb-cpld.c           | 2 +-
+ .../modules/builds/x86-64-accton-as7946-74xkb-cpld.c          | 2 +-
+ .../as9716_32d/modules/builds/x86-64-accton-as9716-32d-fan.c  | 3 +--
+ .../as9716_32d/modules/builds/x86-64-accton-as9716-32d-psu.c  | 3 +--
+ .../as9926-24d/modules/builds/x86-64-accton-as9926-24d-fan.c  | 3 +--
+ .../as9926-24d/modules/builds/x86-64-accton-as9926-24d-psu.c  | 3 +--
+ .../asxvolt16/modules/builds/x86-64-accton-asxvolt16-fan.c    | 3 +--
+ .../asxvolt16/modules/builds/x86-64-accton-asxvolt16-psu.c    | 3 +--
+ .../x86-64/csp9250/modules/builds/x86-64-accton-csp9250-fan.c | 3 +--
+ .../x86-64/csp9250/modules/builds/x86-64-accton-csp9250-psu.c | 3 +--
+ .../es7632bt3/modules/builds/x86-64-accton-es7632bt3-fan.c    | 4 +---
+ .../es7632bt3/modules/builds/x86-64-accton-es7632bt3-psu.c    | 4 +---
+ .../accton/x86-64/minipack/modules/builds/minipack_psensor.c  | 3 +--
+ .../x86-64/scg60d0-484t/modules/builds/scg60d0-484t_psu.c     | 3 +--
+ 88 files changed, 88 insertions(+), 175 deletions(-)
 
 diff --git a/packages/base/any/kernels/modules/accton_i2c_psu.c b/packages/base/any/kernels/modules/accton_i2c_psu.c
-index 279ffd9d541c..3dcf9f51a623 100755
+index d3b769b347b8..1550ac1381ee 100755
 --- a/packages/base/any/kernels/modules/accton_i2c_psu.c
 +++ b/packages/base/any/kernels/modules/accton_i2c_psu.c
 @@ -333,8 +333,7 @@ static int accton_i2c_psu_probe(struct i2c_client *client,
@@ -44,7 +128,7 @@ index 279ffd9d541c..3dcf9f51a623 100755
      data->hwmon_dev = hwmon_device_register(&client->dev);
  #endif
 diff --git a/packages/base/any/kernels/modules/cpr_4011_4mxx.c b/packages/base/any/kernels/modules/cpr_4011_4mxx.c
-index cfb58ee4d0cd..ee51c94bf352 100644
+index e67833a0cc26..d29e3660e6ff 100644
 --- a/packages/base/any/kernels/modules/cpr_4011_4mxx.c
 +++ b/packages/base/any/kernels/modules/cpr_4011_4mxx.c
 @@ -246,8 +246,7 @@ static int cpr_4011_4mxx_probe(struct i2c_client *client,
@@ -58,7 +142,7 @@ index cfb58ee4d0cd..ee51c94bf352 100644
      data->hwmon_dev = hwmon_device_register(&client->dev);
  #endif
 diff --git a/packages/base/any/kernels/modules/dps850.c b/packages/base/any/kernels/modules/dps850.c
-index cb7c1d8f5560..8a3fd99d8c3a 100755
+index de33815344a1..c5493b5db573 100755
 --- a/packages/base/any/kernels/modules/dps850.c
 +++ b/packages/base/any/kernels/modules/dps850.c
 @@ -256,8 +256,7 @@ static int dps850_probe(struct i2c_client *client,
@@ -72,7 +156,7 @@ index cb7c1d8f5560..8a3fd99d8c3a 100755
  	data->hwmon_dev = hwmon_device_register(&client->dev);
  #endif
 diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
-index 1f641ab7a619..17dfb6f99af8 100755
+index 0450fcf5f8dc..180136da0f6f 100755
 --- a/packages/base/any/kernels/modules/ym2651y.c
 +++ b/packages/base/any/kernels/modules/ym2651y.c
 @@ -567,8 +567,7 @@ static int ym2651y_probe(struct i2c_client *client,
@@ -80,6 +164,1181 @@ index 1f641ab7a619..17dfb6f99af8 100755
  
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0)
 -    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "ym2651y",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ #else
+     data->hwmon_dev = hwmon_device_register(&client->dev);
+ #endif
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
+index 9b134e56922d..fe78e0440eb3 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
+@@ -262,8 +262,7 @@ static int as4610_fan_probe(struct platform_device *pdev)
+ 
+ 	}
+ 
+-	fan_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, "as4610_fan",
+-							NULL, NULL, NULL);
++	fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+ 	if (IS_ERR(fan_data->hwmon_dev)) {
+ 		status = PTR_ERR(fan_data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
+index da3bbc7707ed..0ad218228f7f 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
+@@ -160,8 +160,7 @@ static int as4610_psu_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as4610_psu",
+-							NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as4630-54te/modules/builds/x86-64-accton-as4630-54te-psu.c b/packages/platforms/accton/x86-64/as4630-54te/modules/builds/x86-64-accton-as4630-54te-psu.c
+index 418d037017ee..d90673f6f83b 100644
+--- a/packages/platforms/accton/x86-64/as4630-54te/modules/builds/x86-64-accton-as4630-54te-psu.c
++++ b/packages/platforms/accton/x86-64/as4630-54te/modules/builds/x86-64-accton-as4630-54te-psu.c
+@@ -184,8 +184,7 @@ static int as4630_54te_psu_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev,
+-									"as4630_54te_psu", NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5512-54x/modules/builds/x86-64-accton-as5512-54x-fan.c b/packages/platforms/accton/x86-64/as5512-54x/modules/builds/x86-64-accton-as5512-54x-fan.c
+index 0236df14e00d..9718973934af 100644
+--- a/packages/platforms/accton/x86-64/as5512-54x/modules/builds/x86-64-accton-as5512-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as5512-54x/modules/builds/x86-64-accton-as5512-54x-fan.c
+@@ -366,8 +366,7 @@ static int accton_as5512_54x_fan_probe(struct platform_device *pdev)
+ 
+     }
+     
+-    fan_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, "as5512_54x_fan",
+-                                                      NULL, NULL, NULL);
++    fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+ 	if (IS_ERR(fan_data->hwmon_dev)) {
+ 		status = PTR_ERR(fan_data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5512-54x/modules/builds/x86-64-accton-as5512-54x-psu.c b/packages/platforms/accton/x86-64/as5512-54x/modules/builds/x86-64-accton-as5512-54x-psu.c
+index 6219f21cea25..734f4f365dfb 100644
+--- a/packages/platforms/accton/x86-64/as5512-54x/modules/builds/x86-64-accton-as5512-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as5512-54x/modules/builds/x86-64-accton-as5512-54x-psu.c
+@@ -171,8 +171,7 @@ static int as5512_54x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5512_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-fan.c b/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-fan.c
+index eb23d6d7beeb..73e8bf6fdac5 100644
+--- a/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-fan.c
+@@ -354,8 +354,7 @@ static int accton_as5712_54x_fan_probe(struct platform_device *pdev)
+ 
+     }
+ 
+-    fan_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, "as5712_54x_fan",
+-                                                      NULL, NULL, NULL);
++    fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+ 	if (IS_ERR(fan_data->hwmon_dev)) {
+ 		status = PTR_ERR(fan_data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-psu.c b/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-psu.c
+index 09755854fcaf..1740969e899a 100644
+--- a/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-psu.c
+@@ -190,8 +190,7 @@ static int as5712_54x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5712_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-cpld.c b/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-cpld.c
+index c7e35df4f7fb..f56c14289075 100644
+--- a/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-cpld.c
++++ b/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-cpld.c
+@@ -339,8 +339,7 @@ static int as5812_54t_cpld_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5812_54t_cpld",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-fan.c b/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-fan.c
+index b2fa9a08b606..85dfd3c4d858 100644
+--- a/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-fan.c
++++ b/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-fan.c
+@@ -355,8 +355,7 @@ static int accton_as5812_54t_fan_probe(struct platform_device *pdev)
+ 
+     }
+     
+-    fan_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, "as5812_54t_fan",
+-                                                      NULL, NULL, NULL);
++    fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+ 	if (IS_ERR(fan_data->hwmon_dev)) {
+ 		status = PTR_ERR(fan_data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-psu.c b/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-psu.c
+index b48a6470c59f..d8aa0f133ae9 100644
+--- a/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-psu.c
++++ b/packages/platforms/accton/x86-64/as5812-54t/modules/builds/x86-64-accton-as5812-54t-psu.c
+@@ -190,8 +190,7 @@ static int as5812_54t_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5812_54t_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-fan.c b/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-fan.c
+index e04e98d84d13..79b1ae489b4a 100755
+--- a/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-fan.c
+@@ -354,8 +354,7 @@ static int accton_as5812_54x_fan_probe(struct platform_device *pdev)
+ 
+     }
+ 
+-    fan_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, "as5812_54x_fan",
+-                                                      NULL, NULL, NULL);
++    fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+ 	if (IS_ERR(fan_data->hwmon_dev)) {
+ 		status = PTR_ERR(fan_data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-psu.c b/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-psu.c
+index 302d5c0f80af..977f68529893 100755
+--- a/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-psu.c
+@@ -228,8 +228,7 @@ static int as5812_54x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5812_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5822-54x/modules/builds/x86-64-accton-as5822-54x-fan.c b/packages/platforms/accton/x86-64/as5822-54x/modules/builds/x86-64-accton-as5822-54x-fan.c
+index e4f3bd66ee93..f9814b4f43a8 100644
+--- a/packages/platforms/accton/x86-64/as5822-54x/modules/builds/x86-64-accton-as5822-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as5822-54x/modules/builds/x86-64-accton-as5822-54x-fan.c
+@@ -404,8 +404,7 @@ static int as5822_54x_fan_probe(struct platform_device *pdev)
+ 
+     }
+ 
+-    fan_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, "as5822_54x_fan",
+-                                                      NULL, NULL, NULL);
++    fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+ 	if (IS_ERR(fan_data->hwmon_dev)) {
+ 		status = PTR_ERR(fan_data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5822-54x/modules/builds/x86-64-accton-as5822-54x-psu.c b/packages/platforms/accton/x86-64/as5822-54x/modules/builds/x86-64-accton-as5822-54x-psu.c
+index 374dc3989987..e5efafdc124e 100644
+--- a/packages/platforms/accton/x86-64/as5822-54x/modules/builds/x86-64-accton-as5822-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as5822-54x/modules/builds/x86-64-accton-as5822-54x-psu.c
+@@ -182,8 +182,7 @@ static int as5822_54x_psu_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5822_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5835-54t/modules/builds/x86-64-accton-as5835-54t-fan.c b/packages/platforms/accton/x86-64/as5835-54t/modules/builds/x86-64-accton-as5835-54t-fan.c
+index 8411e9fe60a5..93f9d6f4da32 100644
+--- a/packages/platforms/accton/x86-64/as5835-54t/modules/builds/x86-64-accton-as5835-54t-fan.c
++++ b/packages/platforms/accton/x86-64/as5835-54t/modules/builds/x86-64-accton-as5835-54t-fan.c
+@@ -437,8 +437,7 @@ static int as5835_54t_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5835_54t_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5835-54t/modules/builds/x86-64-accton-as5835-54t-psu.c b/packages/platforms/accton/x86-64/as5835-54t/modules/builds/x86-64-accton-as5835-54t-psu.c
+index 634eb0307a64..f4554720b417 100644
+--- a/packages/platforms/accton/x86-64/as5835-54t/modules/builds/x86-64-accton-as5835-54t-psu.c
++++ b/packages/platforms/accton/x86-64/as5835-54t/modules/builds/x86-64-accton-as5835-54t-psu.c
+@@ -181,8 +181,7 @@ static int as5835_54t_psu_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5835_54t_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-fan.c b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-fan.c
+index 9214e8a2848e..9f5cbb8e45d1 100644
+--- a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-fan.c
+@@ -437,8 +437,7 @@ static int as5835_54x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5835_54x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
+index 2b001bd12a42..a344153407d8 100644
+--- a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
+@@ -181,8 +181,7 @@ static int as5835_54x_psu_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5835_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-fan.c b/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-fan.c
+index c62ec0f51f48..ff8905b4669a 100755
+--- a/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-fan.c
+@@ -444,8 +444,7 @@ static int as5912_54x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5912_54x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-psu.c b/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-psu.c
+index 0ac26fa9246d..cf34dd8a4c23 100644
+--- a/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-psu.c
+@@ -179,8 +179,7 @@ static int as5912_54x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5912_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5912-54xk/modules/builds/x86-64-accton-as5912-54xk-fan.c b/packages/platforms/accton/x86-64/as5912-54xk/modules/builds/x86-64-accton-as5912-54xk-fan.c
+index 7455e9726b7a..ed54f40d7b41 100644
+--- a/packages/platforms/accton/x86-64/as5912-54xk/modules/builds/x86-64-accton-as5912-54xk-fan.c
++++ b/packages/platforms/accton/x86-64/as5912-54xk/modules/builds/x86-64-accton-as5912-54xk-fan.c
+@@ -436,8 +436,7 @@ static int as5912_54xk_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5912_54xk_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5912-54xk/modules/builds/x86-64-accton-as5912-54xk-psu.c b/packages/platforms/accton/x86-64/as5912-54xk/modules/builds/x86-64-accton-as5912-54xk-psu.c
+index 4faddf1e40a0..4038119ac779 100644
+--- a/packages/platforms/accton/x86-64/as5912-54xk/modules/builds/x86-64-accton-as5912-54xk-psu.c
++++ b/packages/platforms/accton/x86-64/as5912-54xk/modules/builds/x86-64-accton-as5912-54xk-psu.c
+@@ -155,8 +155,7 @@ static int as5912_54xk_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5912_54xk_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-fan.c b/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-fan.c
+index 4e12ca4e2d48..321a47684d64 100644
+--- a/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-fan.c
++++ b/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-fan.c
+@@ -441,8 +441,7 @@ static int as5915_18x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5915_18x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-psu.c b/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-psu.c
+index 48710e3cae9f..dca475ed5841 100644
+--- a/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-psu.c
++++ b/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-psu.c
+@@ -239,8 +239,7 @@ static int as5915_18x_psu_probe(struct i2c_client *client,
+     if (status) {
+         goto exit_free;
+     }
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev,
+-                      client->name, NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5916-54x/modules/builds/x86-64-accton-as5916-54x-fan.c b/packages/platforms/accton/x86-64/as5916-54x/modules/builds/x86-64-accton-as5916-54x-fan.c
+index 233a87aa0471..86478b0cb6d7 100644
+--- a/packages/platforms/accton/x86-64/as5916-54x/modules/builds/x86-64-accton-as5916-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as5916-54x/modules/builds/x86-64-accton-as5916-54x-fan.c
+@@ -436,8 +436,7 @@ static int as5916_54x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5916_54x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5916-54x/modules/builds/x86-64-accton-as5916-54x-psu.c b/packages/platforms/accton/x86-64/as5916-54x/modules/builds/x86-64-accton-as5916-54x-psu.c
+index 59cc9f4a7d62..1c172862187d 100644
+--- a/packages/platforms/accton/x86-64/as5916-54x/modules/builds/x86-64-accton-as5916-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as5916-54x/modules/builds/x86-64-accton-as5916-54x-psu.c
+@@ -155,8 +155,7 @@ static int as5916_54x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5916_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5916-54xk/modules/builds/x86-64-accton-as5916-54xk-fan.c b/packages/platforms/accton/x86-64/as5916-54xk/modules/builds/x86-64-accton-as5916-54xk-fan.c
+index 803e3993aee2..b0f606fdd52a 100644
+--- a/packages/platforms/accton/x86-64/as5916-54xk/modules/builds/x86-64-accton-as5916-54xk-fan.c
++++ b/packages/platforms/accton/x86-64/as5916-54xk/modules/builds/x86-64-accton-as5916-54xk-fan.c
+@@ -436,8 +436,7 @@ static int as5916_54xk_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5916_54xk_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5916-54xk/modules/builds/x86-64-accton-as5916-54xk-psu.c b/packages/platforms/accton/x86-64/as5916-54xk/modules/builds/x86-64-accton-as5916-54xk-psu.c
+index 143686ed4b12..4d91c8d096aa 100644
+--- a/packages/platforms/accton/x86-64/as5916-54xk/modules/builds/x86-64-accton-as5916-54xk-psu.c
++++ b/packages/platforms/accton/x86-64/as5916-54xk/modules/builds/x86-64-accton-as5916-54xk-psu.c
+@@ -155,8 +155,7 @@ static int as5916_54xk_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5916_54xk_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5916-54xm/modules/builds/x86-64-accton-as5916-54xm-fan.c b/packages/platforms/accton/x86-64/as5916-54xm/modules/builds/x86-64-accton-as5916-54xm-fan.c
+index f09a9a118e78..df2321a5fbc7 100644
+--- a/packages/platforms/accton/x86-64/as5916-54xm/modules/builds/x86-64-accton-as5916-54xm-fan.c
++++ b/packages/platforms/accton/x86-64/as5916-54xm/modules/builds/x86-64-accton-as5916-54xm-fan.c
+@@ -436,8 +436,7 @@ static int as5916_54xm_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5916_54xm_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as5916-54xm/modules/builds/x86-64-accton-as5916-54xm-psu.c b/packages/platforms/accton/x86-64/as5916-54xm/modules/builds/x86-64-accton-as5916-54xm-psu.c
+index 84a5877c80ee..1b4db94e9a43 100644
+--- a/packages/platforms/accton/x86-64/as5916-54xm/modules/builds/x86-64-accton-as5916-54xm-psu.c
++++ b/packages/platforms/accton/x86-64/as5916-54xm/modules/builds/x86-64-accton-as5916-54xm-psu.c
+@@ -155,8 +155,7 @@ static int as5916_54xm_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as5916_54xm_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-fan.c b/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-fan.c
+index 0955e2f2538b..3b95f5bd8258 100644
+--- a/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-fan.c
++++ b/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-fan.c
+@@ -359,8 +359,7 @@ static int accton_as6712_32x_fan_probe(struct platform_device *pdev)
+ 
+     }
+     
+-    fan_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, "as6712_32x_fan",
+-                                                      NULL, NULL, NULL);
++    fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+ 	if (IS_ERR(fan_data->hwmon_dev)) {
+ 		status = PTR_ERR(fan_data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-psu.c b/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-psu.c
+index 6f0e45a8368c..bf7b42b7b2ed 100644
+--- a/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-psu.c
++++ b/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-psu.c
+@@ -189,8 +189,7 @@ static int as6712_32x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as6712_32x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-fan.c b/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-fan.c
+index 24fe0378ab75..9a31c4bc822d 100644
+--- a/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-fan.c
++++ b/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-fan.c
+@@ -358,8 +358,7 @@ static int accton_as6812_32x_fan_probe(struct platform_device *pdev)
+ 
+     }
+     
+-    fan_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, "as6812_32x_fan",
+-                                                      NULL, NULL, NULL);
++    fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+ 	if (IS_ERR(fan_data->hwmon_dev)) {
+ 		status = PTR_ERR(fan_data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-psu.c b/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-psu.c
+index 9db0aeed2193..1d6d77720d9e 100755
+--- a/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-psu.c
++++ b/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-psu.c
+@@ -214,8 +214,7 @@ static int as6812_32x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as6812_32x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7112-54x/modules/builds/x86-64-accton-as7112-54x-fan.c b/packages/platforms/accton/x86-64/as7112-54x/modules/builds/x86-64-accton-as7112-54x-fan.c
+index 56ecc3abbc54..29c13db53320 100755
+--- a/packages/platforms/accton/x86-64/as7112-54x/modules/builds/x86-64-accton-as7112-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as7112-54x/modules/builds/x86-64-accton-as7112-54x-fan.c
+@@ -429,8 +429,7 @@ static int as7112_54x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7112_54x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7112-54x/modules/builds/x86-64-accton-as7112-54x-psu.c b/packages/platforms/accton/x86-64/as7112-54x/modules/builds/x86-64-accton-as7112-54x-psu.c
+index e16bf68b862b..61ef5bb06841 100755
+--- a/packages/platforms/accton/x86-64/as7112-54x/modules/builds/x86-64-accton-as7112-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as7112-54x/modules/builds/x86-64-accton-as7112-54x-psu.c
+@@ -195,8 +195,7 @@ static int as7112_54x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7112_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7312-54x/modules/builds/x86-64-accton-as7312-54x-fan.c b/packages/platforms/accton/x86-64/as7312-54x/modules/builds/x86-64-accton-as7312-54x-fan.c
+index fa568270fb46..6c61f57b4fc6 100644
+--- a/packages/platforms/accton/x86-64/as7312-54x/modules/builds/x86-64-accton-as7312-54x-fan.c
++++ b/packages/platforms/accton/x86-64/as7312-54x/modules/builds/x86-64-accton-as7312-54x-fan.c
+@@ -435,8 +435,7 @@ static int as7312_54x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7312_54x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7312-54x/modules/builds/x86-64-accton-as7312-54x-psu.c b/packages/platforms/accton/x86-64/as7312-54x/modules/builds/x86-64-accton-as7312-54x-psu.c
+index af8b4fe87aa7..62b8e7c5035e 100644
+--- a/packages/platforms/accton/x86-64/as7312-54x/modules/builds/x86-64-accton-as7312-54x-psu.c
++++ b/packages/platforms/accton/x86-64/as7312-54x/modules/builds/x86-64-accton-as7312-54x-psu.c
+@@ -155,8 +155,7 @@ static int as7312_54x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7312_54x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7312-54xs/modules/builds/x86-64-accton-as7312-54xs-fan.c b/packages/platforms/accton/x86-64/as7312-54xs/modules/builds/x86-64-accton-as7312-54xs-fan.c
+index f941c7f3abd5..b65cf608a9c4 100644
+--- a/packages/platforms/accton/x86-64/as7312-54xs/modules/builds/x86-64-accton-as7312-54xs-fan.c
++++ b/packages/platforms/accton/x86-64/as7312-54xs/modules/builds/x86-64-accton-as7312-54xs-fan.c
+@@ -434,8 +434,7 @@ static int as7312_54xs_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7312_54xs_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7312-54xs/modules/builds/x86-64-accton-as7312-54xs-psu.c b/packages/platforms/accton/x86-64/as7312-54xs/modules/builds/x86-64-accton-as7312-54xs-psu.c
+index 25d5fa4f2b92..eb66e8df94b3 100644
+--- a/packages/platforms/accton/x86-64/as7312-54xs/modules/builds/x86-64-accton-as7312-54xs-psu.c
++++ b/packages/platforms/accton/x86-64/as7312-54xs/modules/builds/x86-64-accton-as7312-54xs-psu.c
+@@ -155,8 +155,7 @@ static int as7312_54xs_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7312_54xs_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/accton_as7315_27xb_fan.c b/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/accton_as7315_27xb_fan.c
+index 1d0421268cbe..2228621a1a8e 100644
+--- a/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/accton_as7315_27xb_fan.c
++++ b/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/accton_as7315_27xb_fan.c
+@@ -616,8 +616,7 @@ static int fan_probe(struct i2c_client *client,
+         goto out_kfree;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev,
+-                      client->name, NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_rm_sys;
+diff --git a/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/x86-64-accton-as7315-27xb-psu.c b/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/x86-64-accton-as7315-27xb-psu.c
+index f98717de7626..58d2d3cccd31 100644
+--- a/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/x86-64-accton-as7315-27xb-psu.c
++++ b/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/x86-64-accton-as7315-27xb-psu.c
+@@ -246,8 +246,7 @@ static int as7315_27xb_psu_probe(struct i2c_client *client,
+     if (status) {
+         goto exit_free;
+     }
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev,
+-                      client->name, NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan-eeprom.c b/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan-eeprom.c
+index 3103b3e28163..06e266bd67be 100644
+--- a/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan-eeprom.c
++++ b/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan-eeprom.c
+@@ -207,8 +207,7 @@ static int as7315_30x_fan_eeprom_probe(struct i2c_client *client,
+ 	if (status)
+ 		goto exit_free;
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev,
+-									"as7315_30x_fan_eeprom", NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan.c b/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan.c
+index 059a7d33db31..188de7f698d1 100644
+--- a/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan.c
++++ b/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fan.c
+@@ -484,8 +484,7 @@ static int as7315_30x_fan_probe(struct i2c_client *client,
+ 	if (status)
+ 		goto exit_free;
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev,
+-									"as7315_30x_fan", NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-psu.c b/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-psu.c
+index 8f2829f7b80d..e18e802bc0c3 100644
+--- a/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-psu.c
++++ b/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-psu.c
+@@ -183,8 +183,7 @@ static int as7315_30x_psu_probe(struct i2c_client *client,
+ 	if (status)
+ 		goto exit_free;
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev,
+-									"as7315_30x_psu", NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7326-56x/modules/builds/x86-64-accton-as7326-56x-fan.c b/packages/platforms/accton/x86-64/as7326-56x/modules/builds/x86-64-accton-as7326-56x-fan.c
+index 9320f3c3f610..5ff45ce70a48 100644
+--- a/packages/platforms/accton/x86-64/as7326-56x/modules/builds/x86-64-accton-as7326-56x-fan.c
++++ b/packages/platforms/accton/x86-64/as7326-56x/modules/builds/x86-64-accton-as7326-56x-fan.c
+@@ -902,8 +902,7 @@ static int as7326_56x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7326_56x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7326-56x/modules/builds/x86-64-accton-as7326-56x-psu.c b/packages/platforms/accton/x86-64/as7326-56x/modules/builds/x86-64-accton-as7326-56x-psu.c
+index 3481acc33899..f0f0b113499d 100644
+--- a/packages/platforms/accton/x86-64/as7326-56x/modules/builds/x86-64-accton-as7326-56x-psu.c
++++ b/packages/platforms/accton/x86-64/as7326-56x/modules/builds/x86-64-accton-as7326-56x-psu.c
+@@ -186,8 +186,7 @@ static int as7326_56x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7326_56x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7512-32x/modules/builds/x86-64-accton-as7512-32x-fan.c b/packages/platforms/accton/x86-64/as7512-32x/modules/builds/x86-64-accton-as7512-32x-fan.c
+index cc6dcb6884c3..f2c069adbe4a 100644
+--- a/packages/platforms/accton/x86-64/as7512-32x/modules/builds/x86-64-accton-as7512-32x-fan.c
++++ b/packages/platforms/accton/x86-64/as7512-32x/modules/builds/x86-64-accton-as7512-32x-fan.c
+@@ -443,8 +443,7 @@ static int as7512_32x_fan_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7512_32x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7512-32x/modules/builds/x86-64-accton-as7512-32x-psu.c b/packages/platforms/accton/x86-64/as7512-32x/modules/builds/x86-64-accton-as7512-32x-psu.c
+index aab93f92c12d..be0fb6735d7e 100644
+--- a/packages/platforms/accton/x86-64/as7512-32x/modules/builds/x86-64-accton-as7512-32x-psu.c
++++ b/packages/platforms/accton/x86-64/as7512-32x/modules/builds/x86-64-accton-as7512-32x-psu.c
+@@ -153,8 +153,7 @@ static int as7512_32x_psu_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7512_32x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-cpld1.c b/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-cpld1.c
+index 3499718eb35a..2548904bf7e1 100644
+--- a/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-cpld1.c
++++ b/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-cpld1.c
+@@ -440,8 +440,7 @@ static int as7712_32x_cpld_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7712_32x_cpld",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-fan.c b/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-fan.c
+index 6671f80d9ee8..5f4b343fa82b 100644
+--- a/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-fan.c
++++ b/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-fan.c
+@@ -438,8 +438,7 @@ static int as7712_32x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7712_32x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-psu.c b/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-psu.c
+index ccf26f2f1509..f4ad8d4aa28a 100644
+--- a/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-psu.c
++++ b/packages/platforms/accton/x86-64/as7712-32x/modules/builds/x86-64-accton-as7712-32x-psu.c
+@@ -195,8 +195,7 @@ static int as7712_32x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7712_32x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-expansion_card.c b/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-expansion_card.c
+index 3c07f306e8dc..308965bbcb26 100644
+--- a/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-expansion_card.c
++++ b/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-expansion_card.c
+@@ -203,8 +203,7 @@ static int as7716_24sc_expansion_card_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_24sc_expansion_card",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-fan.c b/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-fan.c
+index 2fecf004d215..2981601596a1 100644
+--- a/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-fan.c
++++ b/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-fan.c
+@@ -399,8 +399,7 @@ static int as7716_24sc_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_24sc_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-psu.c b/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-psu.c
+index 02ead58e0582..3d54f24ec17e 100644
+--- a/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-psu.c
++++ b/packages/platforms/accton/x86-64/as7716-24sc/modules/builds/x86-64-accton-as7716-24sc-psu.c
+@@ -138,8 +138,7 @@ static int as7716_24sc_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_24sc_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-expansion_card.c b/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-expansion_card.c
+index 40026d02a912..85c42ecd9604 100644
+--- a/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-expansion_card.c
++++ b/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-expansion_card.c
+@@ -203,8 +203,7 @@ static int as7716_24xc_expansion_card_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_24xc_expansion_card",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-fan.c b/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-fan.c
+index c5e84d0a61b0..752d35aef754 100644
+--- a/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-fan.c
++++ b/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-fan.c
+@@ -399,8 +399,7 @@ static int as7716_24xc_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_24xc_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-psu.c b/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-psu.c
+index 7bef1f5f4437..209c3a5978e0 100644
+--- a/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-psu.c
++++ b/packages/platforms/accton/x86-64/as7716-24xc/modules/builds/x86-64-accton-as7716-24xc-psu.c
+@@ -138,8 +138,7 @@ static int as7716_24xc_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_24xc_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-cpld1.c b/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-cpld1.c
+index 5dc4ec302788..bef73447fdb1 100644
+--- a/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-cpld1.c
++++ b/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-cpld1.c
+@@ -440,8 +440,7 @@ static int as7716_32x_cpld_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_32x_cpld",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-fan.c b/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-fan.c
+index 2fdae8f0599e..29d809b122c5 100644
+--- a/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-fan.c
++++ b/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-fan.c
+@@ -436,8 +436,7 @@ static int as7716_32x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_32x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-psu.c b/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-psu.c
+index 1d59fbaced59..42608f880ee5 100644
+--- a/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-psu.c
++++ b/packages/platforms/accton/x86-64/as7716-32x/modules/builds/x86-64-accton-as7716-32x-psu.c
+@@ -195,8 +195,7 @@ static int as7716_32x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7716_32x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
+index 3af9b231b33a..212545d27ec9 100755
+--- a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
++++ b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-fan.c
+@@ -570,8 +570,7 @@ static int as7726_32x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7726_32x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
+index 559746c4c480..15a09d3345e4 100755
+--- a/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
++++ b/packages/platforms/accton/x86-64/as7726-32x/modules/builds/x86-64-accton-as7726-32x-psu.c
+@@ -186,8 +186,7 @@ static int as7726_32x_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7726_32x_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7816-64x/modules/builds/x86-64-accton-as7816-64x-cpld1.c b/packages/platforms/accton/x86-64/as7816-64x/modules/builds/x86-64-accton-as7816-64x-cpld1.c
+index cb5a0c18f2a4..171d44d5fffe 100644
+--- a/packages/platforms/accton/x86-64/as7816-64x/modules/builds/x86-64-accton-as7816-64x-cpld1.c
++++ b/packages/platforms/accton/x86-64/as7816-64x/modules/builds/x86-64-accton-as7816-64x-cpld1.c
+@@ -649,8 +649,7 @@ static int as7816_64x_cpld_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7816_64x_cpld",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7816-64x/modules/builds/x86-64-accton-as7816-64x-fan.c b/packages/platforms/accton/x86-64/as7816-64x/modules/builds/x86-64-accton-as7816-64x-fan.c
+index b77c65b99880..21d1f1e093b7 100644
+--- a/packages/platforms/accton/x86-64/as7816-64x/modules/builds/x86-64-accton-as7816-64x-fan.c
++++ b/packages/platforms/accton/x86-64/as7816-64x/modules/builds/x86-64-accton-as7816-64x-fan.c
+@@ -410,8 +410,7 @@ static int as7816_64x_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7816_64x_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7926-40xfb/modules/builds/x86-64-accton-as7926-40xfb-cpld.c b/packages/platforms/accton/x86-64/as7926-40xfb/modules/builds/x86-64-accton-as7926-40xfb-cpld.c
+index 5df3cdc0e32f..117e184e8272 100644
+--- a/packages/platforms/accton/x86-64/as7926-40xfb/modules/builds/x86-64-accton-as7926-40xfb-cpld.c
++++ b/packages/platforms/accton/x86-64/as7926-40xfb/modules/builds/x86-64-accton-as7926-40xfb-cpld.c
+@@ -964,9 +964,7 @@ static int as7926_40xfb_cpld_probe(struct i2c_client *client,
+ 	if (status)
+ 		goto exit_free;
+ 
+-	data->hwmon_dev =
+-	    hwmon_device_register_with_info(&client->dev, DRVNAME, NULL, NULL,
+-					    NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-cpld.c b/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-cpld.c
+index ef33e9a391d5..ab538c129f48 100755
+--- a/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-cpld.c
++++ b/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-cpld.c
+@@ -935,7 +935,7 @@ static int as7926_40xke_cpld_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev, DRVNAME, NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-fan.c b/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-fan.c
+index 1ce3486a1ea9..18792f09b367 100755
+--- a/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-fan.c
++++ b/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-fan.c
+@@ -658,7 +658,7 @@ static int as7926_40xke_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, DRVNAME, NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-psu.c b/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-psu.c
+index 67726ae9bdae..6bb99787399a 100755
+--- a/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-psu.c
++++ b/packages/platforms/accton/x86-64/as7926-40xke/modules/builds/x86-64-accton-as7926-40xke-psu.c
+@@ -137,8 +137,7 @@ static int as7926_40xke_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7926_40xke_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7926-80xk/modules/builds/x86-64-accton-as7926-80xk-psu.c b/packages/platforms/accton/x86-64/as7926-80xk/modules/builds/x86-64-accton-as7926-80xk-psu.c
+index 59acca5f469e..c2f519b59aff 100644
+--- a/packages/platforms/accton/x86-64/as7926-80xk/modules/builds/x86-64-accton-as7926-80xk-psu.c
++++ b/packages/platforms/accton/x86-64/as7926-80xk/modules/builds/x86-64-accton-as7926-80xk-psu.c
+@@ -127,8 +127,7 @@ static int as7926_80xk_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as7926_80xk_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7946-30xb/modules/builds/x86-64-accton-as7946-30xb-cpld.c b/packages/platforms/accton/x86-64/as7946-30xb/modules/builds/x86-64-accton-as7946-30xb-cpld.c
+index 052645045846..56721e2b60bb 100644
+--- a/packages/platforms/accton/x86-64/as7946-30xb/modules/builds/x86-64-accton-as7946-30xb-cpld.c
++++ b/packages/platforms/accton/x86-64/as7946-30xb/modules/builds/x86-64-accton-as7946-30xb-cpld.c
+@@ -742,7 +742,7 @@ static int as7946_30xb_cpld_probe(struct i2c_client *client,
+ 	if (status)
+ 		goto exit_free;
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev, DRVNAME, NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as7946-74xkb/modules/builds/x86-64-accton-as7946-74xkb-cpld.c b/packages/platforms/accton/x86-64/as7946-74xkb/modules/builds/x86-64-accton-as7946-74xkb-cpld.c
+index f810eee3cc71..0476d3a49ca9 100644
+--- a/packages/platforms/accton/x86-64/as7946-74xkb/modules/builds/x86-64-accton-as7946-74xkb-cpld.c
++++ b/packages/platforms/accton/x86-64/as7946-74xkb/modules/builds/x86-64-accton-as7946-74xkb-cpld.c
+@@ -1135,7 +1135,7 @@ static int as7946_74xkb_cpld_probe(struct i2c_client *client,
+ 	if (status)
+ 		goto exit_free;
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev, DRVNAME, NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as9716_32d/modules/builds/x86-64-accton-as9716-32d-fan.c b/packages/platforms/accton/x86-64/as9716_32d/modules/builds/x86-64-accton-as9716-32d-fan.c
+index b1c88e2d6fc3..6383cc517e6c 100755
+--- a/packages/platforms/accton/x86-64/as9716_32d/modules/builds/x86-64-accton-as9716-32d-fan.c
++++ b/packages/platforms/accton/x86-64/as9716_32d/modules/builds/x86-64-accton-as9716-32d-fan.c
+@@ -432,8 +432,7 @@ static int as9716_32d_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as9716_32d_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as9716_32d/modules/builds/x86-64-accton-as9716-32d-psu.c b/packages/platforms/accton/x86-64/as9716_32d/modules/builds/x86-64-accton-as9716-32d-psu.c
+index 2528f4293140..ef57a6fed0b4 100755
+--- a/packages/platforms/accton/x86-64/as9716_32d/modules/builds/x86-64-accton-as9716-32d-psu.c
++++ b/packages/platforms/accton/x86-64/as9716_32d/modules/builds/x86-64-accton-as9716-32d-psu.c
+@@ -178,8 +178,7 @@ static int as9716_32d_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as9716_32d_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as9926-24d/modules/builds/x86-64-accton-as9926-24d-fan.c b/packages/platforms/accton/x86-64/as9926-24d/modules/builds/x86-64-accton-as9926-24d-fan.c
+index 28dd039ecabb..26ae4f1a6c7e 100644
+--- a/packages/platforms/accton/x86-64/as9926-24d/modules/builds/x86-64-accton-as9926-24d-fan.c
++++ b/packages/platforms/accton/x86-64/as9926-24d/modules/builds/x86-64-accton-as9926-24d-fan.c
+@@ -479,8 +479,7 @@ static int as9926_24d_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as9926_24d_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/as9926-24d/modules/builds/x86-64-accton-as9926-24d-psu.c b/packages/platforms/accton/x86-64/as9926-24d/modules/builds/x86-64-accton-as9926-24d-psu.c
+index aa3c4efff3ae..d6cc7d565c72 100644
+--- a/packages/platforms/accton/x86-64/as9926-24d/modules/builds/x86-64-accton-as9926-24d-psu.c
++++ b/packages/platforms/accton/x86-64/as9926-24d/modules/builds/x86-64-accton-as9926-24d-psu.c
+@@ -181,8 +181,7 @@ static int as9926_24d_psu_probe(struct i2c_client *client,
+ 		goto exit_free;
+ 	}
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "as9926_24d_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/asxvolt16/modules/builds/x86-64-accton-asxvolt16-fan.c b/packages/platforms/accton/x86-64/asxvolt16/modules/builds/x86-64-accton-asxvolt16-fan.c
+index 34f8120219a3..b27042a55365 100755
+--- a/packages/platforms/accton/x86-64/asxvolt16/modules/builds/x86-64-accton-asxvolt16-fan.c
++++ b/packages/platforms/accton/x86-64/asxvolt16/modules/builds/x86-64-accton-asxvolt16-fan.c
+@@ -446,8 +446,7 @@ static int asxvolt16_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "asxvolt16_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/asxvolt16/modules/builds/x86-64-accton-asxvolt16-psu.c b/packages/platforms/accton/x86-64/asxvolt16/modules/builds/x86-64-accton-asxvolt16-psu.c
+index 89801415adf7..b07c6702c0c0 100755
+--- a/packages/platforms/accton/x86-64/asxvolt16/modules/builds/x86-64-accton-asxvolt16-psu.c
++++ b/packages/platforms/accton/x86-64/asxvolt16/modules/builds/x86-64-accton-asxvolt16-psu.c
+@@ -143,8 +143,7 @@ static int asxvolt16_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "asxvolt16_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/csp9250/modules/builds/x86-64-accton-csp9250-fan.c b/packages/platforms/accton/x86-64/csp9250/modules/builds/x86-64-accton-csp9250-fan.c
+index 4266a11d1259..4fdd84e1258b 100755
+--- a/packages/platforms/accton/x86-64/csp9250/modules/builds/x86-64-accton-csp9250-fan.c
++++ b/packages/platforms/accton/x86-64/csp9250/modules/builds/x86-64-accton-csp9250-fan.c
+@@ -419,8 +419,7 @@ static int csp9250_fan_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "csp9250_fan",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/csp9250/modules/builds/x86-64-accton-csp9250-psu.c b/packages/platforms/accton/x86-64/csp9250/modules/builds/x86-64-accton-csp9250-psu.c
+index 174e66514d35..877e6f26ef69 100755
+--- a/packages/platforms/accton/x86-64/csp9250/modules/builds/x86-64-accton-csp9250-psu.c
++++ b/packages/platforms/accton/x86-64/csp9250/modules/builds/x86-64-accton-csp9250-psu.c
+@@ -136,8 +136,7 @@ static int csp9250_psu_probe(struct i2c_client *client,
+         goto exit_free;
+     }
+ 
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "csp9250_psu",
+-                                                      NULL, NULL, NULL);
++    data->hwmon_dev = hwmon_device_register(&client->dev);
+     if (IS_ERR(data->hwmon_dev)) {
+         status = PTR_ERR(data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/es7632bt3/modules/builds/x86-64-accton-es7632bt3-fan.c b/packages/platforms/accton/x86-64/es7632bt3/modules/builds/x86-64-accton-es7632bt3-fan.c
+index 312818a49e3f..8033e5ab2274 100644
+--- a/packages/platforms/accton/x86-64/es7632bt3/modules/builds/x86-64-accton-es7632bt3-fan.c
++++ b/packages/platforms/accton/x86-64/es7632bt3/modules/builds/x86-64-accton-es7632bt3-fan.c
+@@ -550,9 +550,7 @@ static int es7632bt3_fan_probe(struct i2c_client *client,
+ 	if (status)
+ 		goto exit_free;
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev, 
+-							  "es7632bt3_fan",
+-							  NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/es7632bt3/modules/builds/x86-64-accton-es7632bt3-psu.c b/packages/platforms/accton/x86-64/es7632bt3/modules/builds/x86-64-accton-es7632bt3-psu.c
+index 723571d3a054..20a8a0e8bb4e 100644
+--- a/packages/platforms/accton/x86-64/es7632bt3/modules/builds/x86-64-accton-es7632bt3-psu.c
++++ b/packages/platforms/accton/x86-64/es7632bt3/modules/builds/x86-64-accton-es7632bt3-psu.c
+@@ -163,9 +163,7 @@ static int es7632bt3_psu_probe(struct i2c_client *client,
+ 	if (status)
+ 		goto exit_free;
+ 
+-	data->hwmon_dev = hwmon_device_register_with_info(&client->dev, 
+-							  "es7632bt3_psu", 
+-							  NULL, NULL, NULL);
++	data->hwmon_dev = hwmon_device_register(&client->dev);
+ 	if (IS_ERR(data->hwmon_dev)) {
+ 		status = PTR_ERR(data->hwmon_dev);
+ 		goto exit_remove;
+diff --git a/packages/platforms/accton/x86-64/minipack/modules/builds/minipack_psensor.c b/packages/platforms/accton/x86-64/minipack/modules/builds/minipack_psensor.c
+index bb239c458355..27a929e61d60 100644
+--- a/packages/platforms/accton/x86-64/minipack/modules/builds/minipack_psensor.c
++++ b/packages/platforms/accton/x86-64/minipack/modules/builds/minipack_psensor.c
+@@ -1342,8 +1342,7 @@ static int minipack_probe(struct platform_device *pdev)
+         goto exit_kfree;
+     }
+ 
+-    mp_data->hwmon_dev = hwmon_device_register_with_info(&pdev->dev, DRVNAME,
+-                         NULL, NULL, NULL);
++    mp_data->hwmon_dev = hwmon_device_register(&pdev->dev);
+     if (IS_ERR(mp_data->hwmon_dev)) {
+         status = PTR_ERR(mp_data->hwmon_dev);
+         goto exit_remove;
+diff --git a/packages/platforms/alphanetworks/x86-64/scg60d0-484t/modules/builds/scg60d0-484t_psu.c b/packages/platforms/alphanetworks/x86-64/scg60d0-484t/modules/builds/scg60d0-484t_psu.c
+index 16c754a944a3..4b36e8f2fcf0 100644
+--- a/packages/platforms/alphanetworks/x86-64/scg60d0-484t/modules/builds/scg60d0-484t_psu.c
++++ b/packages/platforms/alphanetworks/x86-64/scg60d0-484t/modules/builds/scg60d0-484t_psu.c
+@@ -302,8 +302,7 @@ static int scg60d0_484t_psu_probe(struct i2c_client *client,
+     }
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0)
+-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "scg60d0_psu",
 -                                                      NULL, NULL, NULL);
 +    data->hwmon_dev = hwmon_device_register(&client->dev);
  #else

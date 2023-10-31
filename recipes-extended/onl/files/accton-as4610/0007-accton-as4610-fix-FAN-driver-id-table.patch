@@ -1,7 +1,7 @@
 From 242f9ae241b1917cab412c3decc6bfc3c18f6a55 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 14:16:09 +0200
-Subject: [PATCH 7/10] accton-as4610: fix FAN driver id table
+Subject: [PATCH 7/8] accton-as4610: fix FAN driver id table
 
 This is a platform driver, not an I2C driver, so fix and add the id
 table to the driver.
