@@ -1,7 +1,7 @@
 From 21c1dbb7292fa4db62a91fdffb1b6ffcc4d0dacb Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 29 Sep 2023 11:26:41 +0200
-Subject: [PATCH 17/17] optoe: fix race in sysfs registration on probe
+Subject: [PATCH 16/16] optoe: fix race in sysfs registration on probe
 
 The optoe first creates the sysfs entries and then calls
 i2c_set_clientdata(), but a very fast userspace may already try to
