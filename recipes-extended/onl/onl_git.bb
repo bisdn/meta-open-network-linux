@@ -15,23 +15,22 @@ PV = "2023-09-13+git${SRCPV}"
 
 # submodules are checked out individually to support license file checking
 SRC_URI += " \
-           file://onl/0001-file_uds-silence-unused-result-warnings.patch \
-           file://onl/0002-platform_manager-do-not-ignore-write-return-value.patch \
-           file://onl/0003-file-check-unix-socket-path-is-short-enough.patch \
-           file://onl/0004-ym2651y-fix-update-when-MFR_MODEL_OPTION-is-uninmple.patch \
-           file://onl/0005-WIP-tools-convert-to-python3.patch \
-           file://onl/0006-dynamically-determine-location-of-python3.patch \
-           file://onl/0007-onlpm-hardcode-supported-arches.patch \
-           file://onl/0008-onlpm-add-an-argument-for-just-printing-the-builddir.patch \
-           file://onl/0009-onlpm-allow-overriding-the-dist-codename-from-enviro.patch \
-           file://onl/0010-tools-replace-yaml.load-with-yaml.full_load.patch \
-           file://onl/0011-optoe-allow-compilation-with-linux-5.5-and-newer.patch \
-           file://onl/0012-kmodbuild.sh-don-t-treat-undefined-symbols-as-errors.patch \
-           file://onl/0013-optoe-add-of-device-match-table.patch \
-           file://onl/0014-ym2561y-add-of-device-match-table.patch \
-           file://onl/0015-modules-do-not-call-hwmon_device_register_with_info-.patch \
-           file://onl/0016-modules-update-i2c_driver-with-6.1-compatibility.patch \
-           file://onl/0017-optoe-fix-race-in-sysfs-registraton-on-probe.patch \
+           file://onl/0001-platform_manager-do-not-ignore-write-return-value.patch \
+           file://onl/0002-file-check-unix-socket-path-is-short-enough.patch \
+           file://onl/0003-ym2651y-fix-update-when-MFR_MODEL_OPTION-is-uninmple.patch \
+           file://onl/0004-WIP-tools-convert-to-python3.patch \
+           file://onl/0005-dynamically-determine-location-of-python3.patch \
+           file://onl/0006-onlpm-hardcode-supported-arches.patch \
+           file://onl/0007-onlpm-add-an-argument-for-just-printing-the-builddir.patch \
+           file://onl/0008-onlpm-allow-overriding-the-dist-codename-from-enviro.patch \
+           file://onl/0009-tools-replace-yaml.load-with-yaml.full_load.patch \
+           file://onl/0010-optoe-allow-compilation-with-linux-5.5-and-newer.patch \
+           file://onl/0011-kmodbuild.sh-don-t-treat-undefined-symbols-as-errors.patch \
+           file://onl/0012-optoe-add-of-device-match-table.patch \
+           file://onl/0013-ym2561y-add-of-device-match-table.patch \
+           file://onl/0014-modules-do-not-call-hwmon_device_register_with_info-.patch \
+           file://onl/0015-modules-update-i2c_driver-with-6.1-compatibility.patch \
+           file://onl/0016-optoe-fix-race-in-sysfs-registraton-on-probe.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
@@ -50,20 +49,17 @@ SRC_URI += " \
            file://accton-as4610/0008-accton-as4610-let-CPLD-handle-the-LED-device.patch \
            file://accton-as4610/0009-accton-as4610-do-not-call-hwmon_device_register_with.patch \
            file://accton-as4610/0010-accton-as4610-update-i2c_driver-with-6.1-compatibili.patch \
-           file://accton-as4630-54pe/0001-accton-as4630-54pe-silence-error.patch \
-           file://accton-as4630-54pe/0002-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
-           file://accton-as4630-54pe/0003-accton-as4630-54pe-update-i2c_driver-with-6.1-compat.patch \
-           file://accton-as4630-54te/0001-accton-as4630-54te-silence-unused-result-warning.patch \
-           file://accton-as4630-54te/0002-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
-           file://accton-as4630-54te/0003-accton-as4610-54te-do-not-call-hwmon_device_register.patch \
-           file://accton-as4630-54te/0004-accton-as4630-54te-update-i2c_driver-with-6.1-compat.patch \
+           file://accton-as4630-54pe/0001-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
+           file://accton-as4630-54pe/0002-accton-as4630-54pe-update-i2c_driver-with-6.1-compat.patch \
+           file://accton-as4630-54te/0001-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
+           file://accton-as4630-54te/0002-accton-as4610-54te-do-not-call-hwmon_device_register.patch \
+           file://accton-as4630-54te/0003-accton-as4630-54te-update-i2c_driver-with-6.1-compat.patch \
            file://accton-as5835-54x/0001-Support-psu_fan_dir-sysfs-for-YM-1401A-PSU.patch \
            file://accton-as5835-54x/0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
            file://accton-as5835-54x/0003-accton-as5835-54x-do-not-call-hwmon_device_register_.patch \
            file://accton-as5835-54x/0004-accton-as5835-54x-update-i2c_driver-with-6.1-compati.patch \
-           file://accton-as7726-32x/0001-as7726-32x-silence-ignored-return-value-warnings.patch \
-           file://accton-as7726-32x/0002-accton-as7726-32x-do-not-call-hwmon_device_register_.patch \
-           file://accton-as7726-32x/0003-accton-as7726-32x-update-i2c_driver-with-6.1-compati.patch \
+           file://accton-as7726-32x/0001-accton-as7726-32x-do-not-call-hwmon_device_register_.patch \
+           file://accton-as7726-32x/0002-accton-as7726-32x-update-i2c_driver-with-6.1-compati.patch \
            file://cel-questone-2a/0001-add-celestica-questone-2a.patch \
            file://cel-questone-2a/0002-questone-2a-fix-ignoring-unused-result-warnings.patch \
            file://cel-questone-2a/0003-cel-questone-2a-delete-unused-global-variables.patch \

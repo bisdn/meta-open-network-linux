@@ -1,7 +1,7 @@
 From a82a63a3d9234f587ff34e32a96fe7383dce0910 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 15 Nov 2022 14:53:18 +0100
-Subject: [PATCH 3/3] accton-as7726-32x: update i2c_driver with 6.1
+Subject: [PATCH 2/2] accton-as7726-32x: update i2c_driver with 6.1
  compatibility
 
 i2c_remove changes its return type from int to void, so we need to

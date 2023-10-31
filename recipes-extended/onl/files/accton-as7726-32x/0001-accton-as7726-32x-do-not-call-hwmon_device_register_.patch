@@ -1,7 +1,7 @@
 From a02c95b1278b4fe98af8e9d7d812ab21ba57db10 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 22 Nov 2022 13:50:47 +0100
-Subject: [PATCH 2/3] accton-as7726-32x: do not call
+Subject: [PATCH 1/2] accton-as7726-32x: do not call
  hwmon_device_register_with_info() with NULL chip
 
 hwmon_device_register_with_info() is supposed to require hwmon_chip_info

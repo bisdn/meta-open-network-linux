@@ -1,7 +1,7 @@
 From c31ee7f01b46fef1f811ee113192d923e553594e Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 15 Nov 2022 14:52:33 +0100
-Subject: [PATCH 4/4] accton-as4630-54te: update i2c_driver with 6.1
+Subject: [PATCH 3/3] accton-as4630-54te: update i2c_driver with 6.1
  compatibility
 
 i2c_remove changes its return type from int to void, so we need to
