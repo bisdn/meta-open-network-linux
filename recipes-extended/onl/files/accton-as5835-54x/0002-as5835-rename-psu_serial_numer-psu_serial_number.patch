@@ -1,7 +1,7 @@
 From c5aab4086340a22e6b92a0eff98d82ff31225daf Mon Sep 17 00:00:00 2001
 From: Roger Luethi <roger.luethi@bisdn.de>
 Date: Sat, 19 Mar 2022 16:42:16 +0100
-Subject: [PATCH 2/4] as5835: rename psu_serial_numer -> psu_serial_number
+Subject: [PATCH 2/2] as5835: rename psu_serial_numer -> psu_serial_number
 
 For the as5835-54x, the files that show the PSU serial numbers in sysfs
 are currently:

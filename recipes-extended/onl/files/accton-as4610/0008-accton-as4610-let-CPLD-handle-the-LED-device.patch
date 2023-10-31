@@ -1,7 +1,7 @@
 From aa73d83e6046d67680774c4ced8d4ea7e2790cfa Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 14:26:51 +0200
-Subject: [PATCH 8/10] accton-as4610: let CPLD handle the LED device
+Subject: [PATCH 8/8] accton-as4610: let CPLD handle the LED device
 
 The LED device directly depends on the CPLD device, so let it be created
 by the CPLD driver. This allows us to convert the LED driver to a simple
