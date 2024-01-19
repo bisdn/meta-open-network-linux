@@ -1,0 +1,89 @@
+From eb85a682cf7c099c6bbc51988d2711f35f2f90db Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 21 Nov 2023 14:40:09 +0100
+Subject: [PATCH 7/7] cel-questone-2a: update i2c_drivers with 6.3
+ compatibility
+
+i2c_probe() dropped its i2c_device_id* argument, so we need to provide
+different versions based on kernel version.
+
+Add variants using the following semantic patch:
+
+// <smpl>
+@r@
+identifier DRIVER;
+identifier remove_fn;
+fresh identifier probe_fn_wrap = probe_fn ## "_6_3";
+position p;
+@@
+struct i2c_driver DRIVER@p = {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++	.probe = probe_fn_wrap,
++#else
+	.probe = probe_fn,
++#endif
+};
+
+@i depends on r@
+@@
+#include <linux/version.h>
+@depends on r && !i@
+@@
+#include <...>
++#include <linux/version.h>
+@depends on r@
+identifier r.probe_fn;
+identifier r.probe_fn_wrap;
+@@
+int probe_fn(...) {...}
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static void probe_fn_wrap(struct i2c_client *client)
++{
++	probe_fn(client, i2c_client_get_device_id(client));
++}
++#endif
+// </smpl>
+
+applied with
+
+  spatch --smpl-spacing --sp-file 6.3-i2c_probe_sig.cocci --in-place --dir packages/
+
+Result taken as is, without any code style fixes.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86-64/questone-2a/modules/builds/src/mc24lc64t.c  | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c
+index 7901297137f4..4d0b461c2800 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c
+@@ -142,6 +142,12 @@ static int mc24lc64t_probe(struct i2c_client *client,
+ 
+         return err;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int mc24lc64t_probe_6_3(struct i2c_client *client)
++{
++        return mc24lc64t_probe(client, i2c_client_get_device_id(client));
++}
++#endif
+ 
+ static int mc24lc64t_remove(struct i2c_client *client)
+ {
+@@ -168,7 +174,11 @@ static struct i2c_driver mc24lc64t_driver = {
+                 .name   = "mc24lc64t",
+                 .owner = THIS_MODULE,
+         },
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++        .probe = mc24lc64t_probe_6_3,
++#else
+         .probe          = mc24lc64t_probe,
++#endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+         .remove = mc24lc64t_remove_6_1,
+ #else
+-- 
+2.42.1
+

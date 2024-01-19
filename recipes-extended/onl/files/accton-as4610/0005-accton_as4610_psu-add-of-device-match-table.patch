@@ -1,4 +1,4 @@
-From 5b3121fb3b6e122f04b8411485dbc3e240342d63 Mon Sep 17 00:00:00 2001
+From f06d7e3382c9ed58dd21313002dff5ad02b54622 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:10:23 +0200
 Subject: [PATCH 5/8] accton_as4610_psu: add of device match table
@@ -13,7 +13,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 9 insertions(+)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
-index 0ad218228f7f..ec3c75a51153 100644
+index 1b37175be4eb..42f52e70a2e1 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_psu.c
 @@ -33,6 +33,7 @@
@@ -24,7 +24,7 @@ index 0ad218228f7f..ec3c75a51153 100644
  #include <linux/version.h>
  
  #define MAX_MODEL_NAME 11
-@@ -210,10 +211,18 @@ static const struct i2c_device_id as4610_psu_id[] = {
+@@ -216,10 +217,18 @@ static const struct i2c_device_id as4610_psu_id[] = {
  };
  MODULE_DEVICE_TABLE(i2c, as4610_psu_id);
  
@@ -41,8 +41,8 @@ index 0ad218228f7f..ec3c75a51153 100644
  		.name	  = "as4610_psu",
 +		.of_match_table = as4610_psu_of_id,
  	},
- 	.probe		  = as4610_psu_probe,
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
+ 	.probe = as4610_psu_probe_6_3,
 -- 
 2.42.0
 
