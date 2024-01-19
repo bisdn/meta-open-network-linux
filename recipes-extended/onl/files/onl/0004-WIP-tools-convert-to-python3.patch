@@ -1,7 +1,7 @@
 From df6d99bf26a8e8cca41633b9af00b6c84ce10607 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 16 Jun 2022 10:30:25 +0200
-Subject: [PATCH 04/16] WIP: tools: convert to python3
+Subject: [PATCH 04/17] WIP: tools: convert to python3
 
 Convert the build code from python2 to python3:
 

@@ -1,7 +1,7 @@
 From 9c741e5b9793dbf529cda24b1023249e2f0099d3 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 5 Aug 2022 10:43:37 +0000
-Subject: [PATCH 4/6] cel-questone-2a: fix various issues in
+Subject: [PATCH 4/7] cel-questone-2a: fix various issues in
  questone-2a_switchboard
 
 Update the code to compile against newer kernels and fix various issues:

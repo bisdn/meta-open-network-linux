@@ -31,6 +31,7 @@ SRC_URI += " \
            file://onl/0014-modules-do-not-call-hwmon_device_register_with_info-.patch \
            file://onl/0015-modules-update-i2c_drivers-with-6.1.patch \
            file://onl/0016-optoe-fix-race-in-sysfs-registraton-on-probe.patch \
+           file://onl/0017-modules-update-i2c_drivers-with-6.3-compatibility.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
@@ -57,6 +58,7 @@ SRC_URI += " \
            file://cel-questone-2a/0004-cel-questone-2a-fix-various-issues-in-questone-2a_sw.patch \
            file://cel-questone-2a/0005-cel-questone-2a-do-not-build-optoe.patch \
            file://cel-questone-2a/0006-cel-questone-2a-update-i2c_drivers-with-6.1-compatib.patch \
+           file://cel-questone-2a/0007-cel-questone-2a-update-i2c_drivers-with-6.3-compatib.patch \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
            file://delta-ag5648/0002-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
