@@ -1,8 +1,8 @@
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index a08c9d092a33..3415cd81710b 100644
+index 6d5afe2e6ba3..477962fda7b0 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
-@@ -459,6 +459,8 @@ source "arch/arm/mach-imx/Kconfig"
+@@ -461,6 +461,8 @@ source "arch/arm/mach-imx/Kconfig"
  
  source "arch/arm/mach-iop32x/Kconfig"
  
@@ -24,10 +24,10 @@ index c846119c448f..fb88418d485c 100644
  machine-$(CONFIG_PLAT_VERSATILE)	+= versatile
  machine-$(CONFIG_PLAT_SPEAR)		+= spear
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 6aa7dc4db2fc..c2efbeb11b80 100644
+index df6d905eeb87..7cd8abef9343 100644
 --- a/arch/arm/boot/dts/Makefile
 +++ b/arch/arm/boot/dts/Makefile
-@@ -1633,3 +1633,21 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+@@ -1641,3 +1641,21 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
  	aspeed-bmc-vegman-n110.dtb \
  	aspeed-bmc-vegman-rx20.dtb \
  	aspeed-bmc-vegman-sx20.dtb
@@ -51,7 +51,7 @@ index 6aa7dc4db2fc..c2efbeb11b80 100644
 +	bcm953547.dtb
 diff --git a/arch/arm/boot/dts/bcm-greyhound.dtsi b/arch/arm/boot/dts/bcm-greyhound.dtsi
 new file mode 100644
-index 000000000000..a28c27b450c7
+index 000000000000..98d5fe265600
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-greyhound.dtsi
 @@ -0,0 +1,408 @@
@@ -251,7 +251,7 @@ index 000000000000..a28c27b450c7
 +			compatible = "brcm,usb-phy-gh";
 +			reg = idm_usb2h: <0x18115000 0x1000>,
 +			  	idm_usb2d: <0x18111000 0x1000>;
-+			vbus-gpio = <&gpio_ccg 6 GPIO_ACTIVE_HIGH>;
++			vbus-gpios = <&gpio_ccg 6 GPIO_ACTIVE_HIGH>;
 +			status = "disabled";
 +		};
 +
@@ -465,7 +465,7 @@ index 000000000000..a28c27b450c7
 +};
 diff --git a/arch/arm/boot/dts/bcm-greyhound2.dtsi b/arch/arm/boot/dts/bcm-greyhound2.dtsi
 new file mode 100644
-index 000000000000..35cd1896a318
+index 000000000000..ae8655c66961
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-greyhound2.dtsi
 @@ -0,0 +1,429 @@
@@ -665,7 +665,7 @@ index 000000000000..35cd1896a318
 +			reg = idm_usb2h: <0x18115000 0x1000>,
 +				idm_usb2d: <0x18111000 0x1000>,
 +				idm_utmih: <0x18049500 0x100>;
-+			vbus-gpio = <&gpio_ccg 6 GPIO_ACTIVE_HIGH>;
++			vbus-gpios = <&gpio_ccg 6 GPIO_ACTIVE_HIGH>;
 +			status = "disabled";
 +		};
 +
@@ -900,7 +900,7 @@ index 000000000000..35cd1896a318
 +};
 diff --git a/arch/arm/boot/dts/bcm-helix4.dtsi b/arch/arm/boot/dts/bcm-helix4.dtsi
 new file mode 100644
-index 000000000000..ea4b7389d006
+index 000000000000..4426cd36d7f2
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-helix4.dtsi
 @@ -0,0 +1,512 @@
@@ -1161,8 +1161,8 @@ index 000000000000..ea4b7389d006
 +			compatible = "brcm,usb-phy-hx4";
 +			reg = idm_usb2h: <0x18115000 0x1000>,
 +				idm_usb2d: <0x18116000 0x1000>;
-+			vbus-gpio = <&gpio_cca 1 GPIO_ACTIVE_LOW>;
-+			usbdev-gpio = <&gpio_cca 0 GPIO_ACTIVE_HIGH>;
++			vbus-gpios = <&gpio_cca 1 GPIO_ACTIVE_LOW>;
++			usbdev-gpios = <&gpio_cca 0 GPIO_ACTIVE_HIGH>;
 +			status = "disabled";
 +		};
 +
@@ -1431,7 +1431,7 @@ index 33e6ba63a1ee..8d5ddead45a7 100644
  	interrupt-parent = <&gic>;
 diff --git a/arch/arm/boot/dts/bcm-hurricane3.dtsi b/arch/arm/boot/dts/bcm-hurricane3.dtsi
 new file mode 100644
-index 000000000000..7ac61fbc0334
+index 000000000000..752eb2d5a97d
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-hurricane3.dtsi
 @@ -0,0 +1,416 @@
@@ -1631,7 +1631,7 @@ index 000000000000..7ac61fbc0334
 +			compatible = "brcm,usb-phy-gh";
 +			reg = idm_usb2h: <0x18115000 0x1000>,
 +				idm_usb2d: <0x18111000 0x1000>;
-+			vbus-gpio = <&gpio_ccg 3 GPIO_ACTIVE_HIGH>;
++			vbus-gpios = <&gpio_ccg 3 GPIO_ACTIVE_HIGH>;
 +			status = "disabled";
 +		};
 +
@@ -1853,7 +1853,7 @@ index 000000000000..7ac61fbc0334
 +};
 diff --git a/arch/arm/boot/dts/bcm-katana2.dtsi b/arch/arm/boot/dts/bcm-katana2.dtsi
 new file mode 100644
-index 000000000000..5fb697489ad0
+index 000000000000..c0756ea72958
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-katana2.dtsi
 @@ -0,0 +1,480 @@
@@ -2111,8 +2111,8 @@ index 000000000000..5fb697489ad0
 +			compatible = "brcm,usb-phy-kt2";
 +			reg = idm_usb2h: <0x18115000 0x1000>, 
 +			  	idm_usb2d: <0x18116000 0x1000>; 
-+			vbus-gpio = <&gpio_cca 1 GPIO_ACTIVE_LOW>;
-+			usbdev-gpio = <&gpio_cca 0 GPIO_ACTIVE_HIGH>;
++			vbus-gpios = <&gpio_cca 1 GPIO_ACTIVE_LOW>;
++			usbdev-gpios = <&gpio_cca 0 GPIO_ACTIVE_HIGH>;
 +			status = "disabled";	
 +		};
 +	
@@ -2339,7 +2339,7 @@ index 000000000000..5fb697489ad0
 +
 diff --git a/arch/arm/boot/dts/bcm-saber2.dtsi b/arch/arm/boot/dts/bcm-saber2.dtsi
 new file mode 100644
-index 000000000000..862476d30590
+index 000000000000..af2f9a676619
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-saber2.dtsi
 @@ -0,0 +1,397 @@
@@ -2537,7 +2537,7 @@ index 000000000000..862476d30590
 +			compatible = "brcm,usb-phy-sb2";
 +			reg = idm_usb2h: <0x18115000 0x1000>,
 +			      idm_usb2d: <0x18111000 0x1000>;
-+			vbus-gpio = <&gpio_ccg 1 GPIO_ACTIVE_LOW>;
++			vbus-gpios = <&gpio_ccg 1 GPIO_ACTIVE_LOW>;
 +			status = "disabled";
 +		};
 +
@@ -2742,7 +2742,7 @@ index 000000000000..862476d30590
 +};
 diff --git a/arch/arm/boot/dts/bcm-wolfhound2.dtsi b/arch/arm/boot/dts/bcm-wolfhound2.dtsi
 new file mode 100644
-index 000000000000..3f55e7c4f3e7
+index 000000000000..abb7abb03ccc
 --- /dev/null
 +++ b/arch/arm/boot/dts/bcm-wolfhound2.dtsi
 @@ -0,0 +1,385 @@
@@ -2932,7 +2932,7 @@ index 000000000000..3f55e7c4f3e7
 +			compatible = "brcm,usb-phy-gh";
 +			reg = idm_usb2h: <0x18115000 0x1000>,
 +				idm_usb2d: <0x18111000 0x1000>;
-+			vbus-gpio = <&gpio_ccg 3 GPIO_ACTIVE_HIGH>;
++			vbus-gpios = <&gpio_ccg 3 GPIO_ACTIVE_HIGH>;
 +			status = "disabled";
 +		};
 +
@@ -6358,5 +6358,5 @@ index 000000000000..4f1527fe46bd
 +#endif
 \ No newline at end of file
 -- 
-2.38.1
+2.43.0
 
