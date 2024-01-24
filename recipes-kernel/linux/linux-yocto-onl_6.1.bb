@@ -29,10 +29,6 @@ SRC_URI += "\
     file://kernel-meta;type=kmeta;name=kernel-meta;destsuffix=kernel-meta \
 "
 
-SRC_URI:append:arm = "\
-    file://arch/arm/boot/dts;subdir=git \
-"
-
 DEPENDS += "${@bb.utils.contains('ARCH', 'x86', 'elfutils-native', '', d)}"
 DEPENDS += "openssl-native util-linux-native"
 DEPENDS += "gmp-native libmpc-native"
