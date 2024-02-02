@@ -1,0 +1,20 @@
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 673bafb8be58..ddb0711a1279 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -200,10 +200,10 @@ config GPIO_BCM_KONA
+ 
+ config GPIO_BCM_XGS_IPROC
+ 	tristate "BRCM XGS iProc GPIO support"
+-	depends on OF_GPIO && (ARCH_BCM_IPROC || COMPILE_TEST)
++	depends on OF_GPIO && (ARCH_BCM_IPROC || ARCH_XGS_IPROC || COMPILE_TEST)
+ 	select GPIO_GENERIC
+ 	select GPIOLIB_IRQCHIP
+-	default ARCH_BCM_IPROC
++	default ARCH_BCM_IPROC || ARCH_XGS_IPROC
+ 	help
+ 	  Say yes here to enable GPIO support for Broadcom XGS iProc SoCs.
+ 
+-- 
+2.43.0
+

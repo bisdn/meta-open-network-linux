@@ -1,0 +1,19 @@
+diff --git a/drivers/net/mdio/Kconfig b/drivers/net/mdio/Kconfig
+index 4a7a303be2f7..0630ead94f18 100644
+--- a/drivers/net/mdio/Kconfig
++++ b/drivers/net/mdio/Kconfig
+@@ -86,9 +86,9 @@ config MDIO_BITBANG
+ 
+ config MDIO_BCM_IPROC
+ 	tristate "Broadcom iProc MDIO bus controller"
+-	depends on ARCH_BCM_IPROC || COMPILE_TEST
++	depends on ARCH_BCM_IPROC || ARCH_XGS_IPROC || COMPILE_TEST
+ 	depends on HAS_IOMEM && OF_MDIO
+-	default ARCH_BCM_IPROC
++	default ARCH_BCM_IPROC || ARCH_XGS_IPROC
+ 	help
+ 	  This module provides a driver for the MDIO busses found in the
+ 	  Broadcom iProc SoC's.
+-- 
+2.43.0
+

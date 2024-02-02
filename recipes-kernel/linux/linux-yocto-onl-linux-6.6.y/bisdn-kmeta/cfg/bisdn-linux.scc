@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+
+patch 0001-net-rtnetlink-send-BONDING_INFO-events-down-to-users.patch
+patch 0001-net-ipv6-apply-IFLA_INET6_ADDR_GEN_MODE-immediately.patch
+patch 0001-tun-allow-setting-hwaddr-on-tap-interface-creation.patch
+
+# https://git.yoctoproject.org/yocto-kernel-cache/tree/
+include features/bpf/bpf.scc
+include features/cgroups/cgroups.scc
+include features/tun/tun.scc
+include features/vrf/vrf.scc
+include cfg/fs/ext4.scc
+include cfg/net/bridge.scc
+include cgl/cfg/net/ip_vs.scc
+
+# in recipes-kernel/linux/linux-yocto-onl-linux-*/bisdn-kmeta/cfg/
+include docker-extra.scc
