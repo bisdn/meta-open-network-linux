@@ -1,0 +1,25 @@
+diff --git a/drivers/mtd/nand/raw/brcmnand/brcmnand.c b/drivers/mtd/nand/raw/brcmnand/brcmnand.c
+index 440bef477930..9b2fc6319a68 100644
+--- a/drivers/mtd/nand/raw/brcmnand/brcmnand.c
++++ b/drivers/mtd/nand/raw/brcmnand/brcmnand.c
+@@ -1636,6 +1636,8 @@ static void brcmnand_send_cmd(struct brcmnand_host *host, int cmd)
+ 	ctrl->cmd_pending = cmd;
+ 
+ 	ret = bcmnand_ctrl_poll_status(ctrl, NAND_CTRL_RDY, NAND_CTRL_RDY, 0);
++	/* mark out this warning for XGS iProc */
++	if (!IS_ENABLED(CONFIG_ARCH_XGS_IPROC))
+ 	WARN_ON(ret);
+ 
+ 	mb(); /* flush previous writes */
+@@ -2237,6 +2239,8 @@ static int brcmstb_nand_verify_erased_page(struct mtd_info *mtd,
+ 						  ecc_bytes, ecc.length,
+ 						  NULL, 0,
+ 						  chip->ecc.strength);
++		buf += chip->ecc.size;
++
+ 		if (ret < 0)
+ 			return ret;
+ 
+-- 
+2.43.0
+
