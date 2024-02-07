@@ -1,0 +1,614 @@
+From 7831a272c10984b39a3805a2306024bd548f39c4 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 7 Feb 2024 17:27:23 +0100
+Subject: [PATCH 18/18] modules: update class_create() usage for 6.4
+
+Update class_create() usage for 6.4 which lost its first parameter.
+
+// <smpl>
+@@
+expression ret;
+expression E1,E2;
+@@
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++ret = class_create(E2);
++#else
+ ret = class_create(E1, E2);
++#endif
+// </smpl>
+
+applied with
+
+  spatch --sp-file 6.4-class_create.cocci --in-place --dir packages/
+
+Result taken as is, without any code style fixes.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86-64/as9516-32d/modules/builds/src/bf_fpga_main.c    | 4 ++++
+ .../x86-64/belgite/modules/builds/src/platform_cpld.c      | 4 ++++
+ .../silverstone/modules/builds/src/switchboard-diag.c      | 4 ++++
+ .../inventec/x86-64/d10056/modules/builds/src/inv_swps.c   | 4 ++++
+ .../inventec/x86-64/d10056/modules/builds/src/inv_vpd.c    | 4 ++++
+ .../inventec/x86-64/d3352/modules/builds/src/inv_swps.c    | 4 ++++
+ .../inventec/x86-64/d5052/modules/builds/src/inv_swps.c    | 4 ++++
+ .../inventec/x86-64/d5052/modules/builds/src/inv_vpd.c     | 4 ++++
+ .../inventec/x86-64/d5254/modules/builds/src/inv_swps.c    | 4 ++++
+ .../inventec/x86-64/d5254/modules/builds/src/inv_vpd.c     | 4 ++++
+ .../x86-64/d5264q28b/modules/builds/src/inv_swps.c         | 4 ++++
+ .../inventec/x86-64/d6254qs/modules/builds/src/inv_swps.c  | 4 ++++
+ .../inventec/x86-64/d6254qs/modules/builds/src/inv_vpd.c   | 4 ++++
+ .../inventec/x86-64/d6332/modules/builds/src/inv_swps.c    | 4 ++++
+ .../inventec/x86-64/d6356/modules/builds/src/inv_swps.c    | 4 ++++
+ .../inventec/x86-64/d6356/modules/builds/src/inv_vpd.c     | 4 ++++
+ .../inventec/x86-64/d6556/modules/builds/src/inv_swps.c    | 4 ++++
+ .../inventec/x86-64/d6556/modules/builds/src/inv_vpd.c     | 4 ++++
+ .../x86-64/d7032q28b/modules/builds/src/inv_swps.c         | 4 ++++
+ .../inventec/x86-64/d7032q28b/modules/builds/src/inv_vpd.c | 4 ++++
+ .../x86-64/d7054q28b/modules/builds/src/inv_swps.c         | 4 ++++
+ .../inventec/x86-64/d7054q28b/modules/builds/src/inv_vpd.c | 4 ++++
+ .../x86-64/d7264q28b/modules/builds/src/inv_swps.c         | 4 ++++
+ .../inventec/x86-64/d7264q28b/modules/builds/src/inv_vpd.c | 4 ++++
+ .../inventec/x86-64/d7332/modules/builds/src/inv_vpd.c     | 4 ++++
+ .../x86-64/aurora-610/modules/builds/src/net_swps.c        | 7 ++++++-
+ .../netberg/x86-64/aurora-610/modules/builds/src/net_vpd.c | 7 ++++++-
+ .../netberg/x86-64/aurora-820/modules/builds/src/net_vpd.c | 4 ++++
+ packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c | 4 ++++
+ .../platforms/quanta/x86-64/modules/builds/qci_cpld_led.c  | 4 ++++
+ .../quanta/x86-64/modules/builds/qci_cpld_sfp28.c          | 4 ++++
+ .../modules/builds/src/x86-64-ufispace-s9700-23d-vpd.c     | 4 ++++
+ .../modules/builds/src/x86-64-ufispace-s9700-53dx-vpd.c    | 4 ++++
+ .../modules/builds/src/x86-64-ufispace-s9705-48d-vpd.c     | 4 ++++
+ 34 files changed, 140 insertions(+), 2 deletions(-)
+
+diff --git a/packages/platforms/accton/x86-64/as9516-32d/modules/builds/src/bf_fpga_main.c b/packages/platforms/accton/x86-64/as9516-32d/modules/builds/src/bf_fpga_main.c
+index 2cb1ee3b1a7f..8b4195c382f0 100644
+--- a/packages/platforms/accton/x86-64/as9516-32d/modules/builds/src/bf_fpga_main.c
++++ b/packages/platforms/accton/x86-64/as9516-32d/modules/builds/src/bf_fpga_main.c
+@@ -657,7 +657,11 @@ static int bf_init_cdev(struct bf_pci_dev *bfdev, int minor) {
+   ret = bf_major_init(bfdev, minor);
+   if (ret) return ret;
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++  bf_class = class_create(BF_CLASS_NAME);
++#else
+   bf_class = class_create(THIS_MODULE, BF_CLASS_NAME);
++#endif
+   if (!bf_class) {
+     printk(KERN_ERR "create_class failed for bf_fpga_dev\n");
+     ret = -ENODEV;
+diff --git a/packages/platforms/celestica/x86-64/belgite/modules/builds/src/platform_cpld.c b/packages/platforms/celestica/x86-64/belgite/modules/builds/src/platform_cpld.c
+index 7a4c5cb6f7fc..c56306dd4d00 100644
+--- a/packages/platforms/celestica/x86-64/belgite/modules/builds/src/platform_cpld.c
++++ b/packages/platforms/celestica/x86-64/belgite/modules/builds/src/platform_cpld.c
+@@ -928,7 +928,11 @@ static int cpld_drv_probe(struct platform_device *pdev)
+         return err;
+     }
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    celplatform = class_create("celplatform");
++#else
+     celplatform = class_create(THIS_MODULE, "celplatform");
++#endif
+     if (IS_ERR(celplatform)) {
+         printk(KERN_ERR "Failed to register device class\n");
+         sysfs_remove_group(&pdev->dev.kobj, &cpld_group);
+diff --git a/packages/platforms/celestica/x86-64/silverstone/modules/builds/src/switchboard-diag.c b/packages/platforms/celestica/x86-64/silverstone/modules/builds/src/switchboard-diag.c
+index ee3e6d7be920..ff9fde4f7420 100644
+--- a/packages/platforms/celestica/x86-64/silverstone/modules/builds/src/switchboard-diag.c
++++ b/packages/platforms/celestica/x86-64/silverstone/modules/builds/src/switchboard-diag.c
+@@ -1258,7 +1258,11 @@ static int fpga_pci_probe(struct pci_dev *pdev)
+     fpga_version = ioread32(fpga_dev.data_base_addr);
+     printk(KERN_INFO "FPGA VERSION : %8.8x\n", fpga_version);
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    fpgafwclass = class_create(CLASS_NAME);
++#else
+     fpgafwclass = class_create(THIS_MODULE, CLASS_NAME);
++#endif
+     if (IS_ERR(fpgafwclass)) {
+         printk(KERN_ALERT "Failed to register device class\n");
+         err = PTR_ERR(fpgafwclass);
+diff --git a/packages/platforms/inventec/x86-64/d10056/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d10056/modules/builds/src/inv_swps.c
+index 6686352cf616..cff2b68fd9f4 100644
+--- a/packages/platforms/inventec/x86-64/d10056/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d10056/modules/builds/src/inv_swps.c
+@@ -2920,7 +2920,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d10056/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d10056/modules/builds/src/inv_vpd.c
+index b07cb6bbbdc6..92ea920df26d 100644
+--- a/packages/platforms/inventec/x86-64/d10056/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d10056/modules/builds/src/inv_vpd.c
+@@ -259,7 +259,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d3352/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d3352/modules/builds/src/inv_swps.c
+index e5988f2758f1..02c45abd888c 100644
+--- a/packages/platforms/inventec/x86-64/d3352/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d3352/modules/builds/src/inv_swps.c
+@@ -2760,7 +2760,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d5052/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d5052/modules/builds/src/inv_swps.c
+index d3fddbc48988..8924a0dec8a5 100644
+--- a/packages/platforms/inventec/x86-64/d5052/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d5052/modules/builds/src/inv_swps.c
+@@ -2760,7 +2760,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d5052/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d5052/modules/builds/src/inv_vpd.c
+index b6d755e1d6df..569409e648ba 100644
+--- a/packages/platforms/inventec/x86-64/d5052/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d5052/modules/builds/src/inv_vpd.c
+@@ -264,7 +264,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d5254/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d5254/modules/builds/src/inv_swps.c
+index 42e430026263..5400f18c8880 100644
+--- a/packages/platforms/inventec/x86-64/d5254/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d5254/modules/builds/src/inv_swps.c
+@@ -2745,7 +2745,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d5254/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d5254/modules/builds/src/inv_vpd.c
+index a11ac3309c50..8f91c99d2e6d 100644
+--- a/packages/platforms/inventec/x86-64/d5254/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d5254/modules/builds/src/inv_vpd.c
+@@ -259,7 +259,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d5264q28b/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d5264q28b/modules/builds/src/inv_swps.c
+index cce1bad65884..0ed4c8941cfd 100644
+--- a/packages/platforms/inventec/x86-64/d5264q28b/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d5264q28b/modules/builds/src/inv_swps.c
+@@ -2976,7 +2976,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d6254qs/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d6254qs/modules/builds/src/inv_swps.c
+index 23f6c5247680..d0c10209ac9d 100644
+--- a/packages/platforms/inventec/x86-64/d6254qs/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d6254qs/modules/builds/src/inv_swps.c
+@@ -2838,7 +2838,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d6254qs/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d6254qs/modules/builds/src/inv_vpd.c
+index b6d755e1d6df..569409e648ba 100644
+--- a/packages/platforms/inventec/x86-64/d6254qs/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d6254qs/modules/builds/src/inv_vpd.c
+@@ -264,7 +264,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d6332/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d6332/modules/builds/src/inv_swps.c
+index cce1bad65884..0ed4c8941cfd 100644
+--- a/packages/platforms/inventec/x86-64/d6332/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d6332/modules/builds/src/inv_swps.c
+@@ -2976,7 +2976,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv_swps.c
+index 922515e1fab7..1012a17d2e2d 100644
+--- a/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv_swps.c
+@@ -3032,7 +3032,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv_vpd.c
+index 2075fd4eea91..51a0bbe93d74 100644
+--- a/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv_vpd.c
+@@ -258,7 +258,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d6556/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d6556/modules/builds/src/inv_swps.c
+index 3d38ec510a00..ae3668097730 100644
+--- a/packages/platforms/inventec/x86-64/d6556/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d6556/modules/builds/src/inv_swps.c
+@@ -2855,7 +2855,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d6556/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d6556/modules/builds/src/inv_vpd.c
+index 2075fd4eea91..51a0bbe93d74 100644
+--- a/packages/platforms/inventec/x86-64/d6556/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d6556/modules/builds/src/inv_vpd.c
+@@ -258,7 +258,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d7032q28b/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d7032q28b/modules/builds/src/inv_swps.c
+index 015fefc19ef8..1cc53e57df1f 100644
+--- a/packages/platforms/inventec/x86-64/d7032q28b/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d7032q28b/modules/builds/src/inv_swps.c
+@@ -2699,7 +2699,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d7032q28b/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d7032q28b/modules/builds/src/inv_vpd.c
+index b4b232a4d64e..97bf4cef696e 100644
+--- a/packages/platforms/inventec/x86-64/d7032q28b/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d7032q28b/modules/builds/src/inv_vpd.c
+@@ -284,7 +284,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d7054q28b/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d7054q28b/modules/builds/src/inv_swps.c
+index 9050e59c9b23..f268b5307d9e 100644
+--- a/packages/platforms/inventec/x86-64/d7054q28b/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d7054q28b/modules/builds/src/inv_swps.c
+@@ -2743,7 +2743,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d7054q28b/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d7054q28b/modules/builds/src/inv_vpd.c
+index 7e81636e9027..9cacf9b049c6 100644
+--- a/packages/platforms/inventec/x86-64/d7054q28b/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d7054q28b/modules/builds/src/inv_vpd.c
+@@ -280,7 +280,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d7264q28b/modules/builds/src/inv_swps.c b/packages/platforms/inventec/x86-64/d7264q28b/modules/builds/src/inv_swps.c
+index 41ee997443af..8363025d98b4 100644
+--- a/packages/platforms/inventec/x86-64/d7264q28b/modules/builds/src/inv_swps.c
++++ b/packages/platforms/inventec/x86-64/d7264q28b/modules/builds/src/inv_swps.c
+@@ -2743,7 +2743,11 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
+     swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/inventec/x86-64/d7264q28b/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d7264q28b/modules/builds/src/inv_vpd.c
+index 2075fd4eea91..51a0bbe93d74 100644
+--- a/packages/platforms/inventec/x86-64/d7264q28b/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d7264q28b/modules/builds/src/inv_vpd.c
+@@ -258,7 +258,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/inventec/x86-64/d7332/modules/builds/src/inv_vpd.c b/packages/platforms/inventec/x86-64/d7332/modules/builds/src/inv_vpd.c
+index 7e81636e9027..9cacf9b049c6 100644
+--- a/packages/platforms/inventec/x86-64/d7332/modules/builds/src/inv_vpd.c
++++ b/packages/platforms/inventec/x86-64/d7332/modules/builds/src/inv_vpd.c
+@@ -280,7 +280,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/net_swps.c b/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/net_swps.c
+index 0d2b06243ad3..25c86326bbcf 100644
+--- a/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/net_swps.c
++++ b/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/net_swps.c
+@@ -2709,7 +2709,12 @@ register_swp_module(void){
+     port_major = MAJOR(port_devt);
+ 
+     /* Create class object */
+-    swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    swp_class_p = class_create(SWP_CLS_NAME);
++#else
++    swp_class_p = class_create(THIS_MODULE, SWP_CLS_NAME);
++#endif
++    
+     if (IS_ERR(swp_class_p)) {
+         SWPS_ERR("Create class failure! \n");
+         goto err_register_swp_module_3;
+diff --git a/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/net_vpd.c b/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/net_vpd.c
+index 8806ffeb96e6..7a9b2b119749 100644
+--- a/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/net_vpd.c
++++ b/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/net_vpd.c
+@@ -259,7 +259,12 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
+-    vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
++    vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
++    
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/net_vpd.c b/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/net_vpd.c
+index 89b86ae3c430..4dde0224a8b5 100644
+--- a/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/net_vpd.c
++++ b/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/net_vpd.c
+@@ -264,7 +264,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
+index db12eed1d051..466e4641ef37 100755
+--- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
++++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
+@@ -479,7 +479,11 @@ static int cpld_probe(struct i2c_client *client,
+ 
+ 	if (!cpld_class)
+ 	{
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++		cpld_class = class_create(name);
++#else
+ 		cpld_class = class_create(THIS_MODULE, name);
++#endif
+ 		if (IS_ERR(cpld_class)) {
+ 			pr_err("couldn't create sysfs class\n");
+ 			return PTR_ERR(cpld_class);
+diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
+index 3474d0507fd3..15d4a2217917 100644
+--- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
++++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
+@@ -194,7 +194,11 @@ static int cpld_led_probe(struct i2c_client *client,
+ 
+ 	if (!cpld_class)
+ 	{
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++		cpld_class = class_create("cpld-led");
++#else
+ 		cpld_class = class_create(THIS_MODULE, "cpld-led");
++#endif
+ 		if (IS_ERR(cpld_class)) {
+ 			pr_err("couldn't create sysfs class\n");
+ 			return PTR_ERR(cpld_class);
+diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
+index 03e84a79bbb4..bc7912f2a83b 100755
+--- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
++++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
+@@ -303,7 +303,11 @@ static int cpld_probe(struct i2c_client *client,
+ 
+ 	if (!cpld_class)
+ 	{
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++		cpld_class = class_create(name);
++#else
+ 		cpld_class = class_create(THIS_MODULE, name);
++#endif
+ 		if (IS_ERR(cpld_class)) {
+ 			pr_err("couldn't create sysfs class\n");
+ 			return PTR_ERR(cpld_class);
+diff --git a/packages/platforms/ufispace/x86-64/s9700-23d/modules/builds/src/x86-64-ufispace-s9700-23d-vpd.c b/packages/platforms/ufispace/x86-64/s9700-23d/modules/builds/src/x86-64-ufispace-s9700-23d-vpd.c
+index 02e4dd446a1e..bb8c812c756e 100644
+--- a/packages/platforms/ufispace/x86-64/s9700-23d/modules/builds/src/x86-64-ufispace-s9700-23d-vpd.c
++++ b/packages/platforms/ufispace/x86-64/s9700-23d/modules/builds/src/x86-64-ufispace-s9700-23d-vpd.c
+@@ -287,7 +287,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/ufispace/x86-64/s9700-53dx/modules/builds/src/x86-64-ufispace-s9700-53dx-vpd.c b/packages/platforms/ufispace/x86-64/s9700-53dx/modules/builds/src/x86-64-ufispace-s9700-53dx-vpd.c
+index 2ef91515fed8..dd703a86969e 100644
+--- a/packages/platforms/ufispace/x86-64/s9700-53dx/modules/builds/src/x86-64-ufispace-s9700-53dx-vpd.c
++++ b/packages/platforms/ufispace/x86-64/s9700-53dx/modules/builds/src/x86-64-ufispace-s9700-53dx-vpd.c
+@@ -287,7 +287,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+diff --git a/packages/platforms/ufispace/x86-64/s9705-48d/modules/builds/src/x86-64-ufispace-s9705-48d-vpd.c b/packages/platforms/ufispace/x86-64/s9705-48d/modules/builds/src/x86-64-ufispace-s9705-48d-vpd.c
+index 0ee93c594f1e..d197f5be336c 100644
+--- a/packages/platforms/ufispace/x86-64/s9705-48d/modules/builds/src/x86-64-ufispace-s9705-48d-vpd.c
++++ b/packages/platforms/ufispace/x86-64/s9705-48d/modules/builds/src/x86-64-ufispace-s9705-48d-vpd.c
+@@ -287,7 +287,11 @@ register_vpd_module(void)
+     vpd_major  = MAJOR(vpd_devt);
+ 
+     /* Create class object */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++    vpd_class_p = class_create(EEPROM_CLASS);
++#else
+     vpd_class_p = class_create(THIS_MODULE, EEPROM_CLASS);
++#endif
+     if (IS_ERR(vpd_class_p)) {
+         VPD_ERR("Create class failure! \n");
+         goto err_register_vpd_module_1;
+-- 
+2.43.0
+

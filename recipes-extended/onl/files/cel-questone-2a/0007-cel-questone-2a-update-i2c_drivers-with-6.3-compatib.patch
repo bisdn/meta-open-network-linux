@@ -1,7 +1,7 @@
 From 1be6ea265034a85992562842891f57b7a81df433 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 21 Nov 2023 14:40:09 +0100
-Subject: [PATCH 7/7] cel-questone-2a: update i2c_drivers with 6.3
+Subject: [PATCH 7/8] cel-questone-2a: update i2c_drivers with 6.3
  compatibility
 
 i2c_probe() dropped its i2c_device_id* argument, so we need to provide
