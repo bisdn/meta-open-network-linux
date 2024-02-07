@@ -194,7 +194,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  .../silverstone/modules/builds/src/mc24lc64t.c    | 10 ++++++++++
  .../x86-64/ag5648/modules/builds/dni_ag5648_psu.c | 10 ++++++++++
  .../x86-64/ag5648/modules/builds/dni_ag5648_sfp.c | 10 ++++++++++
- .../x86-64/ag5648/modules/builds/dni_emc2305.c    | 10 ++++++++++
+ .../x86-64/ag5648/modules/builds/dni_emc2305.c    | 13 +++++++++++++
  .../ag9032v1/modules/builds/dni_ag9032v1_psu.c    | 10 ++++++++++
  .../ag9032v1/modules/builds/dni_ag9032v1_sfp.c    | 10 ++++++++++
  .../x86-64/ag9032v1/modules/builds/dni_emc2305.c  | 10 ++++++++++
@@ -273,7 +273,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  .../modules/builds/rseb-w1-32-system_cpld.c       | 10 ++++++++++
  .../modules/builds/rseb-w1-32_psu.c               | 10 ++++++++++
  .../modules/builds/tps53681.c                     | 10 ++++++++++
- 222 files changed, 2290 insertions(+), 46 deletions(-)
+ 222 files changed, 2293 insertions(+), 46 deletions(-)
 
 diff --git a/packages/base/any/kernels/modules/accton_i2c_psu.c b/packages/base/any/kernels/modules/accton_i2c_psu.c
 index 1550ac1381ee..79ba285a5502 100755
@@ -4527,10 +4527,20 @@ index 6dc38ec6d1d5..849f4b7044c0 100755
  	.remove = ag5648_sfp_remove_6_1,
  #else
 diff --git a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_emc2305.c b/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_emc2305.c
-index edd46a60421f..b4dfd38cb36d 100755
+index edd46a60421f..7dbb73d2d62c 100755
 --- a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_emc2305.c
 +++ b/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_emc2305.c
-@@ -91,7 +91,11 @@ static struct i2c_driver emc2305_driver =
+@@ -77,6 +77,9 @@ static int emc2305_remove(struct i2c_client *client);
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+ static void emc2305_remove_6_1(struct i2c_client *client);
+ #endif
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int emc2305_probe_6_3(struct i2c_client *client);
++#endif
+ 
+ static const struct i2c_device_id emc2305_id[] =
+ {
+@@ -91,7 +94,11 @@ static struct i2c_driver emc2305_driver =
    .driver = {
      .name = "emc2305",
    },
@@ -4542,7 +4552,7 @@ index edd46a60421f..b4dfd38cb36d 100755
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
    .remove = emc2305_remove_6_1,
  #else
-@@ -375,6 +379,12 @@ exit_remove:
+@@ -375,6 +382,12 @@ exit_remove:
    sysfs_remove_group(&client->dev.kobj, &data->attrs);
    return err;
  }
