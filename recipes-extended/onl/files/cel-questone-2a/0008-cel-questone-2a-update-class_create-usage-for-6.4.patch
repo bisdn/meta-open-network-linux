@@ -1,0 +1,69 @@
+From 526182fa397a7b8df5ee42debac4b9e84c08c613 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 7 Feb 2024 17:25:24 +0100
+Subject: [PATCH 8/8] cel-questone-2a: update class_create() usage for 6.4
+
+Update class_create() usage for 6.4 which lost its first parameter.
+
+// <smpl>
+@r@
+expression ret;
+expression E1,E2;
+@@
+ret = class_create(E1, E2);
+@depends on r@
+expression ret;
+expression E1,E2;
+@@
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++ret = class_create(E2);
++#else
+ ret = class_create(E1, E2);
++#endif
+@i depends on r@
+@@
+ #include <linux/version.h>
+@depends on r && !i@
+@@
+ #include <...>
++#include <linux/version.h>
+// </smpl>
+
+applied with
+
+  spatch --sp-file 6.4-class_create.cocci --in-place --dir packages/
+
+Result taken as is, without any code style fixes.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../questone-2a/modules/builds/src/questone2a_switchboard.c  | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
+index cbe1dd0735ee..e867c980aa18 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
+@@ -50,6 +50,7 @@
+ #include <linux/fs.h>
+ #include <linux/uaccess.h>
+ #include <linux/jiffies.h>
++#include <linux/version.h>
+ 
+ 
+ 
+@@ -2024,7 +2025,11 @@ static int fpgafw_init(void){
+    printk(KERN_INFO "Device registered correctly with major number %d\n", majorNumber);
+ 
+    // Register the device class
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,4,0)
++   fpgafwclass = class_create(CLASS_NAME);
++#else
+    fpgafwclass = class_create(THIS_MODULE, CLASS_NAME);
++#endif
+    if (IS_ERR(fpgafwclass)){                // Check for error and clean up if there is
+       unregister_chrdev(majorNumber, DEVICE_NAME);
+       printk(KERN_ALERT "Failed to register device class\n");
+-- 
+2.43.0
+
