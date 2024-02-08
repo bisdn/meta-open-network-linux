@@ -474,6 +474,12 @@ static int as4630_poe_pse_probe(struct i2c_client *client, const struct i2c_devi
 
 	return 0;
 }
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
+static int as4630_poe_pse_probe_6_3(struct i2c_client *client)
+{
+	return as4630_poe_pse_probe(client, i2c_client_get_device_id(client));
+}
+#endif
 
 static int as4630_poe_pse_remove(struct i2c_client *client)
 {
@@ -508,7 +514,11 @@ static const struct i2c_device_id as4630_54pe_poe_pse_id[] = {
 MODULE_DEVICE_TABLE(i2c, as4630_54pe_poe_pse_id);
 
 static struct i2c_driver as4630_poe_pse_driver = {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
+	.probe = as4630_poe_pse_probe_6_3,
+#else
 	.probe = as4630_poe_pse_probe,
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
 	.remove = as4630_poe_pse_remove_6_1,
 #else
