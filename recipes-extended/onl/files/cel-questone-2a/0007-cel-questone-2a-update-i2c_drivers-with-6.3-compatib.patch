@@ -1,4 +1,4 @@
-From eb85a682cf7c099c6bbc51988d2711f35f2f90db Mon Sep 17 00:00:00 2001
+From 1be6ea265034a85992562842891f57b7a81df433 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 21 Nov 2023 14:40:09 +0100
 Subject: [PATCH 7/7] cel-questone-2a: update i2c_drivers with 6.3
@@ -26,10 +26,10 @@ struct i2c_driver DRIVER@p = {
 
 @i depends on r@
 @@
-#include <linux/version.h>
+ #include <linux/version.h>
 @depends on r && !i@
 @@
-#include <...>
+ #include <...>
 +#include <linux/version.h>
 @depends on r@
 identifier r.probe_fn;
@@ -46,14 +46,19 @@ int probe_fn(...) {...}
 
 applied with
 
-  spatch --smpl-spacing --sp-file 6.3-i2c_probe_sig.cocci --in-place --dir packages/
+  spatch --allow-inconsistent-paths --smpl-spacing --sp-file 6.3-i2c_probe_sig.cocci --in-place --dir packages/
+
+(not sure where the inconsistent paths come from, but they get triggered
+in optoe.c and sff_8436_eeprom.c)
 
 Result taken as is, without any code style fixes.
 
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../x86-64/questone-2a/modules/builds/src/mc24lc64t.c  | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ .../x86-64/questone-2a/modules/builds/src/optoe.c      | 10 ++++++++++
+ .../questone-2a/modules/builds/src/sff_8436_eeprom.c   | 10 ++++++++++
+ 3 files changed, 30 insertions(+)
 
 diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/mc24lc64t.c
 index 7901297137f4..4d0b461c2800 100644
@@ -84,6 +89,64 @@ index 7901297137f4..4d0b461c2800 100644
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
          .remove = mc24lc64t_remove_6_1,
  #else
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/optoe.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/optoe.c
+index 76ee8aee17db..e26b512294f5 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/optoe.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/optoe.c
+@@ -1117,6 +1117,12 @@ exit:
+ 
+ 	return err;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int optoe_probe_6_3(struct i2c_client *client)
++{
++	return optoe_probe(client, i2c_client_get_device_id(client));
++}
++#endif
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+@@ -1125,7 +1131,11 @@ static struct i2c_driver optoe_driver = {
+ 		.name = "optoe",
+ 		.owner = THIS_MODULE,
+ 	},
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++	.probe = optoe_probe_6_3,
++#else
+ 	.probe = optoe_probe,
++#endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+ 	.remove = optoe_remove_6_1,
+ #else
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/sff_8436_eeprom.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/sff_8436_eeprom.c
+index 191cc65e6755..216ee4e639f2 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/sff_8436_eeprom.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/sff_8436_eeprom.c
+@@ -953,6 +953,12 @@ exit:
+ 
+ 	return err;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int sff_8436_eeprom_probe_6_3(struct i2c_client *client)
++{
++	return sff_8436_eeprom_probe(client, i2c_client_get_device_id(client));
++}
++#endif
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+@@ -961,7 +967,11 @@ static struct i2c_driver sff_8436_driver = {
+ 		.name = "sff8436",
+ 		.owner = THIS_MODULE,
+ 	},
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++	.probe = sff_8436_eeprom_probe_6_3,
++#else
+ 	.probe = sff_8436_eeprom_probe,
++#endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+ 	.remove = sff_8436_remove_6_1,
+ #else
 -- 
-2.42.1
+2.43.0
 

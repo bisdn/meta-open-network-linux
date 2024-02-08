@@ -1,4 +1,4 @@
-From 794bb8bb89a5e1fbfe7e8a9b21629ed2ca4d5dd6 Mon Sep 17 00:00:00 2001
+From 8d7cc76d9261ea82d0b9ed1f007dc4092588a03d Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 21 Nov 2023 14:41:16 +0100
 Subject: [PATCH 17/17] modules: update i2c_drivers with 6.3 compatibility
@@ -25,10 +25,10 @@ struct i2c_driver DRIVER@p = {
 
 @i depends on r@
 @@
-#include <linux/version.h>
+ #include <linux/version.h>
 @depends on r && !i@
 @@
-#include <...>
+ #include <...>
 +#include <linux/version.h>
 @depends on r@
 identifier r.probe_fn;
@@ -45,7 +45,10 @@ int probe_fn(...) {...}
 
 applied with
 
-  spatch --smpl-spacing --sp-file 6.3-i2c_probe_sig.cocci --in-place --dir packages/
+    spatch --allow-inconsistent-paths --smpl-spacing --sp-file 6.3-i2c_probe.cocci --in-place --dir packages/
+
+(not sure where the inconsistent paths come from, but they get triggered
+in multiple modules)
 
 Result taken as is, without any code style fixes.
 
@@ -192,6 +195,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  .../belgite/modules/builds/src/platform_fan.c     | 10 ++++++++++
  .../belgite/modules/builds/src/platform_psu.c     | 10 ++++++++++
  .../silverstone/modules/builds/src/mc24lc64t.c    | 10 ++++++++++
+ .../x86-64/silverstone/modules/builds/src/optoe.c | 10 ++++++++++
  .../x86-64/ag5648/modules/builds/dni_ag5648_psu.c | 10 ++++++++++
  .../x86-64/ag5648/modules/builds/dni_ag5648_sfp.c | 10 ++++++++++
  .../x86-64/ag5648/modules/builds/dni_emc2305.c    | 13 +++++++++++++
@@ -212,6 +216,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  .../delta/x86-64/modules/builds/i2c_cpld.c        | 10 ++++++++++
  .../ingrasys/x86-64/modules/builds/eeprom_mb.c    | 10 ++++++++++
  .../modules/builds/ingrasys_s9230_64x_i2c_cpld.c  | 10 ++++++++++
+ .../modules/builds/ingrasys_s9230_64x_psu.c       | 10 ++++++++++
  .../modules/builds/ingrasys_s9280_64x_i2c_cpld.c  | 10 ++++++++++
  .../modules/builds/ingrasys_s9280_64x_psu.c       | 10 ++++++++++
  .../x86-64/d10056/modules/builds/src/inv_cpld.c   | 10 ++++++++++
@@ -262,6 +267,9 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  .../powerpc/ly2/modules/builds/quanta-ly-hwmon.c  | 10 ++++++++++
  .../ly2/modules/builds/quanta-ly2-i2c-mux.c       | 10 ++++++++++
  .../modules/builds/quanta-ly6-i2c-mux.c           | 10 ++++++++++
+ .../quanta/x86-64/modules/builds/qci_cpld.c       | 10 ++++++++++
+ .../quanta/x86-64/modules/builds/qci_cpld_led.c   | 10 ++++++++++
+ .../quanta/x86-64/modules/builds/qci_cpld_sfp28.c | 10 ++++++++++
  .../quanta/x86-64/modules/builds/qci_pmbus.c      | 10 ++++++++++
  .../modules/builds/quanta_hwmon_ix_series.c       | 10 ++++++++++
  .../modules/builds/quanta_hwmon_ly_series.c       | 10 ++++++++++
@@ -273,7 +281,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  .../modules/builds/rseb-w1-32-system_cpld.c       | 10 ++++++++++
  .../modules/builds/rseb-w1-32_psu.c               | 10 ++++++++++
  .../modules/builds/tps53681.c                     | 10 ++++++++++
- 222 files changed, 2293 insertions(+), 46 deletions(-)
+ 227 files changed, 2343 insertions(+), 46 deletions(-)
 
 diff --git a/packages/base/any/kernels/modules/accton_i2c_psu.c b/packages/base/any/kernels/modules/accton_i2c_psu.c
 index 1550ac1381ee..79ba285a5502 100755
@@ -4468,6 +4476,35 @@ index 9fcfcb531cb7..32f05ba7a51b 100644
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
          .remove = mc24lc64t_remove_6_1,
  #else
+diff --git a/packages/platforms/celestica/x86-64/silverstone/modules/builds/src/optoe.c b/packages/platforms/celestica/x86-64/silverstone/modules/builds/src/optoe.c
+index a699a7e16cd6..5ba179ea94c8 100644
+--- a/packages/platforms/celestica/x86-64/silverstone/modules/builds/src/optoe.c
++++ b/packages/platforms/celestica/x86-64/silverstone/modules/builds/src/optoe.c
+@@ -1168,6 +1168,12 @@ exit:
+ 
+ 	return err;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int optoe_probe_6_3(struct i2c_client *client)
++{
++	return optoe_probe(client, i2c_client_get_device_id(client));
++}
++#endif
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+@@ -1176,7 +1182,11 @@ static struct i2c_driver optoe_driver = {
+ 		.name = "optoe",
+ 		.owner = THIS_MODULE,
+ 	},
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++	.probe = optoe_probe_6_3,
++#else
+ 	.probe = optoe_probe,
++#endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+ 	.remove = optoe_remove_6_1,
+ #else
 diff --git a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c b/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c
 index 9c4287e94a90..5be3f38171a7 100755
 --- a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_ag5648_psu.c
@@ -5057,6 +5094,35 @@ index a5c0a2362434..4ca29cdbbc0b 100644
 +#endif
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
      .remove = ingrasys_i2c_cpld_remove_6_1,
+ #else
+diff --git a/packages/platforms/ingrasys/x86-64/s9230-64x/modules/builds/ingrasys_s9230_64x_psu.c b/packages/platforms/ingrasys/x86-64/s9230-64x/modules/builds/ingrasys_s9230_64x_psu.c
+index b1db59aa75db..05cc72439308 100644
+--- a/packages/platforms/ingrasys/x86-64/s9230-64x/modules/builds/ingrasys_s9230_64x_psu.c
++++ b/packages/platforms/ingrasys/x86-64/s9230-64x/modules/builds/ingrasys_s9230_64x_psu.c
+@@ -369,6 +369,12 @@ exit:
+     
+     return status;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int s9230_psu_probe_6_3(struct i2c_client *client)
++{
++    return s9230_psu_probe(client, i2c_client_get_device_id(client));
++}
++#endif
+ 
+ static int 
+ s9230_psu_remove(struct i2c_client *client)
+@@ -519,7 +525,11 @@ static struct i2c_driver s9230_psu_driver = {
+     .driver = {
+         .name     = DRIVER_NAME,
+     },
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++    .probe = s9230_psu_probe_6_3,
++#else
+     .probe        = s9230_psu_probe,
++#endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+     .remove = s9230_psu_remove_6_1,
  #else
 diff --git a/packages/platforms/ingrasys/x86-64/s9280-64x/modules/builds/ingrasys_s9280_64x_i2c_cpld.c b/packages/platforms/ingrasys/x86-64/s9280-64x/modules/builds/ingrasys_s9280_64x_i2c_cpld.c
 index a6ca5403b600..6010bc7e03a4 100644
@@ -6510,6 +6576,93 @@ index 22b6ecff1be9..2c0324741660 100644
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
  	.remove = quanta_ly6_i2c_mux_remove_6_1,
  #else
+diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
+index db12eed1d051..92737e3098d5 100755
+--- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
++++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
+@@ -82,7 +82,11 @@ static struct i2c_driver cpld_driver = {
+ 	.driver = {
+ 		.name	= "qci_cpld",
+ 	},
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++	.probe = cpld_probe_6_3,
++#else
+ 	.probe		= cpld_probe,
++#endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+ 	.remove = cpld_remove_6_1,
+ #else
+@@ -560,6 +564,12 @@ static int cpld_probe(struct i2c_client *client,
+ //	sysfs_remove_group(&client->dev.kobj, &data->attrs);
+ 	return err;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int cpld_probe_6_3(struct i2c_client *client)
++{
++	return cpld_probe(client, i2c_client_get_device_id(client));
++}
++#endif
+ 
+ /* FIXME: for older kernel doesn't with idr_is_empty function, implement here */
+ #if 1
+diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
+index 3474d0507fd3..61c78a7c04bf 100644
+--- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
++++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
+@@ -76,7 +76,11 @@ static struct i2c_driver cpld_led_driver = {
+ 	.driver = {
+ 		.name	= "qci_cpld_led",
+ 	},
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++	.probe = cpld_led_probe_6_3,
++#else
+ 	.probe		= cpld_led_probe,
++#endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+ 	.remove = cpld_led_remove_6_1,
+ #else
+@@ -247,6 +251,12 @@ exit_remove:
+ //	sysfs_remove_group(&client->dev.kobj, &data->attrs);
+ 	return err;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int cpld_led_probe_6_3(struct i2c_client *client)
++{
++	return cpld_led_probe(client, i2c_client_get_device_id(client));
++}
++#endif
+ 
+ /* FIXME: for older kernel doesn't with idr_is_empty function, implement here */
+ static int idr_has_entry(int id, void *p, void *data)
+diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
+index 03e84a79bbb4..54bf79bfb697 100755
+--- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
++++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
+@@ -80,7 +80,11 @@ static struct i2c_driver cpld_driver = {
+ 	.driver = {
+ 		.name	= "qci_cpld_sfp28",
+ 	},
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++	.probe = cpld_probe_6_3,
++#else
+ 	.probe		= cpld_probe,
++#endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+ 	.remove = cpld_remove_6_1,
+ #else
+@@ -363,6 +367,12 @@ static int cpld_probe(struct i2c_client *client,
+ //	sysfs_remove_group(&client->dev.kobj, &data->attrs);
+ 	return err;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
++static int cpld_probe_6_3(struct i2c_client *client)
++{
++	return cpld_probe(client, i2c_client_get_device_id(client));
++}
++#endif
+ 
+ /* FIXME: for older kernel doesn't with idr_is_empty function, implement here */
+ #if 1
 diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_pmbus.c b/packages/platforms/quanta/x86-64/modules/builds/qci_pmbus.c
 index 675f579676c1..6f4aca8ee089 100644
 --- a/packages/platforms/quanta/x86-64/modules/builds/qci_pmbus.c
