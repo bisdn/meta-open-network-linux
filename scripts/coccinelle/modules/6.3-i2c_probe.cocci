@@ -8,7 +8,7 @@
 
 @r@
 identifier DRIVER;
-identifier remove_fn;
+identifier probe_fn;
 fresh identifier probe_fn_wrap = probe_fn ## "_6_3";
 position p;
 @@
@@ -19,7 +19,6 @@ struct i2c_driver DRIVER@p = {
 	.probe = probe_fn,
 +#endif
 };
-
 @i depends on r@
 @@
 #include <linux/version.h>
@@ -33,8 +32,8 @@ identifier r.probe_fn_wrap;
 @@
 int probe_fn(...) {...}
 +#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
-+static void probe_fn_wrap(struct i2c_client *client)
++static int probe_fn_wrap(struct i2c_client *client)
 +{
-+	probe_fn(client, i2c_client_get_device_id(client));
++	return probe_fn(client, i2c_client_get_device_id(client));
 +}
 +#endif
