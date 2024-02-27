@@ -10,6 +10,9 @@
  *
  */
 /dts-v1/;
+
+#include <dt-bindings/mux/mux.h>
+
 #include "bcm-helix4.dtsi"
 
 / {
@@ -87,7 +90,7 @@
             reg = <0x70>;
             #address-cells = <1>;
             #size-cells = <0>;
-            deselect-on-exit;
+            idle-state = <MUX_IDLE_DISCONNECT>;
 
         // SFP+ 1
         i2c@0 {
