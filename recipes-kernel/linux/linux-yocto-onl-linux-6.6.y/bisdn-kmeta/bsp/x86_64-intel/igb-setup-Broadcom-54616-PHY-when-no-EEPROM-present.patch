@@ -77,15 +77,15 @@ diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/i
 index 38034d1d1830..6e477824f21a 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -3,6 +3,7 @@
- 
- #include <linux/if_ether.h>
+@@ -4,6 +4,7 @@
+ #include <linux/bitfield.h>
  #include <linux/delay.h>
+ #include <linux/if_ether.h>
 +#include <linux/brcmphy.h>
- 
  #include "e1000_mac.h"
  #include "e1000_phy.h"
-@@ -460,6 +461,34 @@ s32 igb_write_phy_reg_igp(struct e1000_hw *hw, u32 offset, u16 data)
+ 
+@@ -461,6 +462,34 @@ s32 igb_write_phy_reg_igp(struct e1000_hw *hw, u32 offset, u16 data)
  	return ret_val;
  }
  
