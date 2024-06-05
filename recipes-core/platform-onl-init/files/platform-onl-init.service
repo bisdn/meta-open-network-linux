@@ -4,7 +4,7 @@ After=systemd-modules-load.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/platform-onl-init.sh
+ExecStart=/usr/libexec/platform-onl-init/platform-onl-init.sh
 RemainAfterExit=true
 StandardOutput=journal
 
