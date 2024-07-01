@@ -28,8 +28,8 @@ SRC_URI += " \
 do_install() {
         install -d ${D}${systemd_system_unitdir}
         install -m 0644 ${WORKDIR}/platform-onl-init.service ${D}${systemd_system_unitdir}
-        install -d ${D}${bindir}
-        install -m 0755 ${WORKDIR}/*.sh ${D}${bindir}
+        install -d ${D}${libexecdir}/platform-onl-init
+        install -m 0755 ${WORKDIR}/*.sh ${D}${libexecdir}/platform-onl-init
 }
 
 SYSTEMD_SERVICE:${PN}:append = "platform-onl-init.service"

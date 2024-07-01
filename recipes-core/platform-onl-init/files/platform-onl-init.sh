@@ -41,4 +41,4 @@ wait_for_file() {
 
 onl_platform="$(cat /etc/onl/platform)"
 
-[ -e "/usr/bin/platform-${onl_platform}-init.sh" ] && . /usr/bin/platform-${onl_platform}-init.sh
+[ -e "/usr/libexec/platform-onl-init/platform-${onl_platform}-init.sh" ] && . /usr/libexec/platform-onl-init/platform-${onl_platform}-init.sh
