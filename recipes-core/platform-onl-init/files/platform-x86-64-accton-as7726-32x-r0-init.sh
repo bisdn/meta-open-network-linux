@@ -140,4 +140,4 @@ done
 create_i2c_dev 24c02 0x56 0
 
 ir3570_check
-/usr/bin/8v89307_init.sh
+/usr/libexec/platform-onl-init/8v89307_init.sh
