@@ -1,0 +1,58 @@
+From b30062a33cf518842b8a93e38ba622dc2cf8e57d Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 30 Aug 2024 13:54:41 +0200
+Subject: [PATCH net V2] net: bridge: br_fdb_external_learn_add(): always set
+ EXT_LEARN
+
+When userspace wants to take over a fdb entry by setting it as
+EXTERN_LEARNED, we set both flags BR_FDB_ADDED_BY_EXT_LEARN and
+BR_FDB_ADDED_BY_USER in br_fdb_external_learn_add().
+
+If the bridge updates the entry later because its port changed, we clear
+the BR_FDB_ADDED_BY_EXT_LEARN flag, but leave the BR_FDB_ADDED_BY_USER
+flag set.
+
+If userspace then wants to take over the entry again,
+br_fdb_external_learn_add() sees that BR_FDB_ADDED_BY_USER and skips
+setting the BR_FDB_ADDED_BY_EXT_LEARN flags, thus silently ignores the
+update.
+
+Fix this by always allowing to set BR_FDB_ADDED_BY_EXT_LEARN regardless
+if this was a user fdb entry or not.
+
+Fixes: 710ae7287737 ("net: bridge: Mark FDB entries that were added by user as such")
+Upstream-Status: Submitted [https://patchwork.kernel.org/project/netdevbpf/patch/20240903081958.29951-1-jonas.gorski@bisdn.de/]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+Changelog:
+V2:
+ * always allow setting EXT_LEARN regardless if user entry
+ * reworded the commit message a bit to match the new behavior
+ * dropped the redundant code excerpt from the commit message as it's
+   already in the context
+
+ net/bridge/br_fdb.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
+index c77591e63841..ad7a42b505ef 100644
+--- a/net/bridge/br_fdb.c
++++ b/net/bridge/br_fdb.c
+@@ -1469,12 +1469,10 @@ int br_fdb_external_learn_add(struct net_bridge *br, struct net_bridge_port *p,
+ 			modified = true;
+ 		}
+ 
+-		if (test_bit(BR_FDB_ADDED_BY_EXT_LEARN, &fdb->flags)) {
++		if (test_and_set_bit(BR_FDB_ADDED_BY_EXT_LEARN, &fdb->flags)) {
+ 			/* Refresh entry */
+ 			fdb->used = jiffies;
+-		} else if (!test_bit(BR_FDB_ADDED_BY_USER, &fdb->flags)) {
+-			/* Take over SW learned entry */
+-			set_bit(BR_FDB_ADDED_BY_EXT_LEARN, &fdb->flags);
++		} else {
+ 			modified = true;
+ 		}
+ 
+-- 
+2.46.0
+
