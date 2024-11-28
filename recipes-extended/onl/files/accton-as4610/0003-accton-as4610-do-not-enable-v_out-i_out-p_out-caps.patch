@@ -1,0 +1,91 @@
+From ec73c1dd0cc31d8255b342821fd44a56cd3e15ef Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 20 Nov 2024 09:09:20 +0100
+Subject: [PATCH] accton-as4610: do not enable v_out/i_out/p_out caps
+
+Some PSUs on AS4610-30 and AS4610-54 have a defect where reading out
+v_out/i_out/p_out values while only one PSU is connected causes system
+lockups and subsequent resets from the watchdog.
+
+Since these values are non-essential, just disable the readout of the
+values. As we do not know exactly which PSU models are affected, disable
+it for everyone for now.
+
+This is a partial revert of 24efd4f46987a552a622434a881ae68d8a2d353a.
+
+Fixes: 24efd4f46987 ("[as4610] Support Delta PSU DPS-920AB")
+Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/1012]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../arm_accton_as4610/module/src/psui.c       | 41 -------------------
+ 1 file changed, 41 deletions(-)
+
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
+index 934004108bc2..1389c54ba5a0 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/psui.c
+@@ -23,7 +23,6 @@
+  *
+  *
+  ***********************************************************/
+-#include <onlplib/file.h>
+ #include <onlp/platformi/psui.h>
+ #include <onlplib/mmap.h>
+ #include <stdio.h>
+@@ -89,45 +88,6 @@ static onlp_psu_info_t pinfo[] =
+     }
+ };
+ 
+-static int
+-psu_pmbus_info_get(int id, char *node, int *value)
+-{
+-    int  ret = 0;
+-    *value = 0;
+-    char *path[] = { PSU1_AC_PMBUS_PREFIX, PSU2_AC_PMBUS_PREFIX };
+-
+-    ret = onlp_file_read_int(value, "%s%s", path[id-1], node);
+-    if (ret < 0) {
+-        return ONLP_STATUS_E_INTERNAL;
+-    }
+-
+-    return ret;
+-}
+-
+-static int
+-psu_caps_get(int pid, onlp_psu_info_t* info)
+-{
+-    int val   = 0;
+-
+-    /* Read voltage, current and power */
+-    if (psu_pmbus_info_get(pid, "psu_v_out", &val) == 0) {
+-        info->mvout = val;
+-        info->caps |= ONLP_PSU_CAPS_VOUT;
+-    }
+-
+-    if (psu_pmbus_info_get(pid, "psu_i_out", &val) == 0) {
+-        info->miout = val;
+-        info->caps |= ONLP_PSU_CAPS_IOUT;
+-    }
+-
+-    if (psu_pmbus_info_get(pid, "psu_p_out", &val) == 0) {
+-        info->mpout = val;
+-        info->caps |= ONLP_PSU_CAPS_POUT;
+-    }
+-
+-    return ONLP_STATUS_OK;
+-}
+-
+ int
+ onlp_psui_info_get(onlp_oid_t id, onlp_psu_info_t* info)
+ {
+@@ -171,7 +131,6 @@ onlp_psui_info_get(onlp_oid_t id, onlp_psu_info_t* info)
+         case PSU_TYPE_AC_F2B:
+         case PSU_TYPE_AC_B2F:
+             info->caps = ONLP_PSU_CAPS_AC;
+-            psu_caps_get(index, info);
+             ret = ONLP_STATUS_OK;
+             break;
+         case PSU_TYPE_UNKNOWN:  /* User insert a unknown PSU or unplugged.*/
+-- 
+2.46.1
+
