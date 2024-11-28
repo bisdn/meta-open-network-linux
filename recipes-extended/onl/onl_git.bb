@@ -43,7 +43,7 @@ SRC_URI += " \
            file://infra/0005-modtool-skip-hidden-directories-when-loading-modules.patch;patchdir=${SUBMODULE_INFRA} \
            file://accton-as4610/0001-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
            file://accton-as4610/0002-accton-as4610-fix-value-truncation-when-accessing-le.patch \
-           file://accton-as4610/0003-accton-as4610-do-not-try-to-read-out-PSU-values-for-.patch \
+           file://accton-as4610/0003-accton-as4610-do-not-enable-v_out-i_out-p_out-caps.patch \
            file://accton-as4610/0004-accton_as4610_cpld-add-of-device-match-table.patch \
            file://accton-as4610/0005-accton_as4610_psu-add-of-device-match-table.patch \
            file://accton-as4610/0006-accton-as4610-let-CPLD-handle-the-FAN-device.patch \
