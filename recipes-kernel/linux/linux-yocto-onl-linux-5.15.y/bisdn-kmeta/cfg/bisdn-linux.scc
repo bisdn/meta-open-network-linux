@@ -3,6 +3,7 @@
 patch 0001-net-rtnetlink-send-BONDING_INFO-events-down-to-users.patch
 patch 0001-net-ipv6-apply-IFLA_INET6_ADDR_GEN_MODE-immediately.patch
 patch 0001-tun-allow-setting-hwaddr-on-tap-interface-creation.patch
+patch 0001-net-bridge-ensure-that-link-local-traffic-cannot-unl.patch
 
 # Patch 3/4 for NDA_FLAGS_EXT (prerequisite of MAB)
 # https://lore.kernel.org/netdev/20211011121238.25542-2-daniel@iogearbox.net/
