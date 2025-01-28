@@ -215,13 +215,13 @@ do_install() {
 
       # install platform modules
       MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-platform-modules-${baseplatform}:${ONL_BUILD_ARCH})
-      cp -r ${MODULES_DIR}/builds/${nonarch_base_libdir}/modules ${D}${nonarch_base_libdir}
+      cp -r ${MODULES_DIR}/builds/lib/modules ${D}${nonarch_base_libdir}
   done
 
   # install vendor modules
   for vendor in ${ONL_MODULE_VENDORS_BUILD}; do
       MODULES_DIR=$(ONL=${ONL} ONL_DEBIAN_SUITE=${ONL_DEBIAN_SUITE} tools/onlpm.py --packagedirs=${S}/packages --repo=${S}/REPO --show-build-dirs onl-vendor-${vendor}-modules:${ONL_BUILD_ARCH})
-      cp -r ${MODULES_DIR}/builds/${nonarch_base_libdir}/modules ${D}${nonarch_base_libdir}
+      cp -r ${MODULES_DIR}/builds/lib/modules ${D}${nonarch_base_libdir}
   done
 
   # install libonlp shared library
