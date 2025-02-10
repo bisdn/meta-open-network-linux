@@ -1,0 +1,36 @@
+From 8b65cc8b19ee93e9ebea03024d5f4d32ca8ed7bf Mon Sep 17 00:00:00 2001
+From: Hans Schultz <schultz.hans@gmail.com>
+Date: Wed, 23 Feb 2022 11:16:47 +0100
+Subject: [PATCH 2/5] net: bridge: Add support for offloading of locked port
+ flag
+
+Various switchcores support setting ports in locked mode, so that
+clients behind locked ports cannot send traffic through the port
+unless a fdb entry is added with the clients MAC address.
+
+Signed-off-by: Hans Schultz <schultz.hans+netdev@gmail.com>
+Acked-by: Nikolay Aleksandrov <nikolay@nvidia.com>
+Reviewed-by: Ido Schimmel <idosch@nvidia.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+(cherry picked from commit fa1c83342987d8b2fd246894295393e09b0af18f)
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ net/bridge/br_switchdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/bridge/br_switchdev.c b/net/bridge/br_switchdev.c
+index 6bf518d78f02..1e45b40afa4a 100644
+--- a/net/bridge/br_switchdev.c
++++ b/net/bridge/br_switchdev.c
+@@ -71,7 +71,7 @@ bool nbp_switchdev_allowed_egress(const struct net_bridge_port *p,
+ 
+ /* Flags that can be offloaded to hardware */
+ #define BR_PORT_FLAGS_HW_OFFLOAD (BR_LEARNING | BR_FLOOD | \
+-				  BR_MCAST_FLOOD | BR_BCAST_FLOOD)
++				  BR_MCAST_FLOOD | BR_BCAST_FLOOD | BR_PORT_LOCKED)
+ 
+ int br_switchdev_set_port_flag(struct net_bridge_port *p,
+ 			       unsigned long flags,
+-- 
+2.47.1
+

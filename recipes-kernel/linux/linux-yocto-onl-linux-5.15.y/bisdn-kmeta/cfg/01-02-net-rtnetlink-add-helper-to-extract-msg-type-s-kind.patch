@@ -1,0 +1,49 @@
+From 57dad441919d4596982eb50500e77efc8ea9125e Mon Sep 17 00:00:00 2001
+From: Nikolay Aleksandrov <razor@blackwall.org>
+Date: Wed, 13 Apr 2022 13:51:52 +0300
+Subject: [PATCH 02/12] net: rtnetlink: add helper to extract msg type's kind
+
+Add a helper which extracts the msg type's kind using the kind mask (0x3).
+
+Signed-off-by: Nikolay Aleksandrov <razor@blackwall.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+(cherry picked from commit 2e9ea3e30f696fd438319c07836422bb0bbb4608)
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ include/net/rtnetlink.h | 6 ++++++
+ net/core/rtnetlink.c    | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/include/net/rtnetlink.h b/include/net/rtnetlink.h
+index dcb1c92e6987..d2961e2ed30b 100644
+--- a/include/net/rtnetlink.h
++++ b/include/net/rtnetlink.h
+@@ -19,6 +19,12 @@ enum rtnl_kinds {
+ 	RTNL_KIND_GET,
+ 	RTNL_KIND_SET
+ };
++#define RTNL_KIND_MASK 0x3
++
++static inline enum rtnl_kinds rtnl_msgtype_kind(int msgtype)
++{
++	return msgtype & RTNL_KIND_MASK;
++}
+ 
+ struct rtnl_msg_handler {
+ 	struct module *owner;
+diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
+index 24795110b2ff..d0bcd0296f83 100644
+--- a/net/core/rtnetlink.c
++++ b/net/core/rtnetlink.c
+@@ -5569,7 +5569,7 @@ static int rtnetlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
+ 		return 0;
+ 
+ 	family = ((struct rtgenmsg *)nlmsg_data(nlh))->rtgen_family;
+-	kind = type&3;
++	kind = rtnl_msgtype_kind(type);
+ 
+ 	if (kind != RTNL_KIND_GET && !netlink_net_capable(skb, CAP_NET_ADMIN))
+ 		return -EPERM;
+-- 
+2.47.1
+
