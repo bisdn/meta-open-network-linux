@@ -4,6 +4,40 @@ patch 0001-net-rtnetlink-send-BONDING_INFO-events-down-to-users.patch
 patch 0001-net-ipv6-apply-IFLA_INET6_ADDR_GEN_MODE-immediately.patch
 patch 0001-tun-allow-setting-hwaddr-on-tap-interface-creation.patch
 
+# Patch 3/4 for NDA_FLAGS_EXT (prerequisite of MAB)
+# https://lore.kernel.org/netdev/20211011121238.25542-2-daniel@iogearbox.net/
+patch 00-03-net-neigh-Extend-neigh-flags-to-32-bit-to-allow-for-.patch
+
+# "net: bridge: add flush filtering support" (prerequisite of MAB)
+# (1/12 already backported to stable kernels)
+# https://lore.kernel.org/netdev/20220413105202.2616106-1-razor@blackwall.org/T/
+patch 01-02-net-rtnetlink-add-helper-to-extract-msg-type-s-kind.patch
+patch 01-03-net-rtnetlink-use-BIT-for-flag-values.patch
+patch 01-04-net-netlink-add-NLM_F_BULK-delete-request-modifier.patch
+patch 01-05-net-rtnetlink-add-bulk-delete-support-flag.patch
+patch 01-06-net-add-ndo_fdb_del_bulk.patch
+patch 01-07-net-rtnetlink-add-NLM_F_BULK-support-to-rtnl_fdb_del.patch
+patch 01-08-net-bridge-fdb-add-ndo_fdb_del_bulk.patch
+patch 01-09-net-bridge-fdb-add-support-for-fine-grained-flushing.patch
+patch 01-10-net-rtnetlink-add-ndm-flags-and-state-mask-attribute.patch
+patch 01-11-net-bridge-fdb-add-support-for-flush-filtering-based.patch
+patch 01-12-net-bridge-fdb-add-support-for-flush-filtering-based.patch
+
+# Add support for locked bridge ports (for 802.1X)
+# (driver changes skipped since irrelevant for us)
+# https://lore.kernel.org/lkml/20220222132818.1180786-1-schultz.hans+netdev@gmail.com/T/
+patch 02-01-net-bridge-Add-support-for-bridge-port-in-locked-mod.patch
+patch 02-02-net-bridge-Add-support-for-offloading-of-locked-port.patch
+patch 02-03-net-dsa-Include-BR_PORT_LOCKED-in-the-list-of-synced.patch
+patch 02-04-selftests-forwarding-tests-of-locked-port-feature.patch
+
+# bridge: Add MAC Authentication Bypass (MAB) support
+# (+additional build fix)
+# https://lore.kernel.org/netdev/20221101193922.2125323-1-idosch@nvidia.com/
+patch 03-01-bridge-Add-MAC-Authentication-Bypass-MAB-support.patch
+patch 03-02-selftests-forwarding-Add-MAC-Authentication-Bypass-M.patch
+patch 03-03-bridge-Add-missing-parentheses.patch
+
 # https://git.yoctoproject.org/yocto-kernel-cache/tree/
 include features/bpf/bpf.scc
 include features/cgroups/cgroups.scc
