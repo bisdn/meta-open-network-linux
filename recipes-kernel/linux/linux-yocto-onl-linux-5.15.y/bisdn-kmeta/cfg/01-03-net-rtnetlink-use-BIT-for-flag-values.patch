@@ -1,0 +1,31 @@
+From 8e2fddd772b2ffad3fc3f09d426790ed3c4e0f8c Mon Sep 17 00:00:00 2001
+From: Nikolay Aleksandrov <razor@blackwall.org>
+Date: Wed, 13 Apr 2022 13:51:53 +0300
+Subject: [PATCH 03/12] net: rtnetlink: use BIT for flag values
+
+Use BIT to define flag values.
+
+Signed-off-by: Nikolay Aleksandrov <razor@blackwall.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+(cherry picked from commit 0569e31f1bc2f50613ba4c219f3ecc0d1174d841)
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ include/net/rtnetlink.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/net/rtnetlink.h b/include/net/rtnetlink.h
+index d2961e2ed30b..268eadbbaa30 100644
+--- a/include/net/rtnetlink.h
++++ b/include/net/rtnetlink.h
+@@ -10,7 +10,7 @@ typedef int (*rtnl_doit_func)(struct sk_buff *, struct nlmsghdr *,
+ typedef int (*rtnl_dumpit_func)(struct sk_buff *, struct netlink_callback *);
+ 
+ enum rtnl_link_flags {
+-	RTNL_FLAG_DOIT_UNLOCKED = 1,
++	RTNL_FLAG_DOIT_UNLOCKED = BIT(0),
+ };
+ 
+ enum rtnl_kinds {
+-- 
+2.47.1
+

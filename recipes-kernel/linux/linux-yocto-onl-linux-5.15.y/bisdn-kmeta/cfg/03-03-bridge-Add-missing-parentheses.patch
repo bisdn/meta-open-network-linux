@@ -1,0 +1,34 @@
+From 005e4e8b308688af9d3b870d9b801480f69e28d1 Mon Sep 17 00:00:00 2001
+From: Ido Schimmel <idosch@nvidia.com>
+Date: Thu, 10 Nov 2022 10:54:22 +0200
+Subject: [PATCH 3/3] bridge: Add missing parentheses
+
+No changes in generated code.
+
+Reported-by: Petr Machata <petrm@nvidia.com>
+Reviewed-by: Petr Machata <petrm@nvidia.com>
+Signed-off-by: Ido Schimmel <idosch@nvidia.com>
+Link: https://lore.kernel.org/r/20221110085422.521059-1-idosch@nvidia.com
+Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+(cherry picked from commit 3e35f26d339718e155fa7cf5993a99924124a041)
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ net/bridge/br_input.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/bridge/br_input.c b/net/bridge/br_input.c
+index 1fb715b07a03..d8b4d2b540e8 100644
+--- a/net/bridge/br_input.c
++++ b/net/bridge/br_input.c
+@@ -115,7 +115,7 @@ int br_handle_frame_finish(struct net *net, struct sock *sk, struct sk_buff *skb
+ 			   test_bit(BR_FDB_LOCAL, &fdb_src->flags)) {
+ 			/* FDB mismatch. Drop the packet without roaming. */
+ 			goto drop;
+-		} else if test_bit(BR_FDB_LOCKED, &fdb_src->flags) {
++		} else if (test_bit(BR_FDB_LOCKED, &fdb_src->flags)) {
+ 			/* FDB match, but entry is locked. Refresh it and drop
+ 			 * the packet.
+ 			 */
+-- 
+2.47.1
+

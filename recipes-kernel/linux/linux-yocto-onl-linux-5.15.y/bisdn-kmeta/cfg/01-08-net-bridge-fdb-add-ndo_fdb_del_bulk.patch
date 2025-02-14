@@ -1,0 +1,82 @@
+From 660a5e52d245ca717db8639a5de3ce460fe0e849 Mon Sep 17 00:00:00 2001
+From: Nikolay Aleksandrov <razor@blackwall.org>
+Date: Wed, 13 Apr 2022 13:51:58 +0300
+Subject: [PATCH 08/12] net: bridge: fdb: add ndo_fdb_del_bulk
+
+Add a minimal ndo_fdb_del_bulk implementation which flushes all entries.
+Support for more fine-grained filtering will be added in the following
+patches.
+
+Signed-off-by: Nikolay Aleksandrov <razor@blackwall.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+(cherry picked from commit edaef191722439591bfba75b4e5650bfd39c9123)
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ net/bridge/br_device.c  |  1 +
+ net/bridge/br_fdb.c     | 23 +++++++++++++++++++++++
+ net/bridge/br_private.h |  3 +++
+ 3 files changed, 27 insertions(+)
+
+diff --git a/net/bridge/br_device.c b/net/bridge/br_device.c
+index b2fa4ca28102..7bd53218f1bd 100644
+--- a/net/bridge/br_device.c
++++ b/net/bridge/br_device.c
+@@ -470,6 +470,7 @@ static const struct net_device_ops br_netdev_ops = {
+ 	.ndo_fix_features        = br_fix_features,
+ 	.ndo_fdb_add		 = br_fdb_add,
+ 	.ndo_fdb_del		 = br_fdb_delete,
++	.ndo_fdb_del_bulk	 = br_fdb_delete_bulk,
+ 	.ndo_fdb_dump		 = br_fdb_dump,
+ 	.ndo_fdb_get		 = br_fdb_get,
+ 	.ndo_bridge_getlink	 = br_getlink,
+diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
+index 83ec74b67340..45272e3c0586 100644
+--- a/net/bridge/br_fdb.c
++++ b/net/bridge/br_fdb.c
+@@ -394,6 +394,29 @@ void br_fdb_flush(struct net_bridge *br)
+ 	spin_unlock_bh(&br->hash_lock);
+ }
+ 
++int br_fdb_delete_bulk(struct ndmsg *ndm, struct nlattr *tb[],
++		       struct net_device *dev, u16 vid,
++		       struct netlink_ext_ack *extack)
++{
++	struct net_bridge_port *p = NULL;
++	struct net_bridge *br;
++
++	if (netif_is_bridge_master(dev)) {
++		br = netdev_priv(dev);
++	} else {
++		p = br_port_get_rtnl(dev);
++		if (!p) {
++			NL_SET_ERR_MSG_MOD(extack, "Device is not a bridge port");
++			return -EINVAL;
++		}
++		br = p->br;
++	}
++
++	br_fdb_flush(br);
++
++	return 0;
++}
++
+ /* Flush all entries referring to a specific port.
+  * if do_all is set also flush static entries
+  * if vid is set delete all entries that match the vlan_id
+diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+index fe61d3b8d0cc..9aad2954f5fe 100644
+--- a/net/bridge/br_private.h
++++ b/net/bridge/br_private.h
+@@ -777,6 +777,9 @@ void br_fdb_update(struct net_bridge *br, struct net_bridge_port *source,
+ 
+ int br_fdb_delete(struct ndmsg *ndm, struct nlattr *tb[],
+ 		  struct net_device *dev, const unsigned char *addr, u16 vid);
++int br_fdb_delete_bulk(struct ndmsg *ndm, struct nlattr *tb[],
++		       struct net_device *dev, u16 vid,
++		       struct netlink_ext_ack *extack);
+ int br_fdb_add(struct ndmsg *nlh, struct nlattr *tb[], struct net_device *dev,
+ 	       const unsigned char *addr, u16 vid, u16 nlh_flags,
+ 	       struct netlink_ext_ack *extack);
+-- 
+2.47.1
+

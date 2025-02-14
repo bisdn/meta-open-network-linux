@@ -1,0 +1,90 @@
+From 3771613b8ae0ebf9de36e2b9531daf82dfcaff20 Mon Sep 17 00:00:00 2001
+From: Nikolay Aleksandrov <razor@blackwall.org>
+Date: Wed, 13 Apr 2022 13:52:02 +0300
+Subject: [PATCH 12/12] net: bridge: fdb: add support for flush filtering based
+ on ifindex and vlan
+
+Add support for fdb flush filtering based on destination ifindex and
+vlan id. The ifindex must either match a port's device ifindex or the
+bridge's. The vlan support is trivial since it's already validated by
+rtnl_fdb_del, we just need to fill it in.
+
+Signed-off-by: Nikolay Aleksandrov <razor@blackwall.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+(cherry picked from commit 0dbe886a4d8da1852b1ece67808d0bead74b1244)
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ net/bridge/br_fdb.c | 45 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 44 insertions(+), 1 deletion(-)
+
+diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
+index cad55fa2fe6c..9120120f0516 100644
+--- a/net/bridge/br_fdb.c
++++ b/net/bridge/br_fdb.c
+@@ -444,12 +444,44 @@ static unsigned long __ndm_flags_to_fdb_flags(u8 ndm_flags)
+ 	return flags;
+ }
+ 
++static int __fdb_flush_validate_ifindex(const struct net_bridge *br,
++					int ifindex,
++					struct netlink_ext_ack *extack)
++{
++	const struct net_device *dev;
++
++	dev = __dev_get_by_index(dev_net(br->dev), ifindex);
++	if (!dev) {
++		NL_SET_ERR_MSG_MOD(extack, "Unknown flush device ifindex");
++		return -ENODEV;
++	}
++	if (!netif_is_bridge_master(dev) && !netif_is_bridge_port(dev)) {
++		NL_SET_ERR_MSG_MOD(extack, "Flush device is not a bridge or bridge port");
++		return -EINVAL;
++	}
++	if (netif_is_bridge_master(dev) && dev != br->dev) {
++		NL_SET_ERR_MSG_MOD(extack,
++				   "Flush bridge device does not match target bridge device");
++		return -EINVAL;
++	}
++	if (netif_is_bridge_port(dev)) {
++		struct net_bridge_port *p = br_port_get_rtnl(dev);
++
++		if (p->br != br) {
++			NL_SET_ERR_MSG_MOD(extack, "Port belongs to a different bridge device");
++			return -EINVAL;
++		}
++	}
++
++	return 0;
++}
++
+ int br_fdb_delete_bulk(struct ndmsg *ndm, struct nlattr *tb[],
+ 		       struct net_device *dev, u16 vid,
+ 		       struct netlink_ext_ack *extack)
+ {
+ 	u8 ndm_flags = ndm->ndm_flags & ~FDB_FLUSH_IGNORED_NDM_FLAGS;
+-	struct net_bridge_fdb_flush_desc desc = {};
++	struct net_bridge_fdb_flush_desc desc = { .vlan_id = vid };
+ 	struct net_bridge_port *p = NULL;
+ 	struct net_bridge *br;
+ 
+@@ -485,6 +517,17 @@ int br_fdb_delete_bulk(struct ndmsg *ndm, struct nlattr *tb[],
+ 
+ 		desc.flags_mask |= __ndm_flags_to_fdb_flags(ndm_flags_mask);
+ 	}
++	if (tb[NDA_IFINDEX]) {
++		int err, ifidx = nla_get_s32(tb[NDA_IFINDEX]);
++
++		err = __fdb_flush_validate_ifindex(br, ifidx, extack);
++		if (err)
++			return err;
++		desc.port_ifindex = ifidx;
++	} else if (p) {
++		/* flush was invoked with port device and NTF_MASTER */
++		desc.port_ifindex = p->dev->ifindex;
++	}
+ 
+ 	br_debug(br, "flushing port ifindex: %d vlan id: %u flags: 0x%lx flags mask: 0x%lx\n",
+ 		 desc.port_ifindex, desc.vlan_id, desc.flags, desc.flags_mask);
+-- 
+2.47.1
+

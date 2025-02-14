@@ -1,0 +1,121 @@
+From bf628682154914965eece44beb7284a741e74bc3 Mon Sep 17 00:00:00 2001
+From: Nikolay Aleksandrov <razor@blackwall.org>
+Date: Wed, 13 Apr 2022 13:52:01 +0300
+Subject: [PATCH 11/12] net: bridge: fdb: add support for flush filtering based
+ on ndm flags and state
+
+Add support for fdb flush filtering based on ndm flags and state. NDM
+state and flags are mapped to bridge-specific flags and matched
+according to the specified masks. NTF_USE is used to represent
+added_by_user flag since it sets it on fdb add and we don't have a 1:1
+mapping for it. Only allowed bits can be set, NTF_SELF and NTF_MASTER are
+ignored.
+
+Signed-off-by: Nikolay Aleksandrov <razor@blackwall.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+(cherry picked from commit 564445fb4f0f7f3764320966a3d1e7c2711fd256)
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ net/bridge/br_fdb.c     | 58 ++++++++++++++++++++++++++++++++++++++---
+ net/bridge/br_private.h |  5 ++++
+ 2 files changed, 60 insertions(+), 3 deletions(-)
+
+diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
+index dfc6553d08ad..cad55fa2fe6c 100644
+--- a/net/bridge/br_fdb.c
++++ b/net/bridge/br_fdb.c
+@@ -416,13 +416,40 @@ void br_fdb_flush(struct net_bridge *br,
+ 	rcu_read_unlock();
+ }
+ 
++static unsigned long __ndm_state_to_fdb_flags(u16 ndm_state)
++{
++	unsigned long flags = 0;
++
++	if (ndm_state & NUD_PERMANENT)
++		__set_bit(BR_FDB_LOCAL, &flags);
++	if (ndm_state & NUD_NOARP)
++		__set_bit(BR_FDB_STATIC, &flags);
++
++	return flags;
++}
++
++static unsigned long __ndm_flags_to_fdb_flags(u8 ndm_flags)
++{
++	unsigned long flags = 0;
++
++	if (ndm_flags & NTF_USE)
++		__set_bit(BR_FDB_ADDED_BY_USER, &flags);
++	if (ndm_flags & NTF_EXT_LEARNED)
++		__set_bit(BR_FDB_ADDED_BY_EXT_LEARN, &flags);
++	if (ndm_flags & NTF_OFFLOADED)
++		__set_bit(BR_FDB_OFFLOADED, &flags);
++	if (ndm_flags & NTF_STICKY)
++		__set_bit(BR_FDB_STICKY, &flags);
++
++	return flags;
++}
++
+ int br_fdb_delete_bulk(struct ndmsg *ndm, struct nlattr *tb[],
+ 		       struct net_device *dev, u16 vid,
+ 		       struct netlink_ext_ack *extack)
+ {
+-	struct net_bridge_fdb_flush_desc desc = {
+-		.flags_mask = BR_FDB_STATIC
+-	};
++	u8 ndm_flags = ndm->ndm_flags & ~FDB_FLUSH_IGNORED_NDM_FLAGS;
++	struct net_bridge_fdb_flush_desc desc = {};
+ 	struct net_bridge_port *p = NULL;
+ 	struct net_bridge *br;
+ 
+@@ -437,6 +464,31 @@ int br_fdb_delete_bulk(struct ndmsg *ndm, struct nlattr *tb[],
+ 		br = p->br;
+ 	}
+ 
++	if (ndm_flags & ~FDB_FLUSH_ALLOWED_NDM_FLAGS) {
++		NL_SET_ERR_MSG(extack, "Unsupported fdb flush ndm flag bits set");
++		return -EINVAL;
++	}
++	if (ndm->ndm_state & ~FDB_FLUSH_ALLOWED_NDM_STATES) {
++		NL_SET_ERR_MSG(extack, "Unsupported fdb flush ndm state bits set");
++		return -EINVAL;
++	}
++
++	desc.flags |= __ndm_state_to_fdb_flags(ndm->ndm_state);
++	desc.flags |= __ndm_flags_to_fdb_flags(ndm_flags);
++	if (tb[NDA_NDM_STATE_MASK]) {
++		u16 ndm_state_mask = nla_get_u16(tb[NDA_NDM_STATE_MASK]);
++
++		desc.flags_mask |= __ndm_state_to_fdb_flags(ndm_state_mask);
++	}
++	if (tb[NDA_NDM_FLAGS_MASK]) {
++		u8 ndm_flags_mask = nla_get_u8(tb[NDA_NDM_FLAGS_MASK]);
++
++		desc.flags_mask |= __ndm_flags_to_fdb_flags(ndm_flags_mask);
++	}
++
++	br_debug(br, "flushing port ifindex: %d vlan id: %u flags: 0x%lx flags mask: 0x%lx\n",
++		 desc.port_ifindex, desc.vlan_id, desc.flags, desc.flags_mask);
++
+ 	br_fdb_flush(br, &desc);
+ 
+ 	return 0;
+diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+index 45a8a924544c..0be593ff2c79 100644
+--- a/net/bridge/br_private.h
++++ b/net/bridge/br_private.h
+@@ -758,6 +758,11 @@ static inline void br_netpoll_disable(struct net_bridge_port *p)
+ #endif
+ 
+ /* br_fdb.c */
++#define FDB_FLUSH_IGNORED_NDM_FLAGS (NTF_MASTER | NTF_SELF)
++#define FDB_FLUSH_ALLOWED_NDM_STATES (NUD_PERMANENT | NUD_NOARP)
++#define FDB_FLUSH_ALLOWED_NDM_FLAGS (NTF_USE | NTF_EXT_LEARNED | \
++				     NTF_STICKY | NTF_OFFLOADED)
++
+ int br_fdb_init(void);
+ void br_fdb_fini(void);
+ int br_fdb_hash_init(struct net_bridge *br);
+-- 
+2.47.1
+
