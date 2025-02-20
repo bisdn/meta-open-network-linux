@@ -28,6 +28,7 @@
 #include <linux/serdev.h>
 #include <linux/completion.h>
 #include <linux/debugfs.h>
+#include <linux/version.h>
 
 #include "bcm591xx.h"
 
@@ -72,8 +73,13 @@ struct as4610_poe_pse {
 
 #define to_as4610_poe_pse(d)	container_of(d, struct as4610_poe_pse, mcu)
 
-static int as4610_poe_pse_receive(struct serdev_device *serdev,
-				  const unsigned char *data, size_t count)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,9,0)
+static int
+#else
+static size_t
+#endif
+as4610_poe_pse_receive(struct serdev_device *serdev,
+		       const unsigned char *data, size_t count)
 {
 	struct as4610_poe_pse *pse = serdev_device_get_drvdata(serdev);
 	int need, want;
