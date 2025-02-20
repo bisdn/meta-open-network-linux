@@ -1,0 +1,34 @@
+From 0b9c80073e88ae050e697b4732146dab5280e006 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 7 Oct 2021 09:54:18 +0200
+Subject: [PATCH 10/21] mtd: brcmnand: ignore warning
+
+---
+ drivers/mtd/nand/raw/brcmnand/brcmnand.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/mtd/nand/raw/brcmnand/brcmnand.c b/drivers/mtd/nand/raw/brcmnand/brcmnand.c
+index 1b2ec0fec60c..0bfb07366041 100644
+--- a/drivers/mtd/nand/raw/brcmnand/brcmnand.c
++++ b/drivers/mtd/nand/raw/brcmnand/brcmnand.c
+@@ -1700,6 +1700,8 @@ static void brcmnand_send_cmd(struct brcmnand_host *host, int cmd)
+ 	ctrl->cmd_pending = cmd;
+ 
+ 	ret = bcmnand_ctrl_poll_status(host, NAND_CTRL_RDY, NAND_CTRL_RDY, 0);
++	/* mark out this warning for XGS iProc */
++	if (!IS_ENABLED(CONFIG_ARCH_XGS_IPROC))
+ 	WARN_ON(ret);
+ 
+ 	mb(); /* flush previous writes */
+@@ -2127,6 +2129,8 @@ static int brcmstb_nand_verify_erased_page(struct mtd_info *mtd,
+ 						  ecc_bytes, ecc.length,
+ 						  NULL, 0,
+ 						  chip->ecc.strength);
++		buf += chip->ecc.size;
++
+ 		if (ret < 0)
+ 			return ret;
+ 
+-- 
+2.47.1
+

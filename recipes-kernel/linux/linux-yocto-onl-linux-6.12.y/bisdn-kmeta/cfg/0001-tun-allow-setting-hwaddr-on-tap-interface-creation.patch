@@ -1,0 +1,42 @@
+From fe9830c8669dba03f2e2dc60e30775fb88749159 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 19 Jul 2022 14:44:05 +0200
+Subject: [PATCH] tun: allow setting hwaddr on tap interface creation
+
+Sometimes using a fixed mac address on tap interfaces is desired, but
+setting it after creation may race with e.g. a network manager trying to
+set its own mac address (*cough* systemd-networkd) or configuring /
+enabling the interface.
+
+So allow passing a mac address in the ifreq by (ab)using the fact that
+the sa_family field of the sockaddr matches the ifr_flags, so we can
+just use the sa_data field of ifr_hwaddr for passing it.
+
+To avoid assigning unexpected mac addresses, do a validity check before
+trying to use it.
+
+Upstream-Status: undecided if suitable [rather hackish, but also simple]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ drivers/net/tun.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/tun.c b/drivers/net/tun.c
+index 03fe9e3ee7af..dacd55c72e45 100644
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -1394,7 +1394,10 @@ static void tun_net_initialize(struct net_device *dev)
+ 		dev->priv_flags &= ~IFF_TX_SKB_SHARING;
+ 		dev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
+ 
+-		eth_hw_addr_random(dev);
++		if (is_valid_ether_addr(tun->ifr->ifr_hwaddr.sa_data))
++			eth_hw_addr_set(dev, tun->ifr->ifr_hwaddr.sa_data);
++		else
++			eth_hw_addr_random(dev);
+ 
+ 		/* Currently tun does not support XDP, only tap does. */
+ 		dev->xdp_features = NETDEV_XDP_ACT_BASIC |
+-- 
+2.47.1
+
