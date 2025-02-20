@@ -405,7 +405,7 @@ int bcm591xx_init(struct bcm591xx_pse_mcu *mcu, struct device *dev,
 	dev_info(mcu->dev, "Found %i port PoE PSE\n", mcu->num_ports);
 
 	mcu->ports = devm_kcalloc(mcu->dev, sizeof(mcu->ports[0]), mcu->num_ports, GFP_KERNEL);
-	if (mcu->ports)
+	if (!mcu->ports)
 		return -ENOMEM;
 
 	for (i = 0; i < mcu->num_ports; i++) {
