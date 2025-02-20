@@ -138,7 +138,6 @@ static int as4630_poe_pse_probe_6_3(struct i2c_client *client)
 static int as4630_poe_pse_remove(struct i2c_client *client)
 {
 	struct as4630_poe_pse *pse = i2c_get_clientdata(client);
-	int reg;
 
 	bcm591xx_remove(&pse->mcu);
 
