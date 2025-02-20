@@ -1,7 +1,7 @@
-From e7406abc0eb5ca42688edb5a0ee923c69586b206 Mon Sep 17 00:00:00 2001
+From 0848f34ead6e92cdd482f64c91958a0b804711d7 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 17 Jan 2020 14:29:42 +0000
-Subject: [PATCH 2/2] ag5648: update modules to compile and work on recent
+Subject: [PATCH 2/3] ag5648: update modules to compile and work on recent
  kernels
 
 Still require a lot of love to get them in a nice state.

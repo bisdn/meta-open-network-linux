@@ -1,7 +1,7 @@
-From e92c196f8daf108c660a34c50fa4326b9dd5d260 Mon Sep 17 00:00:00 2001
+From 1a70bfbc1bde17849c33d6c2958656660b3dfcd3 Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Wed, 19 Dec 2018 22:43:23 +0100
-Subject: [PATCH 06/13] cpld mux 2 was off by 1 to select the correct qsfp
+Subject: [PATCH 06/15] cpld mux 2 was off by 1 to select the correct qsfp
 
 Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 ---

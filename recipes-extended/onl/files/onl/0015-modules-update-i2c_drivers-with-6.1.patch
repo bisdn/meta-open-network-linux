@@ -1,7 +1,7 @@
 From 995a996aa04987bd8c4712da2a3b2a8a5ba09f95 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 31 Oct 2023 14:31:26 +0100
-Subject: [PATCH 15/47] modules: update i2c_drivers with 6.1
+Subject: [PATCH 15/20] modules: update i2c_drivers with 6.1
 
 i2c_remove changes its return type from int to void, so we need to
 provide different versions based on kernel version.
