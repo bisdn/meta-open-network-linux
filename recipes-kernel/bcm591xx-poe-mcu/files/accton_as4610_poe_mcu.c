@@ -389,7 +389,6 @@ static int as4610_poe_pse_probe(struct serdev_device *serdev)
 static void as4610_poe_pse_remove(struct serdev_device *serdev)
 {
 	struct as4610_poe_pse *pse = serdev_device_get_drvdata(serdev);
-	int reg;
 
 	bcm591xx_remove(&pse->mcu);
 
