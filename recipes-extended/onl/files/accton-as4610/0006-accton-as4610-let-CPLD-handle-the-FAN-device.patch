@@ -1,7 +1,7 @@
-From 5bb41a44a0bdda148d5c9cf5959ba824c6c66c75 Mon Sep 17 00:00:00 2001
+From c1efdc44682aee9d860d1a2956acffde2a3e9fda Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:22:19 +0200
-Subject: [PATCH 6/8] accton-as4610: let CPLD handle the FAN device
+Subject: [PATCH 25/54] accton-as4610: let CPLD handle the FAN device
 
 The FAN device directly depends on the CPLD device, so let it be created
 by the CPLD driver. This allows us to convert the FAN driver to a simple
@@ -18,7 +18,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  2 files changed, 42 insertions(+), 71 deletions(-)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
-index c327f54ff0bd..d97b0f42a961 100644
+index ec46db95738b..e8008c011444 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 @@ -34,6 +34,7 @@
@@ -75,7 +75,7 @@ index c327f54ff0bd..d97b0f42a961 100644
  exit_free:
      kfree(data);
  exit:
-@@ -491,6 +515,9 @@ static int as4610_54_cpld_remove(struct i2c_client *client)
+@@ -497,6 +521,9 @@ static int as4610_54_cpld_remove(struct i2c_client *client)
  {
      struct as4610_54_cpld_data *data = i2c_get_clientdata(client);
  
@@ -86,10 +86,10 @@ index c327f54ff0bd..d97b0f42a961 100644
  
      /* Remove sysfs hooks */
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
-index fe78e0440eb3..74ff7fd68530 100644
+index 9aeb632c1963..71ce0c16425d 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
-@@ -255,11 +255,19 @@ static int as4610_fan_probe(struct platform_device *pdev)
+@@ -256,11 +256,19 @@ static int as4610_fan_probe(struct platform_device *pdev)
  {
  	int status = -1;
  
@@ -111,7 +111,7 @@ index fe78e0440eb3..74ff7fd68530 100644
  	}
  
  	fan_data->hwmon_dev = hwmon_device_register(&pdev->dev);
-@@ -274,6 +282,8 @@ static int as4610_fan_probe(struct platform_device *pdev)
+@@ -275,6 +283,8 @@ static int as4610_fan_probe(struct platform_device *pdev)
  
  exit_remove:
  	sysfs_remove_group(&pdev->dev.kobj, &as4610_fan_group);
@@ -120,7 +120,7 @@ index fe78e0440eb3..74ff7fd68530 100644
  exit:
  	return status;
  }
-@@ -283,6 +293,8 @@ static int as4610_fan_remove(struct platform_device *pdev)
+@@ -284,6 +294,8 @@ static int as4610_fan_remove(struct platform_device *pdev)
  	hwmon_device_unregister(fan_data->hwmon_dev);
  	sysfs_remove_group(&pdev->dev.kobj, &as4610_fan_group);
  
@@ -128,8 +128,8 @@ index fe78e0440eb3..74ff7fd68530 100644
 +
  	return 0;
  }
- 
-@@ -301,75 +313,7 @@ static struct platform_driver as4610_fan_driver = {
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+@@ -312,75 +324,7 @@ static struct platform_driver as4610_fan_driver = {
  	},
  };
  
@@ -207,5 +207,5 @@ index fe78e0440eb3..74ff7fd68530 100644
  MODULE_AUTHOR("Brandon Chuang <brandon_chuang@accton.com.tw>");
  MODULE_DESCRIPTION("as4610_fan driver");
 -- 
-2.42.0
+2.47.1
 

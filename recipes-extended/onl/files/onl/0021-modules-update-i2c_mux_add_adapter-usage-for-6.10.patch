@@ -1,0 +1,405 @@
+From 8385169c80e3fd14a6704844488c1fe0c62cb987 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 18 Feb 2025 21:32:39 +0100
+Subject: [PATCH 1/2] modules: update i2c_mux_add_adapter() usage for 6.10
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../modules/builds/x86-64-accton-as5712-54x-cpld.c  |  4 ++++
+ .../modules/builds/x86-64-accton-as5812-54x-cpld.c  |  4 ++++
+ .../modules/builds/x86-64-accton-as5915-18x-fpga.c  |  4 ++++
+ .../modules/builds/x86-64-accton-as6712-32x-cpld.c  |  4 ++++
+ .../modules/builds/x86-64-accton-as6812-32x-cpld.c  |  4 ++++
+ .../modules/builds/x86-64-accton-as7315-27xb-cpld.c |  4 ++++
+ .../modules/builds/x86-64-accton-as7315-30x-fpga.c  |  4 ++++
+ .../modules/builds/snj60d0-320f_i2c_mux_cpld.c      |  4 ++++
+ .../builds/x86-64-delta-ag8032-i2c-mux-cpld.c       |  4 ++++
+ .../modules/builds/delta_ag9032v2a_platform.c       |  9 +++++++++
+ .../modules/builds/src/delta_ag9064_platform.c      |  4 ++++
+ .../modules/builds/delta_agc7646slv1b_platform.c    | 13 +++++++++++++
+ .../modules/builds/delta_agc7646v1_platform.c       | 13 +++++++++++++
+ .../modules/builds/delta_agc7648sv1_platform.c      |  9 +++++++++
+ .../d6356/modules/builds/src/inv-i2c-mux-pca9641.c  |  4 ++++
+ .../d7332/modules/builds/src/inv-i2c-mux-pca9641.c  |  4 ++++
+ .../modules/builds/src/net-i2c-mux-pca9641.c        |  4 ++++
+ 17 files changed, 96 insertions(+)
+
+diff --git a/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-cpld.c b/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-cpld.c
+index 2346a0b3457f..1909ca2459e6 100644
+--- a/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-cpld.c
++++ b/packages/platforms/accton/x86-64/as5712-54x/modules/builds/x86-64-accton-as5712-54x-cpld.c
+@@ -1072,7 +1072,11 @@ static int as5712_54x_cpld_mux_probe(struct i2c_client *client,
+ 		force = 0;			  /* dynamic adap number */
+ 		class = 0;			  /* no class by default */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, force, num);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, force, num, class);
++#endif
+ 
+ 		if (ret) {
+ 			dev_err(&client->dev,
+diff --git a/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-cpld.c b/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-cpld.c
+index bbe02a6be72e..ef2309d23f23 100644
+--- a/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-cpld.c
++++ b/packages/platforms/accton/x86-64/as5812-54x/modules/builds/x86-64-accton-as5812-54x-cpld.c
+@@ -1073,7 +1073,11 @@ static int as5812_54x_cpld_mux_probe(struct i2c_client *client,
+ 		force = 0;			  /* dynamic adap number */
+ 		class = 0;			  /* no class by default */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, force, num);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, force, num, class);
++#endif
+ 
+ 		if (ret) {
+ 			dev_err(&client->dev,
+diff --git a/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-fpga.c b/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-fpga.c
+index 3a1bcc499822..642a694526a9 100644
+--- a/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-fpga.c
++++ b/packages/platforms/accton/x86-64/as5915-18x/modules/builds/x86-64-accton-as5915-18x-fpga.c
+@@ -300,7 +300,11 @@ static int as5915_18x_fpga_mux_probe(struct i2c_client *client,
+         force = 0;              /* dynamic adap number */
+         class = 0;              /* no class by default */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, force, num);
++#else
+         ret = i2c_mux_add_adapter(muxc, force, num, class);
++#endif
+ 
+         if (ret) {
+             dev_err(&client->dev,
+diff --git a/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-cpld.c b/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-cpld.c
+index cfabe9668ad0..fe22ed3c39b4 100644
+--- a/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-cpld.c
++++ b/packages/platforms/accton/x86-64/as6712-32x/modules/builds/x86-64-accton-as6712-32x-cpld.c
+@@ -523,7 +523,11 @@ static int as6712_32x_cpld_mux_probe(struct i2c_client *client,
+ 		force = 0;			  /* dynamic adap number */
+ 		class = 0;			  /* no class by default */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, force, num);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, force, num, class);
++#endif
+ 
+ 		if (ret) {
+ 			dev_err(&client->dev,
+diff --git a/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-cpld.c b/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-cpld.c
+index 8a228f8a88cd..b8dd210881a1 100644
+--- a/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-cpld.c
++++ b/packages/platforms/accton/x86-64/as6812-32x/modules/builds/x86-64-accton-as6812-32x-cpld.c
+@@ -524,7 +524,11 @@ static int as6812_32x_cpld_mux_probe(struct i2c_client *client,
+ 		force = 0;			  /* dynamic adap number */
+ 		class = 0;			  /* no class by default */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, force, num);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, force, num, class);
++#endif
+ 
+ 		if (ret) {
+ 			dev_err(&client->dev,
+diff --git a/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/x86-64-accton-as7315-27xb-cpld.c b/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/x86-64-accton-as7315-27xb-cpld.c
+index 66178761752b..9d909a49b5fa 100755
+--- a/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/x86-64-accton-as7315-27xb-cpld.c
++++ b/packages/platforms/accton/x86-64/as7315-27xb/modules/builds/x86-64-accton-as7315-27xb-cpld.c
+@@ -875,7 +875,11 @@ static int _add_mux_channels(struct i2c_client *client,
+     for (num = 0; num < chips[model].nchans; num++) {
+         force = 0;			  /* dynamic adap number */
+         class = 0;			  /* no class by default */
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        status = i2c_mux_add_adapter(muxc, force, num);
++#else
+         status = i2c_mux_add_adapter(muxc, force, num, class);
++#endif
+         if (status)
+             return status ;
+     }
+diff --git a/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fpga.c b/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fpga.c
+index 36ccc25fa173..906cabcc5657 100644
+--- a/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fpga.c
++++ b/packages/platforms/accton/x86-64/as7315-30x/modules/builds/x86-64-accton-as7315-30x-fpga.c
+@@ -483,7 +483,11 @@ static int as7315_30x_fpga_mux_probe(struct i2c_client *client,
+ 		force = 0;			  /* dynamic adap number */
+ 		class = 0;			  /* no class by default */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, force, num);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, force, num, class);
++#endif
+ 
+ 		if (ret) {
+ 			dev_err(&client->dev,
+diff --git a/packages/platforms/alphanetworks/x86-64/snj60d0-320f/modules/builds/snj60d0-320f_i2c_mux_cpld.c b/packages/platforms/alphanetworks/x86-64/snj60d0-320f/modules/builds/snj60d0-320f_i2c_mux_cpld.c
+index 9a3840cb6853..e312dff0eb9d 100644
+--- a/packages/platforms/alphanetworks/x86-64/snj60d0-320f/modules/builds/snj60d0-320f_i2c_mux_cpld.c
++++ b/packages/platforms/alphanetworks/x86-64/snj60d0-320f/modules/builds/snj60d0-320f_i2c_mux_cpld.c
+@@ -1094,7 +1094,11 @@ static int snj60d0_320f_cpld_mux_probe(struct i2c_client *client,
+         force = 0;              /* dynamic adap number */
+         class = 0;              /* no class by default */
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, force, num);
++#else
+         ret = i2c_mux_add_adapter(muxc, force, num, class);
++#endif
+ 
+         if (ret) {
+             dev_err(&client->dev,
+diff --git a/packages/platforms/delta/x86-64/ag8032/modules/builds/x86-64-delta-ag8032-i2c-mux-cpld.c b/packages/platforms/delta/x86-64/ag8032/modules/builds/x86-64-delta-ag8032-i2c-mux-cpld.c
+index 2eea11006925..b920b8e53464 100644
+--- a/packages/platforms/delta/x86-64/ag8032/modules/builds/x86-64-delta-ag8032-i2c-mux-cpld.c
++++ b/packages/platforms/delta/x86-64/ag8032/modules/builds/x86-64-delta-ag8032-i2c-mux-cpld.c
+@@ -157,7 +157,11 @@ static int i2c_mux_cpld_probe(struct platform_device *pdev)
+ 	for (i = 0; i < mux->data.n_values; i++) {
+ 		nr = mux->data.base_nr ? (mux->data.base_nr + i) : 0;
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i]);
++#else
+ 		ret = i2c_mux_add_adapter (muxc, nr, mux->data.values[i], 0);
++#endif
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+ 			goto add_adapter_failed;
+diff --git a/packages/platforms/delta/x86-64/ag9032v2a/modules/builds/delta_ag9032v2a_platform.c b/packages/platforms/delta/x86-64/ag9032v2a/modules/builds/delta_ag9032v2a_platform.c
+index 0deb0a9f7579..6c5ca7b64511 100644
+--- a/packages/platforms/delta/x86-64/ag9032v2a/modules/builds/delta_ag9032v2a_platform.c
++++ b/packages/platforms/delta/x86-64/ag9032v2a/modules/builds/delta_ag9032v2a_platform.c
+@@ -11,6 +11,7 @@
+ #include <linux/hwmon-sysfs.h>
+ #include <linux/hwmon.h>
+ #include <linux/err.h>
++#include <linux/version.h>
+ 
+ #define CPUPLD_ADDR 0x31
+ #define SWPLD1_ADDR 0x6a
+@@ -2018,7 +2019,11 @@ static int __init cpld_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+@@ -2084,7 +2089,11 @@ static int __init swpld_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++       	ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+        	ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+diff --git a/packages/platforms/delta/x86-64/ag9064/modules/builds/src/delta_ag9064_platform.c b/packages/platforms/delta/x86-64/ag9064/modules/builds/src/delta_ag9064_platform.c
+index 5f633cd50c48..42ecc1787bf4 100755
+--- a/packages/platforms/delta/x86-64/ag9064/modules/builds/src/delta_ag9064_platform.c
++++ b/packages/platforms/delta/x86-64/ag9064/modules/builds/src/delta_ag9064_platform.c
+@@ -806,7 +806,11 @@ static int __init swpld_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+diff --git a/packages/platforms/delta/x86-64/agc7646slv1b/modules/builds/delta_agc7646slv1b_platform.c b/packages/platforms/delta/x86-64/agc7646slv1b/modules/builds/delta_agc7646slv1b_platform.c
+index 69a8b16271aa..12aa616ef080 100755
+--- a/packages/platforms/delta/x86-64/agc7646slv1b/modules/builds/delta_agc7646slv1b_platform.c
++++ b/packages/platforms/delta/x86-64/agc7646slv1b/modules/builds/delta_agc7646slv1b_platform.c
+@@ -13,6 +13,7 @@
+ #include <linux/err.h>
+ #include <linux/ipmi.h>
+ #include <linux/ipmi_smi.h>
++#include <linux/version.h>
+ 
+ #define CPUPLD_ADDR 0x31
+ #define SWPLD1_ADDR 0x6a
+@@ -2960,7 +2961,11 @@ static int __init cpld_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+@@ -3026,7 +3031,11 @@ static int __init swpld1_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+@@ -3093,7 +3102,11 @@ static int __init swpld3_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+diff --git a/packages/platforms/delta/x86-64/agc7646v1/modules/builds/delta_agc7646v1_platform.c b/packages/platforms/delta/x86-64/agc7646v1/modules/builds/delta_agc7646v1_platform.c
+index ee99dce3509a..3f1932e822da 100755
+--- a/packages/platforms/delta/x86-64/agc7646v1/modules/builds/delta_agc7646v1_platform.c
++++ b/packages/platforms/delta/x86-64/agc7646v1/modules/builds/delta_agc7646v1_platform.c
+@@ -13,6 +13,7 @@
+ #include <linux/err.h>
+ #include <linux/ipmi.h>
+ #include <linux/ipmi_smi.h>
++#include <linux/version.h>
+ 
+ #define CPUPLD_ADDR 0x31
+ #define SWPLD1_ADDR 0x6a
+@@ -2960,7 +2961,11 @@ static int __init cpld_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+@@ -3026,7 +3031,11 @@ static int __init swpld1_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+@@ -3093,7 +3102,11 @@ static int __init swpld3_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+diff --git a/packages/platforms/delta/x86-64/agc7648sv1/modules/builds/delta_agc7648sv1_platform.c b/packages/platforms/delta/x86-64/agc7648sv1/modules/builds/delta_agc7648sv1_platform.c
+index c3d0c5423ed3..5cb8dbb2e0ed 100755
+--- a/packages/platforms/delta/x86-64/agc7648sv1/modules/builds/delta_agc7648sv1_platform.c
++++ b/packages/platforms/delta/x86-64/agc7648sv1/modules/builds/delta_agc7648sv1_platform.c
+@@ -13,6 +13,7 @@
+ #include <linux/err.h>
+ #include <linux/ipmi.h>
+ #include <linux/ipmi_smi.h>
++#include <linux/version.h>
+ 
+ #define CPUPLD_ADDR 0x31
+ #define SWPLD1_ADDR 0x6a
+@@ -1472,7 +1473,11 @@ static int __init cpld_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+@@ -1538,7 +1543,11 @@ static int __init swpld3_mux_probe(struct platform_device *pdev)
+     {
+         int nr = pdata->base_nr + i;
+         unsigned int class = 0;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++        ret = i2c_mux_add_adapter(muxc, nr, i);
++#else
+         ret = i2c_mux_add_adapter(muxc, nr, i, class);
++#endif
+         if (ret) {
+             dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+             goto add_adapter_failed;
+diff --git a/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv-i2c-mux-pca9641.c b/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv-i2c-mux-pca9641.c
+index 0a86a5d05002..4db7c84fc10e 100644
+--- a/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv-i2c-mux-pca9641.c
++++ b/packages/platforms/inventec/x86-64/d6356/modules/builds/src/inv-i2c-mux-pca9641.c
+@@ -537,7 +537,11 @@ static int pca9641_probe(struct i2c_client *client,
+ 
+ 	i2c_set_clientdata(client, muxc);
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++	ret = i2c_mux_add_adapter(muxc, force, 0);
++#else
+ 	ret = i2c_mux_add_adapter(muxc, force, 0, 0);
++#endif
+ 	if (ret) {
+ 		dev_err(&client->dev, "failed to register master selector\n");
+ 		return ret;
+diff --git a/packages/platforms/inventec/x86-64/d7332/modules/builds/src/inv-i2c-mux-pca9641.c b/packages/platforms/inventec/x86-64/d7332/modules/builds/src/inv-i2c-mux-pca9641.c
+index 0a86a5d05002..4db7c84fc10e 100644
+--- a/packages/platforms/inventec/x86-64/d7332/modules/builds/src/inv-i2c-mux-pca9641.c
++++ b/packages/platforms/inventec/x86-64/d7332/modules/builds/src/inv-i2c-mux-pca9641.c
+@@ -537,7 +537,11 @@ static int pca9641_probe(struct i2c_client *client,
+ 
+ 	i2c_set_clientdata(client, muxc);
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++	ret = i2c_mux_add_adapter(muxc, force, 0);
++#else
+ 	ret = i2c_mux_add_adapter(muxc, force, 0, 0);
++#endif
+ 	if (ret) {
+ 		dev_err(&client->dev, "failed to register master selector\n");
+ 		return ret;
+diff --git a/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/net-i2c-mux-pca9641.c b/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/net-i2c-mux-pca9641.c
+index 0a86a5d05002..4db7c84fc10e 100644
+--- a/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/net-i2c-mux-pca9641.c
++++ b/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/net-i2c-mux-pca9641.c
+@@ -537,7 +537,11 @@ static int pca9641_probe(struct i2c_client *client,
+ 
+ 	i2c_set_clientdata(client, muxc);
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++	ret = i2c_mux_add_adapter(muxc, force, 0);
++#else
+ 	ret = i2c_mux_add_adapter(muxc, force, 0, 0);
++#endif
+ 	if (ret) {
+ 		dev_err(&client->dev, "failed to register master selector\n");
+ 		return ret;
+-- 
+2.48.1
+

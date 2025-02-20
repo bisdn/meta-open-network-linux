@@ -1,0 +1,31 @@
+From 17bad03486192619f48cf7403507860eec05f6f8 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 19 Feb 2025 09:47:16 +0100
+Subject: [PATCH] cel-questone-2a: adapt i2c adapter class usage for 6.10
+
+I2C_CLASS_SPD was dropped in 6.10
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../questone-2a/modules/builds/src/questone2a_switchboard.c   | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
+index 02fcb4a1b44d..765299723c6b 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
+@@ -1537,7 +1537,11 @@ static struct i2c_adapter * seastone2_i2c_init(struct platform_device *pdev, int
+     }
+ 
+     new_adapter->owner = THIS_MODULE;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++    new_adapter->class = I2C_CLASS_HWMON;
++#else
+     new_adapter->class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
++#endif
+     new_adapter->algo  = &seastone2_i2c_algorithm;
+     /* If the bus offset is -1, use dynamic bus number */
+     if (bus_number_offset == -1){
+-- 
+2.48.1
+
