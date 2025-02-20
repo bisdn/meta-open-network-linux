@@ -1,0 +1,497 @@
+From 8c9fb0c8afce922275527456647eeec72787f22d Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 7 Oct 2021 10:00:19 +0200
+Subject: [PATCH 11/21] bgmac: xgs-iproc changes
+
+---
+ drivers/net/ethernet/broadcom/Kconfig         |   4 +-
+ .../net/ethernet/broadcom/bgmac-platform.c    | 124 +++++++++++++++++-
+ drivers/net/ethernet/broadcom/bgmac.c         | 118 ++++++++++++++++-
+ drivers/net/ethernet/broadcom/bgmac.h         |  80 +++++++++++
+ 4 files changed, 320 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/broadcom/Kconfig b/drivers/net/ethernet/broadcom/Kconfig
+index 75ca3ddda1f5..b3f9ee6c0957 100644
+--- a/drivers/net/ethernet/broadcom/Kconfig
++++ b/drivers/net/ethernet/broadcom/Kconfig
+@@ -182,11 +182,11 @@ config BGMAC_BCMA
+ 
+ config BGMAC_PLATFORM
+ 	tristate "Broadcom iProc GBit platform support"
+-	depends on ARCH_BCM_IPROC || COMPILE_TEST
++	depends on ARCH_BCM_IPROC || ARCH_XGS_IPROC || COMPILE_TEST
+ 	select BGMAC
+ 	select PHYLIB
+ 	select FIXED_PHY
+-	default ARCH_BCM_IPROC
++	default ARCH_BCM_IPROC || ARCH_XGS_IPROC
+ 	help
+ 	  Say Y here if you want to use the Broadcom iProc Gigabit Ethernet
+ 	  controller through the generic platform interface
+diff --git a/drivers/net/ethernet/broadcom/bgmac-platform.c b/drivers/net/ethernet/broadcom/bgmac-platform.c
+index 78f7862ca006..72ae1cfd3494 100644
+--- a/drivers/net/ethernet/broadcom/bgmac-platform.c
++++ b/drivers/net/ethernet/broadcom/bgmac-platform.c
+@@ -19,6 +19,12 @@
+ #include <linux/of_address.h>
+ #include <linux/of_mdio.h>
+ #include <linux/of_net.h>
++
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++#include <linux/soc/bcm/xgs-iproc-misc-setup.h>
++#include <linux/phy/xgs_iproc_serdes.h>
++#endif
++
+ #include "bgmac.h"
+ 
+ #define NICPM_PADRING_CFG		0x00000004
+@@ -84,9 +90,16 @@ static void platform_bgmac_clk_enable(struct bgmac *bgmac, u32 flags)
+ 	}
+ 
+ 	val = bgmac_idm_read(bgmac, BCMA_IOCTL);
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++	/* To make HX4/KT2 GMAC work */
++	val |= flags;
++	val &= ~(BGMAC_AWCACHE | BGMAC_ARCACHE | BGMAC_AWUSER |
++			 BGMAC_ARUSER);
++#else
+ 	/* Some bits of BCMA_IOCTL set by HW/ATF and should not change */
+ 	val |= flags & ~(BGMAC_AWCACHE | BGMAC_ARCACHE | BGMAC_AWUSER |
+ 			 BGMAC_ARUSER);
++#endif
+ 	val |= BGMAC_CLK_EN;
+ 	bgmac_idm_write(bgmac, BCMA_IOCTL, val);
+ 	bgmac_idm_read(bgmac, BCMA_IOCTL);
+@@ -148,18 +161,123 @@ static void bgmac_nicpm_speed_set(struct net_device *net_dev)
+ 	bgmac_adjust_link(bgmac->net_dev);
+ }
+ 
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++#define SERDES_CONTROL_OFFSET		0x1a8
++#define SC_TX1G_FIFO_RST_MASK		0x00f00000
++#define SC_TX1G_FIFO_RST_VAL		0x00f00000
++#define SC_FORCE_SPD_STRAP_MASK 	0x00060000
++#define SC_FORCE_SPD_STRAP_VAL		0x00040000
++#define SC_FORCE_SPD_100M_VAL		0x00020000
++#define SC_FORCE_SPD_1G_VAL		0x00040000
++#define SC_REF_TERM_SEL_MASK		0x00001000
++#define SC_REFSEL_MASK			0x00000c00
++#define SC_REFSEL_VAL			0x00000400
++#define SC_REFDIV_MASK			0x00000300
++#define SC_REFDIV_VAL			0x00000000
++#define SC_LCREF_EN_MASK		0x00000040
++#define SC_RSTB_PLL_MASK		0x00000010
++#define SC_RSTB_MDIOREGS_MASK		0x00000008
++#define SC_RSTB_HW_MASK 		0x00000004
++#define SC_IDDQ_MASK			0x00000002
++#define SC_PWR_DOWN_MASK		0x00000001
++
++void amac_serdes_init(struct bgmac *info, struct phy_device *phy_dev)
++{
++	u32 sdctl;
++	void *serdes_ctl_reg;
++	struct phy_device *phydev = phy_dev;
++
++	serdes_ctl_reg = info->plat.base + SERDES_CONTROL_OFFSET;
++
++	sdctl = (SC_TX1G_FIFO_RST_VAL | SC_FORCE_SPD_STRAP_VAL);
++	if (xgs_serdes_hx4_amac(phydev))
++		sdctl |= (SC_REFSEL_VAL | SC_REF_TERM_SEL_MASK);
++
++	else if (xgs_serdes_kt2_amac(phydev))
++		sdctl |= SC_REF_TERM_SEL_MASK;
++
++	writel(sdctl, serdes_ctl_reg);
++
++	udelay(1000);
++
++	sdctl = readl(serdes_ctl_reg);
++	sdctl |= (SC_IDDQ_MASK | SC_PWR_DOWN_MASK);
++	writel(sdctl, serdes_ctl_reg);
++
++	sdctl = readl(serdes_ctl_reg);
++	sdctl &= ~(SC_IDDQ_MASK | SC_PWR_DOWN_MASK);
++	writel(sdctl, serdes_ctl_reg);
++
++	/* Bring hardware out of reset */
++	sdctl = readl(serdes_ctl_reg);
++	sdctl |= SC_RSTB_HW_MASK;
++	writel(sdctl, serdes_ctl_reg);
++
++	/* Bring MDIOREGS out of reset */
++	sdctl = readl(serdes_ctl_reg);
++	sdctl |= SC_RSTB_MDIOREGS_MASK;
++	writel(sdctl, serdes_ctl_reg);
++
++	udelay(1000);
++
++	/* Bring PLL out of reset */
++	sdctl = readl(serdes_ctl_reg);
++	sdctl |= SC_RSTB_PLL_MASK;
++	writel(sdctl, serdes_ctl_reg);
++
++	udelay(1000);
++
++	return;
++}
++#endif /* IS_ENABLED(CONFIG_ARCH_XGS_IPROC) */
++
+ static int platform_phy_connect(struct bgmac *bgmac)
+ {
+ 	struct phy_device *phy_dev;
+ 
+-	if (bgmac->plat.nicpm_base)
++	if (bgmac->plat.nicpm_base) {
+ 		phy_dev = of_phy_get_and_connect(bgmac->net_dev,
+ 						 bgmac->dev->of_node,
+ 						 bgmac_nicpm_speed_set);
+-	else
++	}
++	else {
++		struct device_node *np = bgmac->dev->of_node;
++		u32 lane;
++
++		/* For WH2 SGMII case, treat SERDES as PHY */
++		if (of_device_is_compatible(np, "brcm,xgs-wh2-amac") &&
++			is_wh2_amac_sgmii()) {
++			struct device_node *phy_np;
++			phy_interface_t iface = PHY_INTERFACE_MODE_SGMII;
++
++			phy_np = of_parse_phandle(np, "serdes-phy-handle", 0);
++			if (!phy_np)
++				return -ENODEV;
++
++			phy_dev = of_phy_find_device(phy_np);
++			if (!phy_dev)
++				return -ENODEV;
++
++			/* Get lane from DT, otherwise set to default 3 */
++			if (of_property_read_u32(phy_np, "lane-num", &lane))
++				lane = 3;
++			xgs_serdes_set_lane(phy_dev, lane);
++
++			amac_serdes_init(bgmac, phy_dev);
++
++			phy_connect_direct(bgmac->net_dev, phy_dev,
++						bgmac_adjust_link, iface);
++
++			put_device(&phy_dev->mdio.dev);
++			of_node_put(phy_np);
++		}
++		else {
+ 		phy_dev = of_phy_get_and_connect(bgmac->net_dev,
+ 						 bgmac->dev->of_node,
+ 						 bgmac_adjust_link);
++		}
++	}
++
+ 	if (!phy_dev) {
+ 		dev_err(bgmac->dev, "PHY connection failed\n");
+ 		return -ENODEV;
+@@ -284,6 +402,8 @@ static const struct dev_pm_ops bgmac_pm_ops = {
+ static const struct of_device_id bgmac_of_enet_match[] = {
+ 	{.compatible = "brcm,amac",},
+ 	{.compatible = "brcm,nsp-amac",},
++	{.compatible = "brcm,xgs-iproc-amac",},
++	{.compatible = "brcm,xgs-wh2-amac",},
+ 	{.compatible = "brcm,ns2-amac",},
+ 	{},
+ };
+diff --git a/drivers/net/ethernet/broadcom/bgmac.c b/drivers/net/ethernet/broadcom/bgmac.c
+index 6ffdc4229407..2b3333d061aa 100644
+--- a/drivers/net/ethernet/broadcom/bgmac.c
++++ b/drivers/net/ethernet/broadcom/bgmac.c
+@@ -18,6 +18,12 @@
+ #include <net/dsa.h>
+ #include "bgmac.h"
+ 
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++#include <linux/of_mdio.h>
++#include <linux/phy/xgs_iproc_serdes.h>
++extern void amac_serdes_init(struct bgmac *, struct phy_device *);
++#endif
++
+ static bool bgmac_wait_value(struct bgmac *bgmac, u16 reg, u32 mask,
+ 			     u32 value, int timeout)
+ {
+@@ -1118,6 +1124,7 @@ static void bgmac_chip_init(struct bgmac *bgmac)
+ 
+ 	bgmac_umac_write(bgmac, UMAC_MAX_FRAME_LEN, 32 + ETHER_MAX_LEN);
+ 
++	if (!IS_ENABLED(CONFIG_ARCH_XGS_IPROC))
+ 	bgmac_chip_intrs_on(bgmac);
+ 
+ 	bgmac_enable(bgmac);
+@@ -1195,10 +1202,25 @@ static int bgmac_open(struct net_device *net_dev)
+ 	}
+ 	napi_enable(&bgmac->napi);
+ 
++	if (IS_ENABLED(CONFIG_ARCH_XGS_IPROC)) {
++		/* Reset emulated MIB statistics to zero */
++		memset(&bgmac->estats, 0, sizeof(struct bgmac_ethtool_stats));
++	}
++
+ 	phy_start(net_dev->phydev);
+ 
+ 	netif_start_queue(net_dev);
+ 
++	/*
++	 * This interrupt enable was originally set in "bgmac_chip_init" which
++	 * was run before "napi_enable". If interrupt events come before
++	 * napi_enable was run, the NAPI poll routine "bgmac_poll" will not yet
++	 * be available for either handling interrupt events or re-enabling the
++	 * AMAC interrupt disabled by "bgmac_interrupt".
++	 */
++	if (IS_ENABLED(CONFIG_ARCH_XGS_IPROC))
++		bgmac_chip_intrs_on(bgmac);
++
+ 	return 0;
+ }
+ 
+@@ -1378,6 +1400,9 @@ static void bgmac_get_ethtool_stats(struct net_device *dev,
+ 	const struct bgmac_stat *s;
+ 	unsigned int i;
+ 	u64 val;
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++	u64 *estats = (u64*)&bgmac->estats;
++#endif
+ 
+ 	if (!netif_running(dev))
+ 		return;
+@@ -1388,18 +1413,70 @@ static void bgmac_get_ethtool_stats(struct net_device *dev,
+ 		if (s->size == 8)
+ 			val = (u64)bgmac_read(bgmac, s->offset + 4) << 32;
+ 		val |= bgmac_read(bgmac, s->offset);
++		if (IS_ENABLED(CONFIG_ARCH_XGS_IPROC)) {
++			estats[i] += val;
++			data[i] = estats[i];
++		}
++		else {
+ 		data[i] = val;
+ 	}
+ }
++}
++
++static int bgmac_dump_phy_regs(struct bgmac *bgmac, int try_run, char *reg_buf)
++{
++	struct phy_device *phydev = bgmac->net_dev->phydev;
++	int idx, len = 0;
++	char *buf, tmp[32];
++	u16 data = 0;
++
++	if (phydev) {
++		for (idx = 0; idx < 16; idx++) {
++			if (try_run || !reg_buf) {
++				buf = tmp;
++			} else {
++				buf = reg_buf + len;
++				data = phy_read(phydev, idx);
++			}
++			len += sprintf(buf, "PHY REG %d: 0x%.4x\n", idx, data);
++		}
++	}
++	return len;
++}
++
++static int bgmac_get_regs_len(struct net_device *dev)
++{
++	struct bgmac *bgmac = netdev_priv(dev);
++	u32 len = 0;
++
++	len += bgmac_dump_phy_regs(bgmac, 1, NULL);
++
++	return len;
++}
++
++static void bgmac_get_regs(struct net_device *dev,
++		struct ethtool_regs *regs, void *_p)
++{
++	struct bgmac *bgmac = netdev_priv(dev);
++	u32 len = 0;
++
++	regs->version = 0;
++
++	/* Dump phy register */
++	len += bgmac_dump_phy_regs(bgmac, 0, (char *)_p + len);
++}
+ 
+ static void bgmac_get_drvinfo(struct net_device *net_dev,
+ 			      struct ethtool_drvinfo *info)
+ {
+ 	strscpy(info->driver, KBUILD_MODNAME, sizeof(info->driver));
+ 	strscpy(info->bus_info, "AXI", sizeof(info->bus_info));
++	info->regdump_len = bgmac_get_regs_len(net_dev);
+ }
+ 
+ static const struct ethtool_ops bgmac_ethtool_ops = {
++	.get_regs			= bgmac_get_regs,
++	.get_regs_len		= bgmac_get_regs_len,
+ 	.get_strings		= bgmac_get_strings,
+ 	.get_sset_count		= bgmac_get_sset_count,
+ 	.get_ethtool_stats	= bgmac_get_ethtool_stats,
+@@ -1430,11 +1507,11 @@ void bgmac_adjust_link(struct net_device *net_dev)
+ 		}
+ 	}
+ 
+-	if (update) {
++	if (update)
+ 		bgmac_mac_speed(bgmac);
++
+ 		phy_print_status(phy_dev);
+ 	}
+-}
+ EXPORT_SYMBOL_GPL(bgmac_adjust_link);
+ 
+ int bgmac_phy_connect_direct(struct bgmac *bgmac)
+@@ -1489,6 +1566,12 @@ int bgmac_enet_probe(struct bgmac *bgmac)
+ {
+ 	struct net_device *net_dev = bgmac->net_dev;
+ 	int err;
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++	struct device_node *serdes_np;
++	struct device_node *amac_np;
++	struct phy_device *serdes_phy_dev = NULL;
++	static u32 serdes_lane2_init = 0;
++#endif
+ 
+ 	bgmac->in_init = true;
+ 
+@@ -1537,6 +1620,37 @@ int bgmac_enet_probe(struct bgmac *bgmac)
+ 		goto err_dma_free;
+ 	}
+ 
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++	/* SERDES init required for HX4/KT2/SB2/GH2/WH2 */
++	amac_np = bgmac->dev->of_node;
++	serdes_np = of_parse_phandle(amac_np, "serdes-handle", 0);
++	if (serdes_np)
++		serdes_phy_dev = of_phy_find_device(serdes_np);
++
++	if (serdes_phy_dev) {
++		u32 lane;
++		/* If lane available in DT, set lane num */
++		if (!of_property_read_u32(serdes_np, "lane-num", &lane))
++			xgs_serdes_set_lane(serdes_phy_dev, lane);
++
++		amac_serdes_init(bgmac, serdes_phy_dev);
++		phy_init_hw(serdes_phy_dev);
++	}
++
++	/* Init SERDES lane 2 required by SDK for HX4/KT2 */
++	if (!serdes_lane2_init) {
++		/* Use alias defined in DTS rather than full path */
++		serdes_np = of_find_node_by_path("sdk-serdes-lane2");
++		if (serdes_np) {
++			serdes_phy_dev = of_phy_find_device(serdes_np);
++			if (serdes_phy_dev) {
++				phy_init_hw(serdes_phy_dev);
++				serdes_lane2_init = 1;
++			}
++		}
++	}
++#endif
++
+ 	net_dev->features = NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
+ 	net_dev->hw_features = net_dev->features;
+ 	net_dev->vlan_features = net_dev->features;
+diff --git a/drivers/net/ethernet/broadcom/bgmac.h b/drivers/net/ethernet/broadcom/bgmac.h
+index d73ef262991d..11961324b689 100644
+--- a/drivers/net/ethernet/broadcom/bgmac.h
++++ b/drivers/net/ethernet/broadcom/bgmac.h
+@@ -437,6 +437,78 @@ struct bgmac_rx_header {
+ 	__le16 pad[12];
+ };
+ 
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++struct bgmac_ethtool_stats  {
++	u64	tx_good_octets;
++	u64	tx_good;
++	u64	tx_octets;
++	u64	tx_pkts;
++	u64	tx_broadcast;
++	u64	tx_multicast;
++	u64	tx_64;
++	u64	tx_65_127;
++	u64	tx_128_255;
++	u64	tx_256_511;
++	u64	tx_512_1023;
++	u64	tx_1024_1522;
++	u64	tx_1523_2047;
++	u64	tx_2048_4095;
++	u64	tx_4096_8191;
++	u64	tx_8192_max;
++	u64	tx_jabber;
++	u64	tx_oversize;
++	u64	tx_fragment;
++	u64	tx_underruns;
++	u64	tx_total_cols;
++	u64	tx_single_cols;
++	u64	tx_multiple_cols;
++	u64	tx_excessive_cols;
++	u64	tx_late_cols;
++	u64	tx_defered;
++	u64	tx_carrier_lost;
++	u64	tx_pause;
++	u64	tx_unicast;
++	u64	tx_q0;
++	u64	tx_q0_octets;
++	u64	tx_q1;
++	u64	tx_q1_octets;
++	u64	tx_q2;
++	u64	tx_q2_octets;
++	u64	tx_q3;
++	u64	tx_q3_octets;
++
++	u64	rx_good_octets;
++	u64	rx_good;
++	u64	rx_octets;
++	u64	rx_pkts;
++	u64	rx_broadcast;
++	u64	rx_multicast;
++	u64	rx_64;
++	u64	rx_65_127;
++	u64	rx_128_255;
++	u64	rx_256_511;
++	u64	rx_512_1023;
++	u64	rx_1024_1522;
++	u64	rx_1523_2047;
++	u64	rx_2048_4095;
++	u64	rx_4096_8191;
++	u64	rx_8192_max;
++	u64	rx_jabber;
++	u64	rx_oversize;
++	u64	rx_fragment;
++	u64	rx_missed;
++	u64	rx_crc_align;
++	u64	rx_undersize;
++	u64	rx_crc;
++	u64	rx_align;
++	u64	rx_symbol;
++	u64	rx_pause;
++	u64	rx_nonpause;
++	u64	rx_sa_changes;
++	u64	rx_unicast;
++};
++#endif
++
+ struct bgmac {
+ 	union {
+ 		struct {
+@@ -483,6 +555,14 @@ struct bgmac {
+ 
+ 	bool loopback;
+ 
++#if IS_ENABLED(CONFIG_ARCH_XGS_IPROC)
++	/* For XGS iProc, SW emulated MIB registers are required as the HW
++	 * MIB registers will be cleared to zero after reading.
++	 * mib_tx_regs/mib_rx_regs defined above seem for the same purpose,
++	 * but not used so far.
++	 */
++	struct bgmac_ethtool_stats estats;
++#endif
+ 	u32 (*read)(struct bgmac *bgmac, u16 offset);
+ 	void (*write)(struct bgmac *bgmac, u16 offset, u32 value);
+ 	u32 (*idm_read)(struct bgmac *bgmac, u16 offset);
+-- 
+2.47.1
+
