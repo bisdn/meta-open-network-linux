@@ -113,7 +113,7 @@ static const struct bcm591xx_ops as4630_poe_pse_ops = {
 
 static int as4630_poe_pse_probe(struct i2c_client *client, const struct i2c_device_id *dev_id)
 {
-	int ret, reg, psu_rating;
+	int ret;
 	struct as4630_poe_pse *pse;
 
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_I2C_BLOCK))
