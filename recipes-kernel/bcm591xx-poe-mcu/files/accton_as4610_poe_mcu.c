@@ -29,8 +29,6 @@
 #include <linux/completion.h>
 #include <linux/debugfs.h>
 
-#include <asm/unaligned.h>
-
 #include "bcm591xx.h"
 
 /* TODO: replace these with regmap or something more sane */
