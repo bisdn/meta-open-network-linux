@@ -1,0 +1,38 @@
+define KMACHINE armel-iproc
+define KTYPE standard
+define KARCH arm
+
+# submitted upstream
+
+patch 09-01-i2c-iproc-reset-bus-after-timeout-if-START_BUSY-is-s.patch
+
+# platform support
+
+patch 10-01-soc-xgs_iproc-drivers.patch
+patch 10-02-arm-add-iproc-xgs.patch
+patch 10-03-arm-add-iproc-xgs-shim-layer.patch
+patch 10-04-arm-init-DEBUG_RODATA-fix.patch
+patch 10-05-hw_random-xgs-iproc-rng100.patch
+patch 10-06-clk-clk-iproc-armpll-avoid-overflow.patch
+patch 10-07-clk-clk-xgs-iproc.patch
+patch 10-08-gpio-allow-xgs-iproc-for-ARCH_XGS_IPROC-as-well.patch
+patch 10-09-i2c-allow-i2c-bcm-iproc-for-ARCH_XGS_IPROC-as-well.patch
+patch 10-10-mtd-brcmnand-ignore-warning.patch
+patch 10-11-bgmac-xgs-iproc-changes.patch
+patch 10-12-mdio-allow-mdio-bcm-iproc-for-ARCH_XGS_IPROC-as-well.patch
+patch 10-13-phy-xgs-iproc-serdes.patch
+patch 10-14-pci-pcie-xgs-iproc.patch
+patch 10-15-spi-spi-iproc-qspi-xgs-iproc-support.patch
+patch 10-16-usb-ipproc-xgs-hack.patch
+patch 10-17-usb-udc-xgs-iproc-udc.patch
+patch 10-18-usb-phy-phy-xgs-iproc.patch
+patch 10-19-watchdog-sp805_wdt-clear-bootstatus.patch
+patch 10-20-drivers-usb-phy-phy-xgs-iproc-usb-phy-mode.patch
+
+# Yocto patch for ARM reproducibility
+
+patch patches/misc/tools-use-basename-to-identify-file-in-gen-mach-type.patch
+
+include cfg/bisdn-linux.scc
+
+kconf hardware armel-iproc.cfg
