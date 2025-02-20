@@ -1,4 +1,4 @@
-From d0c89f506ed537414b7c3a22eda851e6d8f66481 Mon Sep 17 00:00:00 2001
+From a117063c0499de949abaed840e98996bdabcf2cf Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:09:49 +0200
 Subject: [PATCH 2/3] accton_as4610_cpld: add of device match table

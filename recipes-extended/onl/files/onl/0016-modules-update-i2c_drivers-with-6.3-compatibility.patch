@@ -1,7 +1,7 @@
 From d8523ec0415d3bc23e9fb88e27cf1ba51cd6c9f0 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 21 Nov 2023 14:41:16 +0100
-Subject: [PATCH 16/47] modules: update i2c_drivers with 6.3 compatibility
+Subject: [PATCH 16/20] modules: update i2c_drivers with 6.3 compatibility
 
 i2c_probe() dropped its i2c_device_id* argument, so we need to provide
 different versions based on kernel version.

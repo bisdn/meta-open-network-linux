@@ -1,4 +1,4 @@
-From fa050aa6c54e4be3f97339ef370a99a02a97d888 Mon Sep 17 00:00:00 2001
+From 107e9a311f016346a72cb4ad54d449969ac3e996 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 28 Oct 2022 15:21:49 +0200
 Subject: [PATCH] accton-as4630-54te: do not acccess PSU via pmbus

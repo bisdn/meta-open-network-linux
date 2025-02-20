@@ -1,7 +1,7 @@
-From e1ce8cdf3c0dae0b0c0e8613d47c42171c2743b7 Mon Sep 17 00:00:00 2001
+From 640603261b84921fd7b2838bc25cc1b2c5d3030b Mon Sep 17 00:00:00 2001
 From: Peerapong Jaipakdee <pjaipakdee@celestica.com>
 Date: Mon, 14 Sep 2020 17:51:55 +0700
-Subject: [PATCH 1/8] add celestica questone 2a
+Subject: [PATCH 01/10] add celestica questone 2a
 
 Add Celestica Questone-2a taken from [1], all commits squashed into one
 for easier addition.

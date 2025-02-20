@@ -1,7 +1,7 @@
-From 97b00d680df239024eecc6adfe25259902ffd2c1 Mon Sep 17 00:00:00 2001
+From 85a08d9666417485d4e2264588f2cb38401ff711 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 11 Oct 2022 16:42:23 +0200
-Subject: [PATCH 11/13] delta-ag7648: do not reset QSFP modules when IRQ is
+Subject: [PATCH 11/15] delta-ag7648: do not reset QSFP modules when IRQ is
  asserted
 
 The IntL signal may also be asserted when the module finished initializing:
