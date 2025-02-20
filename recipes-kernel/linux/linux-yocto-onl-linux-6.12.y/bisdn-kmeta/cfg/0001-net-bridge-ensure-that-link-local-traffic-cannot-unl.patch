@@ -1,0 +1,48 @@
+From 6a8ebc2f5476c218a359687a1423e86f744857e4 Mon Sep 17 00:00:00 2001
+From: Hans Schultz <hans@kapio-technology.com>
+Date: Thu, 30 Jun 2022 13:16:34 +0200
+Subject: [PATCH] net: bridge: ensure that link-local traffic cannot unlock a
+ locked port
+
+Especially since adding MAB support with a35ec8e38cdd ("bridge: Add MAC
+Authentication Bypass (MAB) support") there are legitimate use cases for
+enabling learning on a locked port. Likewise, if userspace uses dynamic
+FDB entries learning needs to be enabled as well.
+
+Currently, by default, the bridge will autonomously populate its FDB
+with addresses learned from link-local frames. This is true even when a
+port is locked, which defeats the purpose of the "locked" bridge port
+option.
+
+The behavior can be controlled by the "no_linklocal_learn" bridge
+option, but it is easy to miss, which leads to insecure configurations.
+Additionally, it also disables this for unlocked bridge ports, where
+the behavior may be desired.
+
+Fix this by skipping learning from link-local frames when a port is
+locked.
+
+Fixes: a21d9a670d81 ("net: bridge: Add support for bridge port in locked mode")
+Upstream-Status: Pending [net-next is closed until feb 3rd]
+Signed-off-by: Hans Schultz <hans@kapio-technology.com>
+[jonas.gorski: reworded the commit message]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ net/bridge/br_input.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/net/bridge/br_input.c b/net/bridge/br_input.c
+index c729528b5e85..152ff3d85eb5 100644
+--- a/net/bridge/br_input.c
++++ b/net/bridge/br_input.c
+@@ -232,6 +232,7 @@ static void __br_handle_local_finish(struct sk_buff *skb)
+ 	if ((p->flags & BR_LEARNING) &&
+ 	    nbp_state_should_learn(p) &&
+ 	    !br_opt_get(p->br, BROPT_NO_LL_LEARN) &&
++	    !(p->flags & BR_PORT_LOCKED) &&
+ 	    br_should_learn(p, skb, &vid))
+ 		br_fdb_update(p->br, p, eth_hdr(skb)->h_source, vid, 0);
+ }
+-- 
+2.47.1
+

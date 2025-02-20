@@ -10,8 +10,13 @@
 #include <linux/export.h>
 #include <linux/fs.h>
 #include <linux/module.h>
+#include <linux/version.h>
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
 #include <asm/unaligned.h>
+#else
+#include <linux/unaligned.h>
+#endif
 
 #include "bcm591xx.h"
 
