@@ -1,7 +1,7 @@
-From 6f9b28547225aa059806ed6d4fcdfd851dde144c Mon Sep 17 00:00:00 2001
+From 6bec6e17345d0bc1c5aaff1d82cdeb9df8000e1e Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Thu, 22 Nov 2018 15:12:11 +0100
-Subject: [PATCH 05/13] kernel: update i2c settings module
+Subject: [PATCH 05/15] kernel: update i2c settings module
 
 This patch ensures a more reliable i2c adapter/device initialization. We
 experienced some reordering of the cpld devices which is fixed due to a
