@@ -1,0 +1,45 @@
+From 2e81504e624306c8fe178ffe415be8384ba0eb2b Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Wed, 30 Aug 2023 14:47:45 +0200
+Subject: [PATCH 21/21] i2c: iproc: reset bus after timeout
+
+The bus may get stuck in START_BUSY, so we need to reset it in case of a
+timeout to clear the state.
+
+Works around situations like:
+
+    bcm-iproc-2c 1803b000.i2c: transaction timed out
+    bcm-iproc-2c 1803b000.i2c: bus is busy
+    bcm-iproc-2c 1803b000.i2c: bus is busy
+    bcm-iproc-2c 1803b000.i2c: bus is busy
+    bcm-iproc-2c 1803b000.i2c: bus is busy
+    bcm-iproc-2c 1803b000.i2c: bus is busy
+    ...
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ drivers/i2c/busses/i2c-bcm-iproc.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/i2c/busses/i2c-bcm-iproc.c b/drivers/i2c/busses/i2c-bcm-iproc.c
+index 133d02899c6b..486e61723ed6 100644
+--- a/drivers/i2c/busses/i2c-bcm-iproc.c
++++ b/drivers/i2c/busses/i2c-bcm-iproc.c
+@@ -811,6 +811,14 @@ static int bcm_iproc_i2c_xfer_wait(struct bcm_iproc_i2c_dev *iproc_i2c,
+ 	}
+ 
+ 	if (!time_left && !iproc_i2c->xfer_is_done) {
++		if (!!(iproc_i2c_rd_reg(iproc_i2c,
++				M_CMD_OFFSET) & BIT(M_CMD_START_BUSY_SHIFT))) {
++			/* re-initialize i2c for recovery */
++			bcm_iproc_i2c_enable_disable(iproc_i2c, false);
++			bcm_iproc_i2c_init(iproc_i2c);
++			bcm_iproc_i2c_enable_disable(iproc_i2c, true);
++		}
++
+ 		/* flush both TX/RX FIFOs */
+ 		val = BIT(M_FIFO_RX_FLUSH_SHIFT) | BIT(M_FIFO_TX_FLUSH_SHIFT);
+ 		iproc_i2c_wr_reg(iproc_i2c, M_FIFO_CTRL_OFFSET, val);
+-- 
+2.47.1
+
