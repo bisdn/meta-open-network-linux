@@ -1,7 +1,7 @@
-From 919ed00cabc6c8f07b21f89f3dcfbdb8e856c0c0 Mon Sep 17 00:00:00 2001
+From ace0b9f9102c4f11c0ad531f22153000f07db67a Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 14 Dec 2020 16:34:18 +0100
-Subject: [PATCH 10/13] x86-64-delta-ag7648-i2c-mux-setting-mod: update to
+Subject: [PATCH 10/15] x86-64-delta-ag7648-i2c-mux-setting-mod: update to
  newer I2C API
 
 * i2c_new_client_device was added in 5.4, i2c_new_device dropped in 5.8

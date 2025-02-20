@@ -1,7 +1,7 @@
 From 5416358c4fe7d63479ee01cd088334fd2ac4a6ad Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 18 May 2022 16:21:02 +0200
-Subject: [PATCH 06/47] onlpm: hardcode supported arches
+Subject: [PATCH 06/20] onlpm: hardcode supported arches
 
 For yocto we don't provide a dpkg, so we need to hardcode the supported
 arches.
