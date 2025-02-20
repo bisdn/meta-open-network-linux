@@ -1,0 +1,185 @@
+From 8abfdd7ae7037125b7bb98112c2e824e5478091a Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 7 Oct 2021 10:05:17 +0200
+Subject: [PATCH 16/21] usb: ipproc-xgs hack
+
+---
+ drivers/usb/host/Kconfig         | 14 ++++++++++++++
+ drivers/usb/host/ehci-platform.c | 22 ++++++++++++++++++++++
+ drivers/usb/host/ohci-platform.c | 28 ++++++++++++++++++++++++++++
+ include/linux/usb/iproc_usb.h    | 23 +++++++++++++++++++++++
+ 4 files changed, 87 insertions(+)
+ create mode 100644 include/linux/usb/iproc_usb.h
+
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index d011d6c753ed..6f4dc18df568 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -258,6 +258,13 @@ config USB_EHCI_HCD_STI
+ 	  Enable support for the on-chip EHCI controller found on
+ 	  STMicroelectronics consumer electronics SoC's.
+ 
++config USB_EHCI_XGS_IPROC
++    bool "BRCM XGS iProc EHCI patch"
++    depends on (ARCH_XGS_IPROC && USB_EHCI_HCD_PLATFORM)
++    default n
++    help
++      This option is for BRCM XGS iProc EHCI patch
++
+ config USB_EHCI_HCD_AT91
+ 	tristate  "Support for Atmel on-chip EHCI USB controller"
+ 	depends on USB_EHCI_HCD && (ARCH_AT91 || COMPILE_TEST)
+@@ -559,6 +566,13 @@ config USB_OHCI_HCD_PLATFORM
+ 
+ 	  If unsure, say N.
+ 
++config USB_OHCI_XGS_IPROC
++    bool "BRCM XGS iProc OHCI patch"
++    depends on (ARCH_XGS_IPROC && USB_OHCI_HCD_PLATFORM)
++    default n
++    help
++      This option is for BRCM XGS iProc OHCI patch
++
+ config USB_OCTEON_OHCI
+ 	bool "Octeon on-chip OHCI support (DEPRECATED)"
+ 	depends on CAVIUM_OCTEON_SOC
+diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
+index 98b073185e1c..2acc4c5a9917 100644
+--- a/drivers/usb/host/ehci-platform.c
++++ b/drivers/usb/host/ehci-platform.c
+@@ -44,6 +44,11 @@
+ 
+ #define BCM_USB_FIFO_THRESHOLD	0x00800040
+ 
++#if IS_ENABLED(CONFIG_USB_EHCI_XGS_IPROC)
++#include <linux/usb/phy.h>
++#include <linux/usb/iproc_usb.h>
++#endif
++
+ struct ehci_platform_priv {
+ 	struct clk *clks[EHCI_MAX_CLKS];
+ 	struct reset_control *rsts;
+@@ -241,10 +246,24 @@ static int ehci_platform_probe(struct platform_device *dev)
+ 	struct ehci_platform_priv *priv;
+ 	struct ehci_hcd *ehci;
+ 	int err, irq, clk = 0;
++	struct usb_phy __maybe_unused *phy;
+ 
+ 	if (usb_disabled())
+ 		return -ENODEV;
+ 
++#if CONFIG_USB_EHCI_XGS_IPROC
++	phy = devm_usb_get_phy_by_phandle(&dev->dev, "usb-phy", 0);
++	if (IS_ERR(phy)) {
++		dev_err(&dev->dev, "unable to find transceiver\n");
++		return PTR_ERR(phy);
++	}
++
++	if (phy->flags != IPROC_USB_MODE_HOST)
++		return -ENODEV;
++
++	usb_phy_init(phy);
++#endif
++
+ 	/*
+ 	 * Use reasonable defaults so platforms don't have to provide these
+ 	 * with DT probing on ARM.
+@@ -369,6 +388,9 @@ static int ehci_platform_probe(struct platform_device *dev)
+ 
+ 	hcd->tpl_support = of_usb_host_tpl_support(dev->dev.of_node);
+ 
++#if CONFIG_USB_EHCI_XGS_IPROC
++	hcd->usb_phy = phy;
++#endif
+ 	err = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (err)
+ 		goto err_power;
+diff --git a/drivers/usb/host/ohci-platform.c b/drivers/usb/host/ohci-platform.c
+index 4a75507325dd..535b89bcd6d1 100644
+--- a/drivers/usb/host/ohci-platform.c
++++ b/drivers/usb/host/ohci-platform.c
+@@ -36,6 +36,13 @@
+ #define OHCI_MAX_CLKS 4
+ #define hcd_to_ohci_priv(h) ((struct ohci_platform_priv *)hcd_to_ohci(h)->priv)
+ 
++#if IS_ENABLED(CONFIG_USB_OHCI_XGS_IPROC)
++#include <linux/usb/phy.h>
++#include <linux/usb/iproc_usb.h>
++#define UHCRHDA_REG_OFFSET	0x48
++#define UHCRHDA_OCPM		BIT(11)
++#endif
++
+ struct ohci_platform_priv {
+ 	struct clk *clks[OHCI_MAX_CLKS];
+ 	struct reset_control *resets;
+@@ -94,10 +101,24 @@ static int ohci_platform_probe(struct platform_device *dev)
+ 	struct ohci_platform_priv *priv;
+ 	struct ohci_hcd *ohci;
+ 	int err, irq, clk = 0;
++	struct usb_phy __maybe_unused *phy;
+ 
+ 	if (usb_disabled())
+ 		return -ENODEV;
+ 
++	if (IS_ENABLED(CONFIG_USB_OHCI_XGS_IPROC)) {
++		phy = devm_usb_get_phy_by_phandle(&dev->dev, "usb-phy", 0);
++		if (IS_ERR(phy)) {
++			dev_err(&dev->dev, "unable to find transceiver\n");
++			return PTR_ERR(phy);
++		}
++
++		if (phy->flags != IPROC_USB_MODE_HOST)
++			return -ENODEV;
++
++		usb_phy_init(phy);
++	}
++
+ 	/*
+ 	 * Use reasonable defaults so platforms don't have to provide these
+ 	 * with DT probing on ARM.
+@@ -210,6 +231,13 @@ static int ohci_platform_probe(struct platform_device *dev)
+ 
+ 	hcd->tpl_support = of_usb_host_tpl_support(dev->dev.of_node);
+ 
++	if (IS_ENABLED(CONFIG_USB_OHCI_XGS_IPROC)) {
++		if (of_find_property(dev->dev.of_node, "iproc-ocpm-fix", NULL))
++			writel(readl(hcd->regs + UHCRHDA_REG_OFFSET) |
++				UHCRHDA_OCPM, hcd->regs + UHCRHDA_REG_OFFSET);
++		hcd->usb_phy = phy;
++	}
++
+ 	err = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (err)
+ 		goto err_power;
+diff --git a/include/linux/usb/iproc_usb.h b/include/linux/usb/iproc_usb.h
+new file mode 100644
+index 000000000000..16ed0c924056
+--- /dev/null
++++ b/include/linux/usb/iproc_usb.h
+@@ -0,0 +1,23 @@
++/*
++ * Copyright 2017 Broadcom Limited
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef __LINUX_USB_IPROC_USB_H
++#define __LINUX_USB_IPROC_USB_H
++
++/* USB Flags */
++
++#define IPROC_USB_MODE_HOST		(0)
++#define IPROC_USB_MODE_DEVICE		(1)			
++
++#endif /* __LINUX_USB_IPROC_USB_H */
++
+-- 
+2.47.1
+

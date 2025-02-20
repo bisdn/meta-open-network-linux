@@ -1,0 +1,36 @@
+From b432419f4ac060e238991272eee98e3b23f26dcf Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@gmail.com>
+Date: Fri, 23 Jul 2021 17:00:59 +0200
+Subject: [PATCH] net: ipv6: apply IFLA_INET6_ADDR_GEN_MODE immediately
+
+Apply IFLA_INET6_ADDR_GEN_MODE directly instead of just updating the
+configuration. This allows changing IPv6 address generation at runtime
+like it is possible through sysctl / procfs.
+
+This aligns the way addr_gen_mode changes are handled, regardless of the
+source of the change.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@gmail.com>
+---
+ net/ipv6/addrconf.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index f7c17388ff6a..26194ec62802 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -6055,7 +6055,10 @@ static int inet6_set_link_af(struct net_device *dev, const struct nlattr *nla,
+ 	if (tb[IFLA_INET6_ADDR_GEN_MODE]) {
+ 		u8 mode = nla_get_u8(tb[IFLA_INET6_ADDR_GEN_MODE]);
+ 
+-		WRITE_ONCE(idev->cnf.addr_gen_mode, mode);
++		if (idev->cnf.addr_gen_mode != mode) {
++			WRITE_ONCE(idev->cnf.addr_gen_mode, mode);
++			addrconf_init_auto_addrs(idev->dev);
++		}
+ 	}
+ 
+ 	return 0;
+-- 
+2.47.1
+
