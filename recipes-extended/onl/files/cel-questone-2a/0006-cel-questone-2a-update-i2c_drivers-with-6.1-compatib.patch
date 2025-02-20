@@ -1,7 +1,7 @@
-From b38375bc36bf4cbdb3379cf5ddd6651456f1c84a Mon Sep 17 00:00:00 2001
+From 26265d1070209adc946a991d46c5bb15979d9c57 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 22 Nov 2022 13:07:46 +0100
-Subject: [PATCH 6/8] cel-questone-2a: update i2c_drivers with 6.1
+Subject: [PATCH 06/10] cel-questone-2a: update i2c_drivers with 6.1
  compatibility
 
 i2c_remove changes its return type from int to void, so we need to
