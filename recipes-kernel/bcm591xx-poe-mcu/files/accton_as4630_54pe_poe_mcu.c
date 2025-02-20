@@ -28,7 +28,6 @@
 #include <linux/kernel.h>
 #include <linux/debugfs.h>
 
-#include <asm/unaligned.h>
 #include <linux/version.h>
 
 #include "bcm591xx.h"
