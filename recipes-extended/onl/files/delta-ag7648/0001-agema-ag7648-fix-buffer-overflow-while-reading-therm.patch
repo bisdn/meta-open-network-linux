@@ -1,7 +1,7 @@
-From e894d4464221e4a23fcabc7562bfa5233af2c9d2 Mon Sep 17 00:00:00 2001
+From f81fca93359914448c3aec563e501417a4bc55f2 Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Fri, 19 Mar 2021 10:30:32 +0100
-Subject: [PATCH 01/13] agema-ag7648: fix buffer overflow while reading thermal
+Subject: [PATCH 01/15] agema-ag7648: fix buffer overflow while reading thermal
  state
 
 Appending "2-004d/hwmon/hwmon1/temp1_input" to "/sys/bus/i2c/devices/"

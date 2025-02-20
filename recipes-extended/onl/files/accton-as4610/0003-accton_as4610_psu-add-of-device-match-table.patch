@@ -1,4 +1,4 @@
-From c1690ec177c70cfb59771185643a2544358a957a Mon Sep 17 00:00:00 2001
+From 061cfafe8a05499e4e4c5d057052e83087975917 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:10:23 +0200
 Subject: [PATCH 3/3] accton_as4610_psu: add of device match table

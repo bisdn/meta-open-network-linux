@@ -1,7 +1,7 @@
 From 82117cf2e6ac1468e22dd013d1332f4cb2ec38ed Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 31 Oct 2023 14:35:01 +0100
-Subject: [PATCH 14/47] modules: do not call hwmon_device_register_with_info()
+Subject: [PATCH 14/20] modules: do not call hwmon_device_register_with_info()
  with NULL chip
 
 hwmon_device_register_with_info() is supposed to require hwmon_chip_info

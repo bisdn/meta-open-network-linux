@@ -1,7 +1,7 @@
 From 5dfa9275a194968b9c723a19a3509b1d3fb25aeb Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 19 Apr 2021 16:23:26 +0200
-Subject: [PATCH 02/47] file: check unix socket path is short enough
+Subject: [PATCH 02/20] file: check unix socket path is short enough
 
 Add a length check for path before attempting to copy it. And because
 gcc is not smart enough, move strncpy to the check, else it will fail to

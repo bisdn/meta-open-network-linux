@@ -1,7 +1,7 @@
 From bf7a88d1fcbec66945dd974d80d57b5cbc6ddf87 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 19 Mar 2021 12:07:35 +0100
-Subject: [PATCH 01/47] platform_manager: do not ignore write return value
+Subject: [PATCH 01/20] platform_manager: do not ignore write return value
 
 If the write fails, the other thread will not be notified, so we should
 not try to wait for it.

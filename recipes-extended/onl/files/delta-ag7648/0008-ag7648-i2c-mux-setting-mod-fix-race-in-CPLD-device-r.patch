@@ -1,7 +1,7 @@
-From f3b3fa3da8bf57a50818f038b13f5eb856b66b2e Mon Sep 17 00:00:00 2001
+From 64395d3c0fe86e8685d44807176c6ba08a2e08eb Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 23 Jan 2020 16:21:05 +0000
-Subject: [PATCH 08/13] ag7648-i2c-mux-setting-mod: fix race in CPLD device
+Subject: [PATCH 08/15] ag7648-i2c-mux-setting-mod: fix race in CPLD device
  registration
 
 Registering the device and attaching platform data in two steps is racy

@@ -1,7 +1,7 @@
-From 5b07bd869ba1693b105e601f7138cc73321e5fcc Mon Sep 17 00:00:00 2001
+From 798defa47fb8019034320322cb4d1b6b1ec73b27 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 1 Jul 2022 16:01:24 +0200
-Subject: [PATCH 3/8] cel-questone-2a: delete unused global variables
+Subject: [PATCH 03/10] cel-questone-2a: delete unused global variables
 
 Delete unused global variables to avoid the following build error:
 

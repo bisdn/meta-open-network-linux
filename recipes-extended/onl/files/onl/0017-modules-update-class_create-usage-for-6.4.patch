@@ -1,7 +1,7 @@
-From f39facf64c51e926c7a67fa7a976b97f0ee0e787 Mon Sep 17 00:00:00 2001
+From 1a068cec035aa864f317c7340a9357100f3628e8 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 7 Feb 2024 17:27:23 +0100
-Subject: [PATCH 17/47] modules: update class_create() usage for 6.4
+Subject: [PATCH 17/20] modules: update class_create() usage for 6.4
 
 Update class_create() usage for 6.4 which lost its first parameter.
 

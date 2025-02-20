@@ -1,7 +1,7 @@
 From 1f90b70026d34961af9c5446dee99af2ec791d21 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 23 Jun 2022 11:13:22 +0200
-Subject: [PATCH 08/47] onlpm: allow overriding the dist codename from
+Subject: [PATCH 08/20] onlpm: allow overriding the dist codename from
  environment
 
 Yocto does not provide a lsb_release module, so add support for

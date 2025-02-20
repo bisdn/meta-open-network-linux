@@ -1,7 +1,7 @@
-From b9f185542476cddf294b16cd0fc11dc7440814eb Mon Sep 17 00:00:00 2001
+From a07a31aed5413bfcd9b907a1322727719d8a3256 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 7 Feb 2024 17:25:24 +0100
-Subject: [PATCH 8/8] cel-questone-2a: update class_create() usage for 6.4
+Subject: [PATCH 08/10] cel-questone-2a: update class_create() usage for 6.4
 
 Update class_create() usage for 6.4 which lost its first parameter.
 

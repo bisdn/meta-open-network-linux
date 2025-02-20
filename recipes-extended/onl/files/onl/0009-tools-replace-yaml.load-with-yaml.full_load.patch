@@ -1,7 +1,7 @@
 From 9a0ba116adcc6b171e648ba96047d45569d0e095 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 28 Jun 2022 11:00:16 +0200
-Subject: [PATCH 09/47] tools: replace yaml.load with yaml.full_load
+Subject: [PATCH 09/20] tools: replace yaml.load with yaml.full_load
 
 yaml.load without loader is deprecated and unsafe [1], and was removed
 with PyYAML 6.0.

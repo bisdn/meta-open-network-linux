@@ -1,7 +1,7 @@
-From 146709556117e1aa83d109b047eec5839bcba6c9 Mon Sep 17 00:00:00 2001
+From 4feecd3dd0b460391b3ec3e5546984353ac2bb11 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 23 Mar 2021 11:20:55 +0100
-Subject: [PATCH 2/8] questone-2a: fix ignoring unused result warnings
+Subject: [PATCH 02/10] questone-2a: fix ignoring unused result warnings
 
 |     Compiling[ release ]: x86_64_cel_questone_2a::platform.c
 | ../../../../../../../../../questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c: In function 'is_cache_exist':

@@ -1,7 +1,7 @@
-From 619c98c912ccc94aca938860da092ce1c625d76b Mon Sep 17 00:00:00 2001
+From e85db0a33ade1d448b9e29e43c864d11b265fd8f Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 24 Jan 2020 10:18:11 +0100
-Subject: [PATCH 09/13] ag7648-i2c-mux-setting-mod: force mux bus numbers
+Subject: [PATCH 09/15] ag7648-i2c-mux-setting-mod: force mux bus numbers
 
 Newer kernels allow parallel probing of the CPLDs, so mux bus number
 assignment will become interleaved. Fix this by forcing the mux bus

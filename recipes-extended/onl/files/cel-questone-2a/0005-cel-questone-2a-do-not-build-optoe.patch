@@ -1,7 +1,7 @@
-From 065508bc17907bce88f090fcd1e6b1797ee64cd5 Mon Sep 17 00:00:00 2001
+From a416ce9c1fbf5252ac08e191aaf76bca0c2dd92b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 5 Aug 2022 11:34:17 +0000
-Subject: [PATCH 5/8] cel-questone-2a: do not build optoe
+Subject: [PATCH 05/10] cel-questone-2a: do not build optoe
 
 No reason to use the local copy, just use the onl one that is more
 recent.

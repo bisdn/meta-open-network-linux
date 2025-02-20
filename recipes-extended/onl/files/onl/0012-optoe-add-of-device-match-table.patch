@@ -1,7 +1,7 @@
 From 134b6baced07c943ecd86b4518c6c6b67b7040af Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 11:43:30 +0200
-Subject: [PATCH 12/47] optoe: add of device match table
+Subject: [PATCH 12/20] optoe: add of device match table
 
 For on-demand loading to work the kernel needs to know which compatibles
 are handled by the driver, so add an appropriate table.
