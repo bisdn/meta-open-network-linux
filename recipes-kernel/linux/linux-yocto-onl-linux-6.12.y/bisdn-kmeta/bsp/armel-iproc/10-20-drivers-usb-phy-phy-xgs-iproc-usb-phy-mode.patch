@@ -1,0 +1,39 @@
+From 147d6d6af6c6b0f8aa4bdf0f89b51fe8ae3a9bf6 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 12 Nov 2021 10:33:42 +0100
+Subject: [PATCH 20/21] drivers: usb: phy: phy-xgs-iproc: usb phy mode
+
+---
+ drivers/usb/phy/phy-xgs-iproc.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/usb/phy/phy-xgs-iproc.c b/drivers/usb/phy/phy-xgs-iproc.c
+index 0db479860b97..de6ed42bf4a1 100644
+--- a/drivers/usb/phy/phy-xgs-iproc.c
++++ b/drivers/usb/phy/phy-xgs-iproc.c
+@@ -163,12 +163,22 @@ static int xgs_iproc_usb_phy_mode(struct iproc_usb_priv *iproc_usb_data)
+ 	u32 __maybe_unused val;
+ 	int __maybe_unused gpio_pin, ret;
+ 	struct gpio_desc *usbdev_gpio;
++        const char *phy_mode_str;
+ 
+ 	if (!wrap_base)
+ 		dev_warn(dev, "no wrap base addr");
+ 
+ 	if (of_device_is_compatible(dn, "brcm,usb-phy-hx4") ||
+ 		of_device_is_compatible(dn, "brcm,usb-phy-kt2")) {
++
++                /* Edge-core patch: use "usb-phy-mode" in dts to decide host/device mode */
++                if (!of_property_read_string(dn, "usb-phy-mode", &phy_mode_str)) {
++                        if (!strcasecmp(phy_mode_str, "host"))
++                                return IPROC_USB_MODE_HOST;
++                        if (!strcasecmp(phy_mode_str, "device"))
++                                return IPROC_USB_MODE_DEVICE;
++                }
++
+ 		/* gpio pin 4 to control host/device mode */
+ 		usbdev_gpio = gpiod_get(dev, "usbdev", GPIOD_IN);
+ 		if (IS_ERR(usbdev_gpio)) {
+-- 
+2.47.1
+

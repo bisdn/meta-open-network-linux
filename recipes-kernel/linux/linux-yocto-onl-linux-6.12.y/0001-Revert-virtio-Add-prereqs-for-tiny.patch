@@ -1,0 +1,44 @@
+From c203a1cfd4b56162afd4a7afe26b38fb13026e9e Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 22 May 2025 15:50:44 +0200
+Subject: [PATCH] Revert "virtio: Add prereqs for tiny"
+
+This enables DRM, and we have headless systems, so DRM just needlessly
+increases code size and attack surface.
+
+This reverts commit 26ae60b03262f71c03a2685aa649493b86369c1d.
+---
+ cfg/virtio.cfg | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/cfg/virtio.cfg b/cfg/virtio.cfg
+index c653a461690a..b6e25f0cd661 100644
+--- a/cfg/virtio.cfg
++++ b/cfg/virtio.cfg
+@@ -1,23 +1,15 @@
+ # SPDX-License-Identifier: MIT
+ CONFIG_VIRTIO=y # OVERRIDE:$MODULE_OR_Y
+-CONFIG_VIRTIO_MENU=y
+ CONFIG_VIRTIO_PCI=y # OVERRIDE:$MODULE_OR_Y
+ CONFIG_VIRTIO_BALLOON=y # OVERRIDE:$MODULE_OR_Y
+-CONFIG_NET=y
+ CONFIG_VIRTIO_NET=y # OVERRIDE:$MODULE_OR_Y
+ CONFIG_VIRTIO_BLK=y # OVERRIDE:$MODULE_OR_Y
+-CONFIG_BLK_MQ_VIRTIO=y # OVERRIDE:$MODULE_OR_Y
+ CONFIG_VIRTIO_CONSOLE=y # OVERRIDE:$MODULE_OR_Y
+ CONFIG_VIRTIO_MMIO=y # OVERRIDE:$MODULE_OR_Y
+ CONFIG_VIRTIO_INPUT=m
+ CONFIG_HW_RANDOM=y
+ CONFIG_HW_RANDOM_VIRTIO=y # OVERRIDE:$MODULE_OR_Y
+-CONFIG_SCSI=y # OVERRIDE:$MODULE_OR_Y
+-CONFIG_SCSI_LOWLEVEL=y
+ CONFIG_SCSI_VIRTIO=y # OVERRIDE:$MODULE_OR_Y
+-CONFIG_CRYPTO=y # OVERRIDE:$MODULE_OR_Y
+-CONFIG_CRYPTO_DEV_VIRTIO=y # OVERRIDE:$MODULE_OR_Y
+-CONFIG_DRM=y # OVERRIDE:$MODULE_OR_Y
+ CONFIG_DRM_VIRTIO_GPU=y # OVERRIDE:$MODULE_OR_Y
+ CONFIG_DRM_FBDEV_EMULATION=y # OVERRIDE:$MODULE_OR_Y
+ CONFIG_VSOCKETS=y # OVERRIDE:$MODULE_OR_Y
+-- 
+2.51.0
+

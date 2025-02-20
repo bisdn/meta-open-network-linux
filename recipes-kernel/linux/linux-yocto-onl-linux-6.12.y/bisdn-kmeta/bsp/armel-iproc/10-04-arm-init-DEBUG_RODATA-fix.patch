@@ -1,0 +1,33 @@
+From 642075747ee6652c80d4e16144014085fcf65096 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 7 Oct 2021 09:48:32 +0200
+Subject: [PATCH 04/21] arm: init: DEBUG_RODATA fix(?)
+
+---
+ arch/arm/mm/init.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
+index 5345d218899a..8c7e11bd9c20 100644
+--- a/arch/arm/mm/init.c
++++ b/arch/arm/mm/init.c
+@@ -431,6 +431,16 @@ static void update_sections_early(struct section_perm perms[], int n)
+ 	for_each_process(t) {
+ 		if (t->flags & PF_KTHREAD)
+ 			continue;
++
++		/*
++		 * A process in getting shut down state (PF_EXITING), with its
++		 * task mmu pointer (mm) being NULL, causes hang in
++		 * set_section_perms().
++		 * NOTE: update_sections_early() runs if CONFIG_DEBUG_RODATA=y
++		 */
++		if (t->flags & PF_EXITING)
++			continue;
++
+ 		for_each_thread(t, s)
+ 			if (s->mm)
+ 				set_section_perms(perms, n, true, s->mm);
+-- 
+2.47.1
+
