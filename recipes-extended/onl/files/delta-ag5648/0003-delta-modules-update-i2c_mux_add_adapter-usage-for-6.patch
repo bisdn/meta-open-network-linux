@@ -1,0 +1,30 @@
+From d59648049b8b57721b44adb4e382bfbbaa4eaa5e Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 18 Feb 2025 21:32:39 +0100
+Subject: [PATCH 2/2] delta: modules: update i2c_mux_add_adapter() usage for
+ 6.10
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c b/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c
+index a5ab28db699e..dc9339c24e84 100755
+--- a/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c
++++ b/packages/platforms/delta/x86-64/modules/builds/i2c_cpld.c
+@@ -368,7 +368,11 @@ static int i2c_cpld_mux_probe(struct i2c_client *client,
+   /* Now create an adapter for each channel */
+   for (chan = 0; chan < chips[data->type].nchans; chan++)
+   {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++    ret = i2c_mux_add_adapter(muxc, false, chan);
++#else
+     ret = i2c_mux_add_adapter(muxc, false, chan, 0);
++#endif
+     if (ret)
+     {
+       dev_err(&client->dev, "failed to register multiplexed adapter %d\n", chan);
+-- 
+2.48.1
+

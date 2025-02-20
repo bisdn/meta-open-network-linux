@@ -1,0 +1,459 @@
+From 98c5a43fa58b4694ff6e0a82db442608764a1c4c Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Sun, 9 Feb 2025 16:35:13 +0100
+Subject: [PATCH 20/55] modules: replace strlcpy() with strscpy()
+
+Replace all occurencies of strlcpy() with strscpy() since strlcpy() was
+removed in Linux 6.8 via the following semantic patch:
+
+<smpl>
+@@
+expression E1,E2,E3;
+@@
+-strlcpy(E1, E2, E3);
++strscpy(E1, E2, E3);
+</smpl>
+
+For some reason coccinelle insists on adding braces.
+
+Hand edited the one instance where the return value was used.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86-64/ag5648/modules/builds/dni_emc2305.c   |  2 +-
+ .../x86-64/ag9032v1/modules/builds/dni_emc2305.c |  2 +-
+ .../ag9032v2a/modules/builds/dni_emc2305.c       |  2 +-
+ .../agc7646slv1b/modules/builds/dni_emc2305.c    |  2 +-
+ .../agc7646v1/modules/builds/dni_emc2305.c       |  2 +-
+ .../agc7648a/modules/builds/agc7648a_emc2305.c   |  2 +-
+ .../x86-64/ak7448/modules/builds/dni_emc2305.c   |  2 +-
+ .../ingrasys/x86-64/modules/builds/eeprom_mb.c   |  2 +-
+ .../x86-64/d10056/modules/builds/src/i2c-gpio.c  |  5 +++--
+ .../x86-64/d3352/modules/builds/src/i2c-gpio.c   |  5 +++--
+ .../x86-64/d5052/modules/builds/src/i2c-gpio.c   |  5 +++--
+ .../x86-64/d5254/modules/builds/src/i2c-gpio.c   |  5 +++--
+ .../x86-64/d6332/modules/builds/src/i2c-gpio.c   |  5 +++--
+ .../x86-64/d6356/modules/builds/src/i2c-gpio.c   |  5 +++--
+ .../x86-64/d6556/modules/builds/src/i2c-gpio.c   |  5 +++--
+ .../x86-64/d7332/modules/builds/src/i2c-gpio.c   |  5 +++--
+ .../x86-64/modules/builds/src/inv_eeprom.c       |  2 +-
+ .../aurora-610/modules/builds/src/i2c-gpio.c     |  4 +++-
+ .../aurora-820/modules/builds/src/i2c-gpio.c     |  5 +++--
+ .../netberg/x86-64/modules/builds/eeprom_mb.c    |  2 +-
+ .../x86-64/modules/builds/hardware_monitor.c     |  2 +-
+ .../modules/builds/src/i40e/i40e_ethtool.c       |  8 ++++----
+ .../x86-64/modules/builds/src/i40e/i40e_main.c   | 16 ++++++++--------
+ .../x86-64/modules/builds/src/i40e/i40e_ptp.c    |  2 +-
+ .../modules/builds/src/i40e/i40e_virtchnl_pf.c   |  2 +-
+ .../builds/src/x86-64-ufispace-eeprom-mb.c       |  2 +-
+ 26 files changed, 56 insertions(+), 45 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_emc2305.c b/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_emc2305.c
+index 7dbb73d2d62c..e7565ec96c5c 100755
+--- a/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_emc2305.c
++++ b/packages/platforms/delta/x86-64/ag5648/modules/builds/dni_emc2305.c
+@@ -331,7 +331,7 @@ static int emc2305_detect(struct i2c_client *client,
+     return -ENODEV;
+   }
+ 
+-  strlcpy(info->type, "emc2305", I2C_NAME_SIZE);
++  strscpy(info->type, "emc2305", I2C_NAME_SIZE);
+ 
+   return 0;
+ }
+diff --git a/packages/platforms/delta/x86-64/ag9032v1/modules/builds/dni_emc2305.c b/packages/platforms/delta/x86-64/ag9032v1/modules/builds/dni_emc2305.c
+index 544d67306e26..513ad3b34e19 100755
+--- a/packages/platforms/delta/x86-64/ag9032v1/modules/builds/dni_emc2305.c
++++ b/packages/platforms/delta/x86-64/ag9032v1/modules/builds/dni_emc2305.c
+@@ -336,7 +336,7 @@ static int emc2305_detect(struct i2c_client *client,
+     return -ENODEV;
+   }
+ 
+-  strlcpy(info->type, "emc2305", I2C_NAME_SIZE);
++  strscpy(info->type, "emc2305", I2C_NAME_SIZE);
+ 
+   return 0;
+ }
+diff --git a/packages/platforms/delta/x86-64/ag9032v2a/modules/builds/dni_emc2305.c b/packages/platforms/delta/x86-64/ag9032v2a/modules/builds/dni_emc2305.c
+index 35a2ebb49642..53b73065ae13 100644
+--- a/packages/platforms/delta/x86-64/ag9032v2a/modules/builds/dni_emc2305.c
++++ b/packages/platforms/delta/x86-64/ag9032v2a/modules/builds/dni_emc2305.c
+@@ -322,7 +322,7 @@ static int emc2305_detect(struct i2c_client *client,
+     return -ENODEV;
+   }
+ 
+-  strlcpy(info->type, "emc2305", I2C_NAME_SIZE);
++  strscpy(info->type, "emc2305", I2C_NAME_SIZE);
+ 
+   return 0;
+ }
+diff --git a/packages/platforms/delta/x86-64/agc7646slv1b/modules/builds/dni_emc2305.c b/packages/platforms/delta/x86-64/agc7646slv1b/modules/builds/dni_emc2305.c
+index 35a2ebb49642..53b73065ae13 100644
+--- a/packages/platforms/delta/x86-64/agc7646slv1b/modules/builds/dni_emc2305.c
++++ b/packages/platforms/delta/x86-64/agc7646slv1b/modules/builds/dni_emc2305.c
+@@ -322,7 +322,7 @@ static int emc2305_detect(struct i2c_client *client,
+     return -ENODEV;
+   }
+ 
+-  strlcpy(info->type, "emc2305", I2C_NAME_SIZE);
++  strscpy(info->type, "emc2305", I2C_NAME_SIZE);
+ 
+   return 0;
+ }
+diff --git a/packages/platforms/delta/x86-64/agc7646v1/modules/builds/dni_emc2305.c b/packages/platforms/delta/x86-64/agc7646v1/modules/builds/dni_emc2305.c
+index 35a2ebb49642..53b73065ae13 100644
+--- a/packages/platforms/delta/x86-64/agc7646v1/modules/builds/dni_emc2305.c
++++ b/packages/platforms/delta/x86-64/agc7646v1/modules/builds/dni_emc2305.c
+@@ -322,7 +322,7 @@ static int emc2305_detect(struct i2c_client *client,
+     return -ENODEV;
+   }
+ 
+-  strlcpy(info->type, "emc2305", I2C_NAME_SIZE);
++  strscpy(info->type, "emc2305", I2C_NAME_SIZE);
+ 
+   return 0;
+ }
+diff --git a/packages/platforms/delta/x86-64/agc7648a/modules/builds/agc7648a_emc2305.c b/packages/platforms/delta/x86-64/agc7648a/modules/builds/agc7648a_emc2305.c
+index 631a9a8c4a3e..9738333387f6 100755
+--- a/packages/platforms/delta/x86-64/agc7648a/modules/builds/agc7648a_emc2305.c
++++ b/packages/platforms/delta/x86-64/agc7648a/modules/builds/agc7648a_emc2305.c
+@@ -266,7 +266,7 @@ static int emc2305_detect(struct i2c_client *client,
+     return -ENODEV;
+   }
+ 
+-  strlcpy(info->type, "emc2305", I2C_NAME_SIZE);
++  strscpy(info->type, "emc2305", I2C_NAME_SIZE);
+ 
+   return 0;
+ }
+diff --git a/packages/platforms/delta/x86-64/ak7448/modules/builds/dni_emc2305.c b/packages/platforms/delta/x86-64/ak7448/modules/builds/dni_emc2305.c
+index 24fa3b5df095..944ee4ce97bb 100755
+--- a/packages/platforms/delta/x86-64/ak7448/modules/builds/dni_emc2305.c
++++ b/packages/platforms/delta/x86-64/ak7448/modules/builds/dni_emc2305.c
+@@ -313,7 +313,7 @@ static int emc2305_detect(struct i2c_client *client,
+     return -ENODEV;
+   }
+ 
+-  strlcpy(info->type, "emc2305", I2C_NAME_SIZE);
++  strscpy(info->type, "emc2305", I2C_NAME_SIZE);
+ 
+   return 0;
+ }
+diff --git a/packages/platforms/ingrasys/x86-64/modules/builds/eeprom_mb.c b/packages/platforms/ingrasys/x86-64/modules/builds/eeprom_mb.c
+index ca7fed5e04db..ad1096066a74 100755
+--- a/packages/platforms/ingrasys/x86-64/modules/builds/eeprom_mb.c
++++ b/packages/platforms/ingrasys/x86-64/modules/builds/eeprom_mb.c
+@@ -201,7 +201,7 @@ static int mb_eeprom_detect(struct i2c_client *client, struct i2c_board_info *in
+ 		return -ENODEV;
+ 	}
+ 
+-	strlcpy(info->type, "eeprom", I2C_NAME_SIZE);
++	strscpy(info->type, "eeprom", I2C_NAME_SIZE);
+ 
+ 	return 0;
+ }
+diff --git a/packages/platforms/inventec/x86-64/d10056/modules/builds/src/i2c-gpio.c b/packages/platforms/inventec/x86-64/d10056/modules/builds/src/i2c-gpio.c
+index ef9c738e2202..49833ac5b71a 100644
+--- a/packages/platforms/inventec/x86-64/d10056/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/inventec/x86-64/d10056/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/inventec/x86-64/d3352/modules/builds/src/i2c-gpio.c b/packages/platforms/inventec/x86-64/d3352/modules/builds/src/i2c-gpio.c
+index 34d0b379cebf..f3cccf98b103 100644
+--- a/packages/platforms/inventec/x86-64/d3352/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/inventec/x86-64/d3352/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/inventec/x86-64/d5052/modules/builds/src/i2c-gpio.c b/packages/platforms/inventec/x86-64/d5052/modules/builds/src/i2c-gpio.c
+index 34d0b379cebf..f3cccf98b103 100644
+--- a/packages/platforms/inventec/x86-64/d5052/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/inventec/x86-64/d5052/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/inventec/x86-64/d5254/modules/builds/src/i2c-gpio.c b/packages/platforms/inventec/x86-64/d5254/modules/builds/src/i2c-gpio.c
+index ef9c738e2202..49833ac5b71a 100644
+--- a/packages/platforms/inventec/x86-64/d5254/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/inventec/x86-64/d5254/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/inventec/x86-64/d6332/modules/builds/src/i2c-gpio.c b/packages/platforms/inventec/x86-64/d6332/modules/builds/src/i2c-gpio.c
+index ef9c738e2202..49833ac5b71a 100644
+--- a/packages/platforms/inventec/x86-64/d6332/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/inventec/x86-64/d6332/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/inventec/x86-64/d6356/modules/builds/src/i2c-gpio.c b/packages/platforms/inventec/x86-64/d6356/modules/builds/src/i2c-gpio.c
+index 34d0b379cebf..f3cccf98b103 100644
+--- a/packages/platforms/inventec/x86-64/d6356/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/inventec/x86-64/d6356/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/inventec/x86-64/d6556/modules/builds/src/i2c-gpio.c b/packages/platforms/inventec/x86-64/d6556/modules/builds/src/i2c-gpio.c
+index 34d0b379cebf..f3cccf98b103 100644
+--- a/packages/platforms/inventec/x86-64/d6556/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/inventec/x86-64/d6556/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/inventec/x86-64/d7332/modules/builds/src/i2c-gpio.c b/packages/platforms/inventec/x86-64/d7332/modules/builds/src/i2c-gpio.c
+index ef9c738e2202..49833ac5b71a 100644
+--- a/packages/platforms/inventec/x86-64/d7332/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/inventec/x86-64/d7332/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/inventec/x86-64/modules/builds/src/inv_eeprom.c b/packages/platforms/inventec/x86-64/modules/builds/src/inv_eeprom.c
+index f44792a9ae72..639074402444 100644
+--- a/packages/platforms/inventec/x86-64/modules/builds/src/inv_eeprom.c
++++ b/packages/platforms/inventec/x86-64/modules/builds/src/inv_eeprom.c
+@@ -126,7 +126,7 @@ static int inv_eeprom_detect(struct i2c_client *client, struct i2c_board_info *i
+ 		return -ENODEV;
+ 	}
+ 
+-	strlcpy(info->type, "eeprom", I2C_NAME_SIZE);
++	strscpy(info->type, "eeprom", I2C_NAME_SIZE);
+ 
+ 	return 0;
+ }
+diff --git a/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/i2c-gpio.c b/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/i2c-gpio.c
+index d38d815747b8..b3a46f7671b8 100644
+--- a/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/netberg/x86-64/aurora-610/modules/builds/src/i2c-gpio.c
+@@ -212,7 +212,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 
+ 	adap->owner = THIS_MODULE;
+ 	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	{
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/i2c-gpio.c b/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/i2c-gpio.c
+index ef9c738e2202..49833ac5b71a 100644
+--- a/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/i2c-gpio.c
++++ b/packages/platforms/netberg/x86-64/aurora-820/modules/builds/src/i2c-gpio.c
+@@ -211,8 +211,9 @@ static int i2c_gpio_probe(struct platform_device *pdev)
+ 	bit_data->data = pdata;
+ 
+ 	adap->owner = THIS_MODULE;
+-	if (pdev->dev.of_node)
+-		strlcpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	if (pdev->dev.of_node) {
++		strscpy(adap->name, dev_name(&pdev->dev), sizeof(adap->name));
++	}
+ 	else
+ 		snprintf(adap->name, sizeof(adap->name), "i2c-gpio%d", pdev->id);
+ 
+diff --git a/packages/platforms/netberg/x86-64/modules/builds/eeprom_mb.c b/packages/platforms/netberg/x86-64/modules/builds/eeprom_mb.c
+index 66000a964bb2..1415231f10bb 100755
+--- a/packages/platforms/netberg/x86-64/modules/builds/eeprom_mb.c
++++ b/packages/platforms/netberg/x86-64/modules/builds/eeprom_mb.c
+@@ -201,7 +201,7 @@ static int mb_eeprom_detect(struct i2c_client *client, struct i2c_board_info *in
+ 		return -ENODEV;
+ 	}
+ 
+-	strlcpy(info->type, "eeprom", I2C_NAME_SIZE);
++	strscpy(info->type, "eeprom", I2C_NAME_SIZE);
+ 
+ 	return 0;
+ }
+diff --git a/packages/platforms/netberg/x86-64/modules/builds/hardware_monitor.c b/packages/platforms/netberg/x86-64/modules/builds/hardware_monitor.c
+index 0f18f1ef54f6..6adcdf5e2187 100755
+--- a/packages/platforms/netberg/x86-64/modules/builds/hardware_monitor.c
++++ b/packages/platforms/netberg/x86-64/modules/builds/hardware_monitor.c
+@@ -8448,7 +8448,7 @@ static int w83795adg_hardware_monitor_detect(struct i2c_client *client,
+         }
+     }
+ 
+-    strlcpy(info->type, "HURACAN", I2C_NAME_SIZE);
++    strscpy(info->type, "HURACAN", I2C_NAME_SIZE);
+     return 0;
+ }
+ 
+diff --git a/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_ethtool.c b/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_ethtool.c
+index 605f3227c144..83778308457c 100644
+--- a/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_ethtool.c
++++ b/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_ethtool.c
+@@ -2204,12 +2204,12 @@ static void i40e_get_drvinfo(struct net_device *netdev,
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+ 
+-	strlcpy(drvinfo->driver, i40e_driver_name, sizeof(drvinfo->driver));
+-	strlcpy(drvinfo->version, i40e_driver_version_str,
++	strscpy(drvinfo->driver, i40e_driver_name, sizeof(drvinfo->driver));
++	strscpy(drvinfo->version, i40e_driver_version_str,
+ 		sizeof(drvinfo->version));
+-	strlcpy(drvinfo->fw_version, i40e_nvm_version_str(&pf->hw),
++	strscpy(drvinfo->fw_version, i40e_nvm_version_str(&pf->hw),
+ 		sizeof(drvinfo->fw_version));
+-	strlcpy(drvinfo->bus_info, pci_name(pf->pdev),
++	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
+ 		sizeof(drvinfo->bus_info));
+ #ifdef HAVE_ETHTOOL_GET_SSET_COUNT
+ 	drvinfo->n_priv_flags = I40E_PRIV_FLAGS_STR_LEN;
+diff --git a/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_main.c b/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_main.c
+index 62aeafe1cda0..ceaf87c0d7e1 100644
+--- a/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_main.c
++++ b/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_main.c
+@@ -10565,7 +10565,7 @@ static void i40e_send_version(struct i40e_pf *pf)
+ 	dv.minor_version = DRV_VERSION_MINOR;
+ 	dv.build_version = DRV_VERSION_BUILD;
+ 	dv.subbuild_version = DRV_VERSION_SUBBUILD;
+-	strlcpy(dv.driver_string, DRV_VERSION, sizeof(dv.driver_string));
++	strscpy(dv.driver_string, DRV_VERSION, sizeof(dv.driver_string));
+ 	i40e_aq_send_driver_version(&pf->hw, &dv, NULL);
+ }
+ 
+@@ -16645,23 +16645,23 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 		switch (hw->bus.speed) {
+ 		case i40e_bus_speed_8000:
+-			strlcpy(speed, "8.0", PCI_SPEED_SIZE); break;
++			strscpy(speed, "8.0", PCI_SPEED_SIZE); break;
+ 		case i40e_bus_speed_5000:
+-			strlcpy(speed, "5.0", PCI_SPEED_SIZE); break;
++			strscpy(speed, "5.0", PCI_SPEED_SIZE); break;
+ 		case i40e_bus_speed_2500:
+-			strlcpy(speed, "2.5", PCI_SPEED_SIZE); break;
++			strscpy(speed, "2.5", PCI_SPEED_SIZE); break;
+ 		default:
+ 			break;
+ 		}
+ 		switch (hw->bus.width) {
+ 		case i40e_bus_width_pcie_x8:
+-			strlcpy(width, "8", PCI_WIDTH_SIZE); break;
++			strscpy(width, "8", PCI_WIDTH_SIZE); break;
+ 		case i40e_bus_width_pcie_x4:
+-			strlcpy(width, "4", PCI_WIDTH_SIZE); break;
++			strscpy(width, "4", PCI_WIDTH_SIZE); break;
+ 		case i40e_bus_width_pcie_x2:
+-			strlcpy(width, "2", PCI_WIDTH_SIZE); break;
++			strscpy(width, "2", PCI_WIDTH_SIZE); break;
+ 		case i40e_bus_width_pcie_x1:
+-			strlcpy(width, "1", PCI_WIDTH_SIZE); break;
++			strscpy(width, "1", PCI_WIDTH_SIZE); break;
+ 		default:
+ 			break;
+ 		}
+diff --git a/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_ptp.c b/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_ptp.c
+index 0e3ed747085a..5fad566ed971 100644
+--- a/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_ptp.c
++++ b/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_ptp.c
+@@ -1452,7 +1452,7 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
+ 	if (!IS_ERR_OR_NULL(pf->ptp_clock))
+ 		return 0;
+ 
+-	strlcpy(pf->ptp_caps.name, i40e_driver_name,
++	strscpy(pf->ptp_caps.name, i40e_driver_name,
+ 		sizeof(pf->ptp_caps.name) - 1);
+ 	pf->ptp_caps.owner = THIS_MODULE;
+ 	pf->ptp_caps.max_adj = 999999999;
+diff --git a/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_virtchnl_pf.c b/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_virtchnl_pf.c
+index b07c9a06199b..f80bbd61193e 100644
+--- a/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_virtchnl_pf.c
++++ b/packages/platforms/ufispace/x86-64/modules/builds/src/i40e/i40e_virtchnl_pf.c
+@@ -4553,7 +4553,7 @@ static int i40e_vc_add_cloud_filter(struct i40e_vf *vf, u8 *msg)
+ 	if (pf->fdir_pf_active_filters ||
+ 	    (!hlist_empty(&pf->fdir_filter_list))) {
+ 		aq_ret = I40E_ERR_PARAM;
+-		err_msglen = strlcpy(err_msg_buf,
++		err_msglen = strscpy(err_msg_buf,
+ 				     "Flow Director Sideband filters exists, turn ntuple off to configure cloud filters",
+ 				     sizeof(err_msg_buf));
+ 		err_msg = err_msg_buf;
+diff --git a/packages/platforms/ufispace/x86-64/modules/builds/src/x86-64-ufispace-eeprom-mb.c b/packages/platforms/ufispace/x86-64/modules/builds/src/x86-64-ufispace-eeprom-mb.c
+index b343f91bc746..2c0e54948bde 100755
+--- a/packages/platforms/ufispace/x86-64/modules/builds/src/x86-64-ufispace-eeprom-mb.c
++++ b/packages/platforms/ufispace/x86-64/modules/builds/src/x86-64-ufispace-eeprom-mb.c
+@@ -201,7 +201,7 @@ static int mb_eeprom_detect(struct i2c_client *client, struct i2c_board_info *in
+ 		return -ENODEV;
+ 	}
+ 
+-	strlcpy(info->type, "eeprom", I2C_NAME_SIZE);
++	strscpy(info->type, "eeprom", I2C_NAME_SIZE);
+ 
+ 	return 0;
+ }
+-- 
+2.47.1
+

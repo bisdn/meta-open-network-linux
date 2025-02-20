@@ -1,0 +1,46 @@
+From 9eb387429d167ecafd43b867dbc7d8cc37b8bd4d Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 18 Feb 2025 21:31:23 +0100
+Subject: [PATCH 1/2] delta-ag7648: update i2c_mux_add_adapter() usage for 6.10
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c    | 4 ++++
+ .../ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c    | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
+index 368bb053c956..690a59034cd2 100755
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
+@@ -153,7 +153,11 @@ static int i2c_mux_cpld_probe(struct platform_device *pdev)
+ 	for (i = 0; i < mux->data.n_values; i++) {
+ 		nr = mux->data.base_nr ? (mux->data.base_nr + i) : 0;
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i]);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i], 0);
++#endif
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+ 			goto add_adapter_failed;
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+index d5db6a791852..996f6e315fbd 100755
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+@@ -180,7 +180,11 @@ static int i2c_mux_cpld_probe(struct platform_device *pdev)
+ 	for (i = 0; i < mux->data.n_values; i++) {
+ 		nr = mux->data.base_nr ? (mux->data.base_nr + i) : 0;
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i]);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i], 0);
++#endif
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+ 			goto add_adapter_failed;
+-- 
+2.48.1
+
