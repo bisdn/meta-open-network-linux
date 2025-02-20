@@ -1,0 +1,76 @@
+From 72c29e484835c55a74abb9d409243f4430dcc4f1 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 18 Feb 2025 21:31:23 +0100
+Subject: [PATCH 14/15] delta-ag7648: update i2c_mux_add_adapter() usage for
+ 6.10
+
+Update i2c_mux_add_adapter() usage for 6.10 which lost its last
+paramter.
+
+// <smpl>
+@r@
+expression R,E1,E2,E3,E4;
+position p;
+@@
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++R = i2c_mux_add_adapter(E1, E2, E3);
++#else
+ R = i2c_mux_add_adapter(E1, E2, E3, E4);
++#endif
+@i depends on r@
+@@
+ #include <linux/version.h>
+@depends on r && !i@
+@@
+ #include <...>
++#include <linux/version.h>
+// </smpl>
+
+applied with
+
+  spatch --sp-file 6.10-i2c_mux_add_adapter.cocci --in-place --dir packages/platforms/delta/x86-64/ag7648/
+
+Result taken as is, without any code style fixes.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c    | 4 ++++
+ .../ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c    | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
+index 2b4911ad9b0d..4025c1221857 100755
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
+@@ -153,7 +153,11 @@ static int i2c_mux_cpld_probe(struct platform_device *pdev)
+ 	for (i = 0; i < mux->data.n_values; i++) {
+ 		nr = mux->data.base_nr ? (mux->data.base_nr + i) : 0;
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i]);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i], 0);
++#endif
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+ 			goto add_adapter_failed;
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+index 339c0071fb5d..486d566e01bf 100755
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+@@ -180,7 +180,11 @@ static int i2c_mux_cpld_probe(struct platform_device *pdev)
+ 	for (i = 0; i < mux->data.n_values; i++) {
+ 		nr = mux->data.base_nr ? (mux->data.base_nr + i) : 0;
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,10,0)
++		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i]);
++#else
+ 		ret = i2c_mux_add_adapter(muxc, nr, mux->data.values[i], 0);
++#endif
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+ 			goto add_adapter_failed;
+-- 
+2.51.0
+

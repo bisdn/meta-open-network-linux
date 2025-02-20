@@ -1,7 +1,7 @@
 From 1a737910e1deae58c75e1a13837e95cd2ff01deb Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 16 Jun 2022 10:32:16 +0200
-Subject: [PATCH 05/47] dynamically determine location of python3
+Subject: [PATCH 05/20] dynamically determine location of python3
 
 To allow running the scripts within a distro context with custom python
 search paths, replace the hardcoded location of the python3 binary with
