@@ -1,0 +1,112 @@
+From af34b0c2c99ce75e0bfda53da925bd51f5377dfe Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Sun, 9 Feb 2025 10:41:18 +0100
+Subject: [PATCH 52/54] delta-ag7648: update platform_drivers with 6.11
+ compatibility
+
+platform_driver::remove() changed its return type to void, so we need to
+provide different versions based on the kernel version.
+
+Add variants using the following semantic patch:
+
+<// <smpl>
+@r@
+identifier DRIVER;
+identifier remove_fn;
+fresh identifier remove_fn_wrap = remove_fn ## "_6_11";
+position p;
+@@
+struct platform_driver DRIVER@p = {
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++       .remove = remove_fn_wrap,
++#else
+        .remove = remove_fn,
++#endif
+};
+
+@i depends on r@
+@@
+ #include <linux/version.h>
+@depends on r && !i@
+@@
+ #include <...>
++#include <linux/version.h>
+@depends on r@
+identifier r.remove_fn;
+identifier r.remove_fn_wrap;
+@@
+int remove_fn(...) {...}
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++static void remove_fn_wrap(struct platform_device *pdev)
++{
++       remove_fn(pdev);
++}
++#endif
+// </smpl>
+
+applied with
+
+    spatch --sp-file 6.11-platform_remove_sig.cocci --in-place --dir packages/platforms/delta/x86-64/ag7648/
+
+Result taken as is, without any code style fixes.
+
+Upstream-Status: Unsubmitted
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../modules/builds/x86-64-delta-ag7648-cpld-mux-1.c    | 10 ++++++++++
+ .../modules/builds/x86-64-delta-ag7648-cpld-mux-2.c    | 10 ++++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
+index 2b4911ad9b0d..368bb053c956 100755
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-1.c
+@@ -185,10 +185,20 @@ static int i2c_mux_cpld_remove(struct platform_device *pdev)
+ 
+ 	return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++static void i2c_mux_cpld_remove_6_11(struct platform_device *pdev) {
++	i2c_mux_cpld_remove(pdev);
++}
++#endif
+ 
+ static struct platform_driver i2c_mux_cpld_driver = {
+ 	.probe = i2c_mux_cpld_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++	.remove = i2c_mux_cpld_remove_6_11,
++#else
++	
+ 	.remove = i2c_mux_cpld_remove,
++#endif
+ 	.driver =
+ 		{
+ 			.name = "i2c-mux-cpld",
+diff --git a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+index 339c0071fb5d..d5db6a791852 100755
+--- a/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
++++ b/packages/platforms/delta/x86-64/ag7648/modules/builds/x86-64-delta-ag7648-cpld-mux-2.c
+@@ -212,10 +212,20 @@ static int i2c_mux_cpld_remove(struct platform_device *pdev)
+ 
+ 	return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++static void i2c_mux_cpld_remove_6_11(struct platform_device *pdev) {
++	i2c_mux_cpld_remove(pdev);
++}
++#endif
+ 
+ static struct platform_driver i2c_mux_cpld_driver = {
+ 	.probe = i2c_mux_cpld_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++	.remove = i2c_mux_cpld_remove_6_11,
++#else
++	
+ 	.remove = i2c_mux_cpld_remove,
++#endif
+ 	.driver =
+ 		{
+ 			.name = "i2c-mux-cpld-2",
+-- 
+2.47.1
+

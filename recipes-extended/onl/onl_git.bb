@@ -33,6 +33,9 @@ SRC_URI += " \
            file://onl/0016-optoe-fix-race-in-sysfs-registraton-on-probe.patch \
            file://onl/0017-modules-update-i2c_drivers-with-6.3-compatibility.patch \
            file://onl/0018-modules-update-class_create-usage-for-6.4.patch \
+           file://onl/0019-modules-update-platform_drivers-with-6.11-compatibil.patch \
+           file://onl/0020-modules-replace-strlcpy-with-strscpy.patch \
+           file://onl/0021-modules-update-i2c_mux_add_adapter-usage-for-6.10.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
@@ -61,8 +64,11 @@ SRC_URI += " \
            file://cel-questone-2a/0006-cel-questone-2a-update-i2c_drivers-with-6.1-compatib.patch \
            file://cel-questone-2a/0007-cel-questone-2a-update-i2c_drivers-with-6.3-compatib.patch \
            file://cel-questone-2a/0008-cel-questone-2a-update-class_create-usage-for-6.4.patch \
+           file://cel-questone-2a/0009-cel-questone-2a-update-platform-remove-for-6.11.patch \
+           file://cel-questone-2a/0010-cel-questone-2a-adapt-i2c-adapter-class-usage-for-6..patch \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
            file://delta-ag5648/0002-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
+           file://delta-ag5648/0003-delta-modules-update-i2c_mux_add_adapter-usage-for-6.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
            file://delta-ag7648/0003-bump-kernel-to-4.9.patch \
@@ -76,6 +82,8 @@ SRC_URI += " \
            file://delta-ag7648/0011-delta-ag7648-do-not-reset-QSFP-modules-when-IRQ-is-a.patch \
            file://delta-ag7648/0012-delta-ag7648-make-sure-i2c-i801-is-loaded-before-cre.patch \
            file://delta-ag7648/0013-delta-ag7648-prevent-potential-deadlock-on-probe.patch \
+           file://delta-ag7648/0014-delta-ag7648-update-platform_drivers-with-6.11-compa.patch \
+           file://delta-ag7648/0015-delta-ag7648-update-i2c_mux_add_adapter-usage-for-6..patch \
 "
 
 FILES:${PN} = " \

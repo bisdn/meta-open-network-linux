@@ -1,7 +1,7 @@
-From 242f9ae241b1917cab412c3decc6bfc3c18f6a55 Mon Sep 17 00:00:00 2001
+From 1087857e736661fecdcf4a6abbd0760fca304c5d Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 14:16:09 +0200
-Subject: [PATCH 7/8] accton-as4610: fix FAN driver id table
+Subject: [PATCH 26/54] accton-as4610: fix FAN driver id table
 
 This is a platform driver, not an I2C driver, so fix and add the id
 table to the driver.
@@ -13,12 +13,12 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
-index 2e14798a9721..ff75c0f9d464 100644
+index 71ce0c16425d..00261b4a5474 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_fan.c
-@@ -299,15 +299,16 @@ static int as4610_fan_remove(struct platform_device *pdev)
- 	return 0;
+@@ -304,11 +304,11 @@ static void as4610_fan_remove_6_11(struct platform_device *pdev) {
  }
+ #endif
  
 -static const struct i2c_device_id as4610_fan_id[] = {
 +static const struct platform_device_id as4610_fan_id[] = {
@@ -30,11 +30,14 @@ index 2e14798a9721..ff75c0f9d464 100644
  
  static struct platform_driver as4610_fan_driver = {
  	.probe		= as4610_fan_probe,
+@@ -318,6 +318,7 @@ static struct platform_driver as4610_fan_driver = {
+ 	
  	.remove		= as4610_fan_remove,
+ #endif
 +	.id_table	= as4610_fan_id,
  	.driver		= {
  		.name	= DRVNAME,
  		.owner	= THIS_MODULE,
 -- 
-2.42.0
+2.47.1
 

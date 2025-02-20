@@ -1,0 +1,76 @@
+From 4b973fc2b98647c10c739f774bcb4b3248937b08 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 18 Feb 2025 22:14:58 +0100
+Subject: [PATCH] cel-questone-2a: update platform remove for 6.11
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../modules/builds/src/questone2a_baseboard_cpld.c    | 11 +++++++++++
+ .../modules/builds/src/questone2a_switchboard.c       | 10 ++++++++++
+ 2 files changed, 21 insertions(+)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_baseboard_cpld.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_baseboard_cpld.c
+index 1a5527f0d691..ae691b8367a0 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_baseboard_cpld.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_baseboard_cpld.c
+@@ -28,6 +28,7 @@
+ #include <linux/types.h>
+ #include <uapi/linux/stat.h>
+ #include <linux/string.h>
++#include <linux/version.h>
+ 
+ #define DRIVER_NAME "sys_cpld"
+ /**
+@@ -377,10 +378,20 @@ static int baseboard_cpld_drv_remove(struct platform_device *pdev)
+     sysfs_remove_group(&pdev->dev.kobj, &baseboard_cpld_attrs_grp);
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++static void baseboard_cpld_drv_remove_6_11(struct platform_device *pdev) {
++    baseboard_cpld_drv_remove(pdev);
++}
++#endif
+ 
+ static struct platform_driver baseboard_cpld_drv = {
+     .probe  = baseboard_cpld_drv_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++    .remove = __exit_p(baseboard_cpld_drv_remove_6_11),
++#else
++    
+     .remove = __exit_p(baseboard_cpld_drv_remove),
++#endif
+     .driver = {
+         .name   = DRIVER_NAME,
+     },
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
+index e867c980aa18..02fcb4a1b44d 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/modules/builds/src/questone2a_switchboard.c
+@@ -1843,6 +1843,11 @@ static int seastone2_drv_remove(struct platform_device *pdev)
+     devm_kfree(&pdev->dev, fpga_data);
+     return 0;
+ }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++static void seastone2_drv_remove_6_11(struct platform_device *pdev) {
++    seastone2_drv_remove(pdev);
++}
++#endif
+ 
+ #ifdef TEST_MODE
+     #define FPGA_PCI_BAR_NUM 2
+@@ -1928,7 +1933,12 @@ static struct pci_driver pci_dev_ops = {
+ 
+ static struct platform_driver seastone2_drv = {
+     .probe  = seastone2_drv_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
++    .remove = __exit_p(seastone2_drv_remove_6_11),
++#else
++    
+     .remove = __exit_p(seastone2_drv_remove),
++#endif
+     .driver = {
+         .name   = DRIVER_NAME,
+     },
+-- 
+2.48.1
+
