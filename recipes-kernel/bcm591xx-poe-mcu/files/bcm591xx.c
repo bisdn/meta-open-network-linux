@@ -15,6 +15,9 @@
 
 #include "bcm591xx.h"
 
+/* Disable PoE by default for now, 4-Pair ports do not work reliably */
+#define PSE_EN_DEFAULT                 0
+
 static int bcm591xx_csum(const void *data)
 {
 	const u8 *tmp = data;
@@ -133,6 +136,11 @@ static int bcm591xx_init_ports(struct bcm591xx_pse_mcu *mcu)
 	int i, ret;
 
 	for (i = 0; i < mcu->num_ports; i += 4) {
+		ret = bcm591xx_multi_port_cmd(mcu, MCU_OP_PSE_EN, PSE_EN_DEFAULT,
+					      i, i + 1, i + 2, i + 3);
+		if (ret)
+			return ret;
+
 		ret = bcm591xx_multi_port_cmd(mcu, MCU_OP_PSE_PORT_DETECT_TYPE,
 					      2, i, i + 1, i + 2, i + 3);
 		if (ret)
