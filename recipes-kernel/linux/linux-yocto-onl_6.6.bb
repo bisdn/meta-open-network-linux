@@ -27,7 +27,7 @@ SRC_URI += "\
 # We cannot use patches for that since patches are applied after parsing meta,
 # so the next best thing is copying a pre-commit version of the file.
 SRC_URI += "\
-    file://kernel-meta;type=kmeta;name=kernel-meta;destsuffix=kernel-meta \
+    file://0001-Revert-virtio-Add-prereqs-for-tiny.patch;patchdir=kernel-meta \
 "
 
 DEPENDS += "${@bb.utils.contains('ARCH', 'x86', 'elfutils-native', '', d)}"

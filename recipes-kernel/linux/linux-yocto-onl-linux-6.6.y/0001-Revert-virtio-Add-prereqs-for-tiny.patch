@@ -1,0 +1,44 @@
+From 4f66bc6e58d52c6b03787439aa96ce8b0c5e01b9 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 22 May 2025 15:50:44 +0200
+Subject: [PATCH] Revert "virtio: Add prereqs for tiny"
+
+This enables DRM, and we have headless systems, so DRM just needlessly
+increases code size and attack surface.
+
+This reverts commit 26ae60b03262f71c03a2685aa649493b86369c1d.
+---
+ cfg/virtio.cfg | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/cfg/virtio.cfg b/cfg/virtio.cfg
+index 0ef99c6b8bb0..938d2da51e8c 100644
+--- a/cfg/virtio.cfg
++++ b/cfg/virtio.cfg
+@@ -1,23 +1,16 @@
+ # SPDX-License-Identifier: MIT
+ CONFIG_VIRTIO=y
+-CONFIG_VIRTIO_MENU=y
+ CONFIG_VIRTIO_PCI=y
+ CONFIG_VIRTIO_BALLOON=y
+-CONFIG_NET=y
+ CONFIG_VIRTIO_NET=y
+ CONFIG_VIRTIO_BLK=y
+-CONFIG_BLK_MQ_VIRTIO=y
+ CONFIG_VIRTIO_CONSOLE=y
+ CONFIG_VIRTIO_MMIO=y
+ CONFIG_VIRTIO_INPUT=m
+ CONFIG_HW_RANDOM=y
+ CONFIG_HW_RANDOM_VIRTIO=y
+-CONFIG_SCSI=y
+-CONFIG_SCSI_LOWLEVEL=y
+ CONFIG_SCSI_VIRTIO=y
+-CONFIG_CRYPTO=y
+ CONFIG_CRYPTO_DEV_VIRTIO=y
+-CONFIG_DRM=y
+ CONFIG_DRM_VIRTIO_GPU=y
+ CONFIG_VSOCKETS=y
+ CONFIG_VSOCKETS_DIAG=y
+-- 
+2.49.0
+
