@@ -46,3 +46,7 @@ module_conf_i2c-ismt = "blacklist i2c-ismt"
 # Blacklist i2c-i801 and only load it as needed.
 KERNEL_MODULE_PROBECONF:append:x86-64 = " i2c-i801"
 module_conf_i2c-i801 = "blacklist i2c-i801"
+
+# meta-virtualization does not provide a linux-yocto_5.15_virtualization.inc,
+# so we need to include it directly.
+include ${@bb.utils.contains('DISTRO_FEATURES', 'virtualization', 'recipes-kernel/linux/linux-yocto_virtualization.inc', '', d)}
