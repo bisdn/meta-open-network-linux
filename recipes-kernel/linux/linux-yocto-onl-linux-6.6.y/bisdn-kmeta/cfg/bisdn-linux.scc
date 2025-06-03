@@ -18,3 +18,4 @@ include cgl/cfg/net/ip_vs.scc
 
 # in recipes-kernel/linux/linux-yocto-onl-linux-*/bisdn-kmeta/cfg/
 include docker-extra.scc
+include wireguard.scc
