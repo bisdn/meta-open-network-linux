@@ -1,0 +1,4 @@
+define KFEATURE_DESCRIPTION "Enable wireguard kernel module"
+define KFEATURE_COMPATIBILITY board
+
+kconf non-hardware wireguard.cfg
