@@ -12,7 +12,7 @@ Luckily there is a function allowing us to do it in one step, so use it.
 Fixes i2c devices occationally not being created for the SFP ports
 behind the CPLDs.
 
-Upstream-Status: Inappropriate [code not upstream]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../builds/x86-64-delta-ag7648-i2c-mux-setting.c  | 15 ++++++---------

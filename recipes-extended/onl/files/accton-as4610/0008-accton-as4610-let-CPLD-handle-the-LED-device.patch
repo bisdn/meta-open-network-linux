@@ -7,7 +7,7 @@ The LED device directly depends on the CPLD device, so let it be created
 by the CPLD driver. This allows us to convert the LED driver to a simple
 platform driver.
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Backport [https://github.com/opencomputeproject/OpenNetworkLinux/commit/0ecf75e1354e3b4f461cce80e7593e4b0f6f00df]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../modules/accton_as4610_cpld.c              | 20 ++++-

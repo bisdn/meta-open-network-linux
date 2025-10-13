@@ -6,7 +6,7 @@ Subject: [PATCH 7/8] accton-as4610: fix FAN driver id table
 This is a platform driver, not an I2C driver, so fix and add the id
 table to the driver.
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Backport [https://github.com/opencomputeproject/OpenNetworkLinux/commit/58af58fdede50ec97b206eb22b123432f2c24092]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../armxx/arm-accton-as4610/modules/accton_as4610_fan.c      | 5 +++--

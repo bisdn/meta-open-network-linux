@@ -7,7 +7,7 @@ Subject: [PATCH 3/13] bump kernel to 4.9
 devices
 * port modules to kernel 4.9
 
-Upstream-Status: Unsubmitted [needs cleanup, split, explanation]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 ---
  .../builds/x86-64-delta-ag7648-cpld-mux-1.c   | 289 +++++-----
  .../builds/x86-64-delta-ag7648-cpld-mux-2.c   | 417 +++++++-------

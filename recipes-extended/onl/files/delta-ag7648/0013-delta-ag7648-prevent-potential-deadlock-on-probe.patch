@@ -23,7 +23,7 @@ To avoid this, do not try to add any devices while under the core lock,
 and just collect the matched adapters, and only after returning from the
 bus scan, do the device registration.
 
-Upstream-Status: Unsuitable [platform is EOL]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../x86-64-delta-ag7648-i2c-mux-setting.c     | 54 ++++++++++++++++++-

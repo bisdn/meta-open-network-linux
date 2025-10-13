@@ -6,7 +6,7 @@ Subject: [PATCH 2/2] ag5648: update modules to compile and work on recent
 
 Still require a lot of love to get them in a nice state.
 
-Upstream-Status: Unsubmitted [needs cleanup, older kernel compat]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../ag5648/modules/builds/dni_ag5648_psu.c    |  2 +-

@@ -7,7 +7,7 @@ This patch ensures a more reliable i2c adapter/device initialization. We
 experienced some reordering of the cpld devices which is fixed due to a
 stronger dependency of the cplds.
 
-Upstream-Status: Inappropriate [code not upstream]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 ---
  .../x86-64-delta-ag7648-i2c-mux-setting.c     | 114 ++++++++++--------
  1 file changed, 61 insertions(+), 53 deletions(-)

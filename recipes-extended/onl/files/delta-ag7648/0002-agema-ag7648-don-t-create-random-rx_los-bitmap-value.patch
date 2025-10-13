@@ -14,7 +14,7 @@ Fixes the following build error:
 |          ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 | cc1: all warnings being treated as errors
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c    | 2 +-

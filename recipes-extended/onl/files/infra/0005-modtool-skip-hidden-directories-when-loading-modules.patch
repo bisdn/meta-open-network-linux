@@ -23,7 +23,7 @@ Avoids error messages like:
 | TypeError: argument of type 'NoneType' is not iterable
 
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2020-06-22]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  builder/unix/tools/modtool.py | 10 ++++++----

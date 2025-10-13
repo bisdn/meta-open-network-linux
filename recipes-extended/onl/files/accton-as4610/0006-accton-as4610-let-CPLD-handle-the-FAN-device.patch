@@ -10,7 +10,7 @@ platform driver.
 Ideally this would be handled as a MFD device, but this would require
 more substantial changes.
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Backport [https://github.com/opencomputeproject/OpenNetworkLinux/commit/48a38a383340ac7a6a9946932d226e211953234d]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../modules/accton_as4610_cpld.c              | 27 ++++++

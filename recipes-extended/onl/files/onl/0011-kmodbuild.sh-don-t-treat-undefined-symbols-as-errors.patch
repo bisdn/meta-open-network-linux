@@ -10,7 +10,7 @@ resolved.
 For now reduce the error to a warning to allow building with newer
 kernels.
 
-Upstream-Status: inappropriate [should be fixed, not ignored]
+Upstream-Status: Inappropriate [should be fixed, not ignored]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  tools/scripts/kmodbuild.sh | 2 +-

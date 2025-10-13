@@ -15,7 +15,7 @@ I2C bus. After that, any I2C access fail:
 Until we have a known fix/workaround, disable the pmbus accesses for
 now.
 
-Upstream-Status: unsuitable [waiting for proper fix]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../onlp/builds/x86_64_accton_as4630_54pe/module/src/psui.c   | 4 ++++

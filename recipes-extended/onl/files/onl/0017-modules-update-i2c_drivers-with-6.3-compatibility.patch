@@ -52,6 +52,7 @@ in multiple modules)
 
 Result taken as is, without any code style fixes.
 
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../base/any/kernels/modules/accton_i2c_psu.c     | 10 ++++++++++

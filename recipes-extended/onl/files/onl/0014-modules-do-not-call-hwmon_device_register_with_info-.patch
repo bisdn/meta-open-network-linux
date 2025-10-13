@@ -21,6 +21,7 @@ expression E1,E2;
 +ret = hwmon_device_register(E1);
 // </smpl>
 
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  packages/base/any/kernels/modules/accton_i2c_psu.c            | 3 +--

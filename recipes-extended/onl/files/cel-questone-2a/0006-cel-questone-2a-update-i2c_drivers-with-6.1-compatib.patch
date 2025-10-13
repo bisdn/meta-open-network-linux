@@ -50,6 +50,7 @@ applied with
 
 Result taken as is, without any code style fixes.
 
+Upstream-Status: Inappropriate [Questone 2a support not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../x86-64/questone-2a/modules/builds/src/mc24lc64t.c | 11 +++++++++++
