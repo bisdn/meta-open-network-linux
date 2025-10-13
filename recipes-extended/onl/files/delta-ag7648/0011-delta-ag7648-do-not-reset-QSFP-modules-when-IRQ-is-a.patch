@@ -26,7 +26,7 @@ If a module does this, then this puts the driver in an endless loop of:
 To fix that, don't try to be clever in the mux driver, and let userspace
 handle any issues.
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../builds/x86-64-delta-ag7648-cpld-mux-2.c   | 61 -------------------

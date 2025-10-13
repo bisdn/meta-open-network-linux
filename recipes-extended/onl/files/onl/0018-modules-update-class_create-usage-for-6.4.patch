@@ -23,6 +23,7 @@ applied with
 
 Result taken as is, without any code style fixes.
 
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../x86-64/as9516-32d/modules/builds/src/bf_fpga_main.c    | 4 ++++

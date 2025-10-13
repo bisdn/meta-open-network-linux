@@ -60,7 +60,7 @@ Found by GCC 9.3:
 |       |        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 | cc1: all warnings being treated as errors
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Backport [https://github.com/opencomputeproject/OpenNetworkLinux/commit/c2f87e5ed66c9eb9380c1b857c34f27c42a78994]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../arm_accton_as4610/module/src/ledi.c             | 13 ++++++++-----

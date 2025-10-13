@@ -10,7 +10,7 @@ Delete unused global variables to avoid the following build error:
 | /tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/x86_64-poky-linux/../../libexec/x86_64-poky-linux/gcc/x86_64-poky-linux/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c:33: multiple definition of `command'; BUILD/buster/gcc-local/obj/tmp/kirkstone/work/accton_as4630_54pe-poky-linux/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/platform.c:23: first defined here
 | collect2: error: ld returned 1 exit status
 
-Upstream-Status: inappropriate [platform not upstream]
+Upstream-Status: Inappropriate [Questone 2a support not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c       | 3 ---

@@ -12,7 +12,7 @@ Fixes the following build error:
 | /tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/recipe-sysroot-native/usr/bin/arm-poky-linux-gnueabi/../../libexec/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/11.3.0/ld: BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/bigcode/modules/sff/module/src/sff_tool.c:139: multiple definition of `__not_empty__'; BUILD/buster/gcc-local/obj/tmp/work/accton_as4610-poky-linux-gnueabi/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/modules/AIM/module/src/aim_pvs_syslog.o:/usr/src/debug/onl/1.1+gitAUTOINC+dd61cc1792_8621a0bab7_4bd372b724-r0/git/sm/infra/modules/AIM/module/src/aim_pvs_syslog.c:118: first defined here
 | collect2: error: ld returned 1 exit status
 
-Upstream-Status: unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2020-06-22]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  modules/AIM/module/src/aim_daemon.c            | 2 +-

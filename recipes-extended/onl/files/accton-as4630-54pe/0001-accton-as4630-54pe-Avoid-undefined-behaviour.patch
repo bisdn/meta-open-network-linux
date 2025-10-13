@@ -24,7 +24,7 @@ fan @ 5 = {
 
 Program received signal SIGSEGV, Segmentation fault.
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Rubens Figueiredo <rubens.figueiredo@bisdn.de>
 ---
  .../x86_64_accton_as4630_54pe/module/src/platform_lib.c      | 5 ++++-

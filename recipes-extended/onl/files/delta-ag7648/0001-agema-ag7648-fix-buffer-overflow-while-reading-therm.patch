@@ -30,7 +30,7 @@ agema-ag7648:~$ sudo onlps
 *** buffer overflow detected ***: onlpdump terminated
 Aborted (core dumped)
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../onlp/builds/x86_64_delta_ag7648/module/src/thermali.c      | 3 ++-

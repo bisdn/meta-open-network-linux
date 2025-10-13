@@ -12,7 +12,7 @@ of NULL.
 
 Add wrappers to ensure compatibility to earlier kernel versions.
 
-Upstream-Status: Inappropriate [code not upstream]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../x86-64-delta-ag7648-i2c-mux-setting.c     | 39 ++++++++++++++-----

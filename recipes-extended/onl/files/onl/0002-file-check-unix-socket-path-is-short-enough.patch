@@ -23,7 +23,7 @@ Fixes the following issue with GCC 9.3:
 |   106 |   return __builtin___strncpy_chk (__dest, __src, __len, __bos (__dest));
 |       |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../base/any/onlp/src/onlplib/module/src/file.c     | 13 ++++++++-----

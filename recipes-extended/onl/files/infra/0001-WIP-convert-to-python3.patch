@@ -12,7 +12,7 @@ Convert python scripts from python2 to python3:
 Only tested in so far the build scripts are used within bisdn-linux, so
 most parts are untested.
 
-Upstream-Status: incomplete,untested
+Upstream-Status: Inactive-Upstream [lastcommit: 2020-06-22]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  builder/unix/tools/dependmodules.py  | 22 +++++++++++-----------

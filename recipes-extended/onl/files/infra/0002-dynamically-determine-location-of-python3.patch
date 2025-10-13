@@ -7,7 +7,7 @@ To allow running the scripts within a distro context with custom python
 search paths, replace the hardcoded location of the python3 binary with
 an env call.
 
-Upstream-Status: untested
+Upstream-Status: Inactive-Upstream [lastcommit: 2020-06-22]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  builder/unix/tools/dependmodules.py  | 2 +-

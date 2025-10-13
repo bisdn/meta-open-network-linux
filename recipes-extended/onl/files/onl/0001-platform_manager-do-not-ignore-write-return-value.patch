@@ -15,7 +15,7 @@ Also silences the following:
 |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 | cc1: all warnings being treated as errors
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  packages/base/any/onlp/src/onlp/module/src/platform_manager.c | 3 ++-

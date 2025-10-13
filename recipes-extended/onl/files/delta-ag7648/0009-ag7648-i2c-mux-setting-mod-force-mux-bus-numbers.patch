@@ -7,7 +7,7 @@ Newer kernels allow parallel probing of the CPLDs, so mux bus number
 assignment will become interleaved. Fix this by forcing the mux bus
 numbers to their expected values.
 
-Upstream-Status: Inappropriate [code not upstream]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../ag7648/modules/builds/x86-64-delta-ag7648-i2c-mux-setting.c | 2 ++

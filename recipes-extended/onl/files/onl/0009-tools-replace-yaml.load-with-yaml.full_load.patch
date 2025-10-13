@@ -13,7 +13,7 @@ instances of yaml.load with the shortcut function yaml.full_load:
 
 [1] https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
 
-Upstream-Status: unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  tools/flat-image-tree.py | 2 +-

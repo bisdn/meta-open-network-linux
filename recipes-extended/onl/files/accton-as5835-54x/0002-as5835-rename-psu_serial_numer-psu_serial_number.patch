@@ -19,7 +19,7 @@ Note: the change for the kernel driver, x86-64-accton-as5835-54x-psu.c,
       recipes-extended/onl. The change must be made to the copied driver
       in meta-open-network-linux/recipes-kernel, too.
 
-Upstream-Status: Unsubmitted
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Roger Luethi <roger.luethi@bisdn.de>
 ---
  .../as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c  | 4 ++--

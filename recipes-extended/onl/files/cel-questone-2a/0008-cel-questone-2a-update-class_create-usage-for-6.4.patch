@@ -35,6 +35,7 @@ applied with
 
 Result taken as is, without any code style fixes.
 
+Upstream-Status: Inappropriate [Questone 2a support not upstream]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../questone-2a/modules/builds/src/questone2a_switchboard.c  | 5 +++++

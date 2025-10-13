@@ -11,7 +11,7 @@ Since the mux is attached to i2c-ismt, we do not need request it, as
 it will always get a bus assigned before we can even register the
 mux device.
 
-Upstream-Status: Unsuitable [platform is EOL]
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  .../builds/x86-64-delta-ag7648-i2c-mux-setting.c       | 10 ++++++++++

@@ -72,7 +72,7 @@ Sep 28 18:59:33 accton-as4630-54pe kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000
 Sep 28 18:59:33 accton-as4630-54pe kernel: CR2: 0000000000000048 CR3: 000000010113c000 CR4: 00000000003506e0
 Sep 28 18:59:33 accton-as4630-54pe kernel: note: platform-onl-in[1733] exited with irqs disabled
 
-Upstream-Status: Submitted [https://github.com/opencomputeproject/OpenNetworkLinux/pull/956]
+Upstream-Status: Backport [https://github.com/opencomputeproject/OpenNetworkLinux/commit/3cd5b2739860dc75d687a0d22b94e92704aa6329]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  packages/base/any/kernels/modules/optoe.c | 31 ++++++++++++-----------

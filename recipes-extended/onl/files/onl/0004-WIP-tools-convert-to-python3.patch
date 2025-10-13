@@ -13,7 +13,7 @@ Convert the build code from python2 to python3:
 Only tested in so far the build scripts are used within bisdn-linux, so
 most parts are untested.
 
-Upstream-Status: incomplete,untested
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---
  tools/cpiomod.py           |  2 +-
