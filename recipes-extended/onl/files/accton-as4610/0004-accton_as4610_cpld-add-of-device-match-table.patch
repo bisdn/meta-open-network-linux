@@ -29,7 +29,7 @@ index 441c90b7d4db..ec46db95738b 100644
  MODULE_DEVICE_TABLE(i2c, as4610_54_cpld_id);
  
 +static const struct of_device_id as4610_54_cpld_of_id[] = {
-+    { .compatible = "accton,as4610_54_cpld", .data = as4610_54_cpld },
++    { .compatible = "accton,as4610_54_cpld", .data = (void *)as4610_54_cpld },
 +    { }
 +};
 +MODULE_DEVICE_TABLE(of, as4610_54_cpld_of_id);

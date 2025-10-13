@@ -30,11 +30,11 @@ index aaff463c8eb8..1f641ab7a619 100755
  
 +#ifdef CONFIG_OF
 +static const struct of_device_id ym2651y_of_id[] = {
-+    { .compatible = "3y-power,ym2651", .data = YM2651 },
-+    { .compatible = "3y.power,ym2401", .data = YM2401 },
-+    { .compatible = "3y-power,ym2851", .data = YM2851 },
-+    { .compatible = "3y-power,ym1921", .data = YM1921 },
-+    { .compatible = "3y-power,ype1200am", .data = YPEB1200AM },
++    { .compatible = "3y-power,ym2651", .data = (void *)YM2651 },
++    { .compatible = "3y.power,ym2401", .data = (void *)YM2401 },
++    { .compatible = "3y-power,ym2851", .data = (void *)YM2851 },
++    { .compatible = "3y-power,ym1921", .data = (void *)YM1921 },
++    { .compatible = "3y-power,ype1200am", .data = (void *)YPEB1200AM },
 +    {}
 +};
 +MODULE_DEVICE_TABLE(of, ym2651y_of_id);

@@ -29,8 +29,8 @@ index 1b37175be4eb..42f52e70a2e1 100644
  MODULE_DEVICE_TABLE(i2c, as4610_psu_id);
  
 +static const struct of_device_id as4610_psu_of_id[] = {
-+	{ .compatible = "accton,as4610_psu1", .data = as4610_psu1 },
-+	{ .compatible = "accton,as4610_psu2", .data = as4610_psu2 },
++	{ .compatible = "accton,as4610_psu1", .data = (void *)as4610_psu1 },
++	{ .compatible = "accton,as4610_psu2", .data = (void *)as4610_psu2 },
 +	{}
 +};
 +MODULE_DEVICE_TABLE(of, as4610_psu_of_id);
