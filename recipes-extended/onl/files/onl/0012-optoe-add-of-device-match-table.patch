@@ -30,11 +30,11 @@ index 464a69326be1..dae5e5b5d5f9 100644
  
 +#ifdef CONFIG_OF
 +static const struct of_device_id optoe_of_ids[] = {
-+	{ .compatible = "optoe1", .data = ONE_ADDR },
-+	{ .compatible = "optoe2", .data = TWO_ADDR },
-+	{ .compatible = "optoe3", .data = CMIS_ADDR },
-+	{ .compatible = "sff8436", .data = ONE_ADDR },
-+	{ .compatible = "24c04", .data = TWO_ADDR },
++	{ .compatible = "optoe1", .data = (void *)ONE_ADDR },
++	{ .compatible = "optoe2", .data = (void *)TWO_ADDR },
++	{ .compatible = "optoe3", .data = (void *)CMIS_ADDR },
++	{ .compatible = "sff8436", .data = (void *)ONE_ADDR },
++	{ .compatible = "24c04", .data = (void *)TWO_ADDR },
 +	{ /* END OF LIST */ }
 +};
 +MODULE_DEVICE_TABLE(of, optoe_of_ids);
