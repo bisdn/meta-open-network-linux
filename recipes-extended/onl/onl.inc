@@ -73,7 +73,7 @@ BUILDER_MODULE_MANIFEST = "${WORKDIR}/modules/modules.mk"
 MODULEMANIFEST = "${BUILDER_MODULE_MANIFEST}"
 
 #export SUBMODULE_INFRA BUILDER BUILDER_MODULE_DATABASE BUILDER_MODULE_DATABASE_ROOT BUILDER_MODULE_MANIFEST MODULEMANIFEST ONL
-TOOLCHAIN = "gcc-local"
+ONL_TOOLCHAIN = "gcc-local"
 NO_USE_GCC_VERSION_TOOL="1"
 
 def onl_arch_map(arch, tune):
@@ -123,7 +123,7 @@ EXTRA_OEMAKE = "\
   'SUBMODULE_BIGCODE=${SUBMODULE_BIGCODE}' \
   'SUBMODULE_INFRA=${SUBMODULE_INFRA}' \
   'SUBMODULE_INFRA=${SUBMODULE_INFRA}' \
-  'TOOLCHAIN=${TOOLCHAIN}' \
+  'TOOLCHAIN=${ONL_TOOLCHAIN}' \
 "
 
 do_configure() {
@@ -188,7 +188,7 @@ do_install() {
 
 
   # install onlpdump
-  install -m 0755 packages/base/any/onlp/builds/onlpd/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/onlpd ${D}${bindir}
+  install -m 0755 packages/base/any/onlp/builds/onlpd/BUILD/${ONL_DEBIAN_SUITE}/${ONL_TOOLCHAIN}/bin/onlpd ${D}${bindir}
   ln -r -s ${D}${bindir}/onlpd ${D}${bindir}/onlpdump
 
   # install headers
@@ -209,7 +209,7 @@ do_install() {
 
       # install libonlp-<baseplatform> shared library
       baseplatform=${platform%-r*}
-      install -m 0755 ${ONLP_DIR}/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-${baseplatform}.so ${D}${libdir}
+      install -m 0755 ${ONLP_DIR}/builds/lib/BUILD/${ONL_DEBIAN_SUITE}/${ONL_TOOLCHAIN}/bin/libonlp-${baseplatform}.so ${D}${libdir}
       mv ${D}${libdir}/libonlp-${baseplatform}.so ${D}${libdir}/libonlp-${baseplatform}.so.1
       ln -r -s ${D}${libdir}/libonlp-${baseplatform}.so.1 ${D}${libdir}/libonlp-${baseplatform}.so
 
@@ -225,17 +225,17 @@ do_install() {
   done
 
   # install libonlp shared library
-  install -m 0755 packages/base/any/onlp/builds/onlp/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp.so ${D}${libdir}
+  install -m 0755 packages/base/any/onlp/builds/onlp/BUILD/${ONL_DEBIAN_SUITE}/${ONL_TOOLCHAIN}/bin/libonlp.so ${D}${libdir}
   mv ${D}${libdir}/libonlp.so ${D}${libdir}/libonlp.so.1
   ln -r -s ${D}${libdir}/libonlp.so.1 ${D}${libdir}/libonlp.so
 
   # install libonlp-platform-defaults shared library
-  install -m 0755 packages/base/any/onlp/builds/onlp-platform-defaults/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-platform-defaults.so ${D}${libdir}
+  install -m 0755 packages/base/any/onlp/builds/onlp-platform-defaults/BUILD/${ONL_DEBIAN_SUITE}/${ONL_TOOLCHAIN}/bin/libonlp-platform-defaults.so ${D}${libdir}
   mv ${D}${libdir}/libonlp-platform-defaults.so ${D}${libdir}/libonlp-platform-defaults.so.1
   ln -r -s ${D}${libdir}/libonlp-platform-defaults.so.1 ${D}${libdir}/libonlp-platform-defaults.so
 
   # install libonlp-platform shared library
-  install -m 0755 packages/base/any/onlp/builds/onlp-platform/BUILD/${ONL_DEBIAN_SUITE}/${TOOLCHAIN}/bin/libonlp-platform.so ${D}${libdir}
+  install -m 0755 packages/base/any/onlp/builds/onlp-platform/BUILD/${ONL_DEBIAN_SUITE}/${ONL_TOOLCHAIN}/bin/libonlp-platform.so ${D}${libdir}
   mv ${D}${libdir}/libonlp-platform.so ${D}${libdir}/libonlp-platform.so.1
   ln -r -s ${D}${libdir}/libonlp-platform.so.1 ${D}${libdir}/libonlp-platform.so
 
