@@ -242,7 +242,7 @@ do_install() {
 
   # service file
   install -d ${D}${systemd_unitdir}/system
-  install -m 0644 ${WORKDIR}/onlpd.service ${D}${systemd_unitdir}/system
+  install -m 0644 ${UNPACKDIR}/onlpd.service ${D}${systemd_unitdir}/system
   sed -i -e 's,@BINDIR@,${bindir},g' \
          ${D}${systemd_unitdir}/system/*.service
 }
