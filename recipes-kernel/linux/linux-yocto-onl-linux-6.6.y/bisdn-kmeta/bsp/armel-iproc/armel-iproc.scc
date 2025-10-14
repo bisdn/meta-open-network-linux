@@ -29,6 +29,10 @@ patch 10-18-usb-phy-phy-xgs-iproc.patch
 patch 10-19-watchdog-sp805_wdt-clear-bootstatus.patch
 patch 10-20-drivers-usb-phy-phy-xgs-iproc-usb-phy-mode.patch
 
+# Yocto patch for ARM reproducibility
+
+patch patches/misc/tools-use-basename-to-identify-file-in-gen-mach-type.patch
+
 include cfg/bisdn-linux.scc
 
 kconf hardware armel-iproc.cfg
