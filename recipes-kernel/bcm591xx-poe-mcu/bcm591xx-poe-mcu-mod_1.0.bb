@@ -13,7 +13,7 @@ SRC_URI = " \
           file://poectl \
           "
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 EXTRA_OEMAKE += " KBUILD_MODPOST_WARN=1"
 
@@ -21,7 +21,7 @@ FILES:${PN} += "${sbindir}/poectl"
 
 do_install:append() {
     install -d ${D}${sbindir}
-    install -m 0755 ${WORKDIR}/poectl ${D}${sbindir}
+    install -m 0755 ${UNPACKDIR}/poectl ${D}${sbindir}
 }
 
 # The inherit of module.bbclass will automatically name module packages with
