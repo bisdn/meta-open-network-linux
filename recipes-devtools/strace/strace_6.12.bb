@@ -5,7 +5,7 @@ SECTION = "console/utils"
 LICENSE = "LGPL-2.1-or-later & GPL-2.0-or-later"
 LIC_FILES_CHKSUM = "file://COPYING;md5=2433d82e1432a76dc3eadd9002bfe304"
 
-SRC_URI = "https://strace.io/files/${PV}/strace-${PV}.tar.xz \
+SRC_URI = "${GITHUB_BASE_URI}/download/v${PV}/strace-${PV}.tar.xz \
            file://update-gawk-paths.patch \
            file://Makefile-ptest.patch \
            file://run-ptest \
@@ -15,9 +15,10 @@ SRC_URI = "https://strace.io/files/${PV}/strace-${PV}.tar.xz \
            file://0001-configure-Use-autoconf-macro-to-detect-largefile-sup.patch \
            file://0002-tests-Replace-off64_t-with-off_t.patch \
            "
-SRC_URI[sha256sum] = "2090201e1a3ff32846f4fe421c1163b15f440bb38e31355d09f82d3949922af7"
+SRC_URI[sha256sum] = "c47da93be45b6055f4dc741d7f20efaf50ca10160a5b100c109b294fd9c0bdfe"
 
-inherit autotools ptest
+
+inherit autotools github-releases ptest
 
 # Not yet ported to rv32
 COMPATIBLE_HOST:riscv32 = "null"
@@ -44,13 +45,11 @@ do_install_ptest() {
 	mkdir -p ${D}${PTEST_PATH}/src
 	install -m 755 ${S}/build-aux/test-driver ${D}${PTEST_PATH}/build-aux/
 	install -m 644 ${B}/src/config.h ${D}${PTEST_PATH}/src/
-        sed -i -e '/^src/s/strace.*[0-9]/ptest/' ${D}/${PTEST_PATH}/${TESTDIR}/Makefile
+	sed -e '/^src/s/strace.*[0-9]/ptest/' \
+	    -e "/^TEST_LOG_DRIVER =/s|(top_srcdir)|(top_builddir)|" \
+	    -i ${D}/${PTEST_PATH}/${TESTDIR}/Makefile
 }
 
-RDEPENDS:${PN}-ptest += "make coreutils grep gawk sed"
-
-RDEPENDS:${PN}-ptest:append:libc-glibc = "\
-     locale-base-en-us.iso-8859-1 \
-"
+RDEPENDS:${PN}-ptest += "make coreutils grep gawk sed locale-base-en-us"
 
 BBCLASSEXTEND = "native"
