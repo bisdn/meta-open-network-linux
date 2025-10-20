@@ -1,4 +1,4 @@
-From be03c11f9ea6ab5c5bb7a7aa5e757ad5142ae97e Mon Sep 17 00:00:00 2001
+From 97b00d680df239024eecc6adfe25259902ffd2c1 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 11 Oct 2022 16:42:23 +0200
 Subject: [PATCH 11/13] delta-ag7648: do not reset QSFP modules when IRQ is
@@ -112,5 +112,5 @@ index d42daee20770..339c0071fb5d 100755
  			// read first
  			//res = ctrl_adap->algo->smbus_xfer(ctrl_adap, mux->data.cpld_addr, flags,
 -- 
-2.42.0
+2.51.0
 
