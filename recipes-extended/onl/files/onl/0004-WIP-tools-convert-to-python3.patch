@@ -1,7 +1,7 @@
-From df6d99bf26a8e8cca41633b9af00b6c84ce10607 Mon Sep 17 00:00:00 2001
+From 213de8afc21d113f20babeda5e2caa5da0188e7e Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 16 Jun 2022 10:30:25 +0200
-Subject: [PATCH 04/18] WIP: tools: convert to python3
+Subject: [PATCH 04/47] WIP: tools: convert to python3
 
 Convert the build code from python2 to python3:
 
@@ -896,5 +896,5 @@ index 1cca99b02cd7..d30e23766228 100755
          logger.error("%s" % e.value)
  
 -- 
-2.42.0
+2.51.0
 

@@ -1,4 +1,4 @@
-From 1a1ae46290b3b1cff0fd40a86ff9d0103140b65d Mon Sep 17 00:00:00 2001
+From 86bb38929b68a06272ecd1dd8e45bad1032dbc5a Mon Sep 17 00:00:00 2001
 From: Rubens Figueiredo <rubens.figueiredo@bisdn.de>
 Date: Thu, 25 Nov 2021 14:55:51 +0100
 Subject: [PATCH] accton-as4630-54pe: Avoid undefined behaviour
@@ -47,5 +47,5 @@ index 5f51e1cc1d22..950c9fa5811f 100755
          
          return PSU_TYPE_UNKNOWN;
 -- 
-2.42.0
+2.51.0
 

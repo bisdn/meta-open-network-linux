@@ -1,7 +1,7 @@
-From 35be6d6245ed5d2928ce9837be65d8bd68a30487 Mon Sep 17 00:00:00 2001
+From abe6c8271b29a9739106c2cf02a79a92594e8833 Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Tue, 18 Sep 2018 13:57:36 +0200
-Subject: [PATCH 3/13] bump kernel to 4.9
+Subject: [PATCH 03/13] bump kernel to 4.9
 
 * add x86-64-delta-ag7648-i2c-mux-setting module to initiate all i2c bus
 devices
@@ -1430,5 +1430,5 @@ index 000000000000..36f03af55458
 +MODULE_AUTHOR("Tobias Jungel <tobias.jungel@bisdn.de>");
 +MODULE_LICENSE("GPL");
 -- 
-2.42.0
+2.51.0
 

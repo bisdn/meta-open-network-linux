@@ -8,10 +8,10 @@ require onl.inc
 
 LIC_FILES_CHECKSUM += "file://LICENSE;beginline=14;md5=7e6d108802170df125adb4f452c3c9dd"
 
-SRCREV_onl ?= "f97b185a8722b343e9a0b44d786f29bbd936cb6f"
+SRCREV_onl ?= "28f52e623a5f820598fda549f5c86c670081a48b"
 URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git;protocol=https;branch=master"
 # commit date (UTC) of ${SRCREV_onl}
-PV = "2023-09-13+git${SRCPV}"
+PV = "2024-09-21+git${SRCPV}"
 
 # submodules are checked out individually to support license file checking
 SRC_URI += " \
@@ -30,9 +30,8 @@ SRC_URI += " \
            file://onl/0013-ym2561y-add-of-device-match-table.patch \
            file://onl/0014-modules-do-not-call-hwmon_device_register_with_info-.patch \
            file://onl/0015-modules-update-i2c_drivers-with-6.1.patch \
-           file://onl/0016-optoe-fix-race-in-sysfs-registraton-on-probe.patch \
-           file://onl/0017-modules-update-i2c_drivers-with-6.3-compatibility.patch \
-           file://onl/0018-modules-update-class_create-usage-for-6.4.patch \
+           file://onl/0016-modules-update-i2c_drivers-with-6.3-compatibility.patch \
+           file://onl/0017-modules-update-class_create-usage-for-6.4.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
@@ -41,14 +40,9 @@ SRC_URI += " \
            file://infra/0003-avoid-multiple-global-definitions-for-__not_empty__.patch;patchdir=${SUBMODULE_INFRA} \
            file://infra/0004-replace-yaml.load-with-yaml.full_load.patch;patchdir=${SUBMODULE_INFRA} \
            file://infra/0005-modtool-skip-hidden-directories-when-loading-modules.patch;patchdir=${SUBMODULE_INFRA} \
-           file://accton-as4610/0001-accton-as4610-fix-buffer-overflow-while-accessing-le.patch \
-           file://accton-as4610/0002-accton-as4610-fix-value-truncation-when-accessing-le.patch \
-           file://accton-as4610/0003-accton-as4610-do-not-enable-v_out-i_out-p_out-caps.patch \
-           file://accton-as4610/0004-accton_as4610_cpld-add-of-device-match-table.patch \
-           file://accton-as4610/0005-accton_as4610_psu-add-of-device-match-table.patch \
-           file://accton-as4610/0006-accton-as4610-let-CPLD-handle-the-FAN-device.patch \
-           file://accton-as4610/0007-accton-as4610-fix-FAN-driver-id-table.patch \
-           file://accton-as4610/0008-accton-as4610-let-CPLD-handle-the-LED-device.patch \
+           file://accton-as4610/0001-accton-as4610-do-not-enable-v_out-i_out-p_out-caps.patch \
+           file://accton-as4610/0002-accton_as4610_cpld-add-of-device-match-table.patch \
+           file://accton-as4610/0003-accton_as4610_psu-add-of-device-match-table.patch \
            file://accton-as4630-54pe/0001-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
            file://accton-as4630-54te/0001-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
            file://accton-as5835-54x/0001-Support-psu_fan_dir-sysfs-for-YM-1401A-PSU.patch \
