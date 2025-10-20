@@ -1,4 +1,4 @@
-From 058f63c5ed4f3154555a1ff75fbe8ba986861cda Mon Sep 17 00:00:00 2001
+From fa050aa6c54e4be3f97339ef370a99a02a97d888 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 28 Oct 2022 15:21:49 +0200
 Subject: [PATCH] accton-as4630-54te: do not acccess PSU via pmbus
@@ -52,5 +52,5 @@ index 5bf35ff66da4..6f061e3e0f47 100644
      get_psu_eeprom_str(index, info->serial, sizeof(info->serial), "psu_serial_number");
  
 -- 
-2.42.0
+2.51.0
 

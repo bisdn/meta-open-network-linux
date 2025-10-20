@@ -1,7 +1,7 @@
-From 9f00cefc9e47570b264e4592ec7f63cd7b94afa2 Mon Sep 17 00:00:00 2001
+From 3975cd9c422e4c8eab2167eaaeb4b0d41abf86a9 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Nov 2019 16:19:13 +0100
-Subject: [PATCH 7/13] i2c-mux-setting-mod: add match for newer coreboot
+Subject: [PATCH 07/13] i2c-mux-setting-mod: add match for newer coreboot
 
 Newer(?) coreboot identifies itself as DNI/AG7648, which isn't matched
 by the current code, causing no i2c devices being created.
@@ -37,5 +37,5 @@ index ac0427abffff..b4fc055d20d9 100644
  		.ident = "Delta AG7648 (OEM)",
  		.matches =
 -- 
-2.42.0
+2.51.0
 

@@ -1,4 +1,4 @@
-From 1be6ea265034a85992562842891f57b7a81df433 Mon Sep 17 00:00:00 2001
+From ac87d173a4d05741490792c4c5423c622c16558b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 21 Nov 2023 14:40:09 +0100
 Subject: [PATCH 7/8] cel-questone-2a: update i2c_drivers with 6.3
@@ -149,5 +149,5 @@ index 191cc65e6755..216ee4e639f2 100644
  	.remove = sff_8436_remove_6_1,
  #else
 -- 
-2.43.0
+2.51.0
 
