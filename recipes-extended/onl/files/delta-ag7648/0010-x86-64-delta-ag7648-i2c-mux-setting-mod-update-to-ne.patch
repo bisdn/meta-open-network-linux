@@ -1,4 +1,4 @@
-From 3a2d684dcb6b91fd1610cb6c9e39692bda4d005a Mon Sep 17 00:00:00 2001
+From 919ed00cabc6c8f07b21f89f3dcfbdb8e856c0c0 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Mon, 14 Dec 2020 16:34:18 +0100
 Subject: [PATCH 10/13] x86-64-delta-ag7648-i2c-mux-setting-mod: update to
@@ -101,5 +101,5 @@ index 3f8d2045a743..206094fbc5a1 100644
  
  static bool delta_switch_match_adapter_devid(struct device *dev, u32 devid)
 -- 
-2.42.0
+2.51.0
 

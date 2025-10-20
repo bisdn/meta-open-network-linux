@@ -1,7 +1,7 @@
-From 5abd34f18352748a1dcd5bcb2144bacd931f59a8 Mon Sep 17 00:00:00 2001
+From c3e8164ef18a4cceafeb97a85f6924172187e44d Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 18 May 2022 15:49:13 +0200
-Subject: [PATCH 07/18] onlpm: add an argument for just printing the builddirs
+Subject: [PATCH 07/47] onlpm: add an argument for just printing the builddirs
 
 To allow building without packaging, we need to know the appropriate
 build dir for passing to make.
@@ -44,5 +44,5 @@ index d4403c0d3b65..e810ab7ec76a 100755
              for p in ops.require:
                  pm.require(p, force=ops.force, build_missing=not ops.no_build_missing,
 -- 
-2.42.0
+2.51.0
 

@@ -1,7 +1,7 @@
-From ee37a8e8d190759b77c22dff0745c3f2d3c54bf6 Mon Sep 17 00:00:00 2001
+From 619c98c912ccc94aca938860da092ce1c625d76b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 24 Jan 2020 10:18:11 +0100
-Subject: [PATCH 9/13] ag7648-i2c-mux-setting-mod: force mux bus numbers
+Subject: [PATCH 09/13] ag7648-i2c-mux-setting-mod: force mux bus numbers
 
 Newer kernels allow parallel probing of the CPLDs, so mux bus number
 assignment will become interleaved. Fix this by forcing the mux bus
@@ -34,5 +34,5 @@ index e8298b5731d8..3f8d2045a743 100644
  
  static struct platform_device *delta_ag7648_cpld1_init(void)
 -- 
-2.42.0
+2.51.0
 

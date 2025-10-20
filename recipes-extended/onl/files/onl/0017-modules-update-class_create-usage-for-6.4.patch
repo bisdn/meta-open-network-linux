@@ -1,7 +1,7 @@
-From 7831a272c10984b39a3805a2306024bd548f39c4 Mon Sep 17 00:00:00 2001
+From f39facf64c51e926c7a67fa7a976b97f0ee0e787 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 7 Feb 2024 17:27:23 +0100
-Subject: [PATCH 18/18] modules: update class_create() usage for 6.4
+Subject: [PATCH 17/47] modules: update class_create() usage for 6.4
 
 Update class_create() usage for 6.4 which lost its first parameter.
 
@@ -515,10 +515,10 @@ index 89b86ae3c430..4dde0224a8b5 100644
          VPD_ERR("Create class failure! \n");
          goto err_register_vpd_module_1;
 diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
-index db12eed1d051..466e4641ef37 100755
+index 92737e3098d5..203cf452e42d 100755
 --- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
 +++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld.c
-@@ -479,7 +479,11 @@ static int cpld_probe(struct i2c_client *client,
+@@ -483,7 +483,11 @@ static int cpld_probe(struct i2c_client *client,
  
  	if (!cpld_class)
  	{
@@ -531,10 +531,10 @@ index db12eed1d051..466e4641ef37 100755
  			pr_err("couldn't create sysfs class\n");
  			return PTR_ERR(cpld_class);
 diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
-index 3474d0507fd3..15d4a2217917 100644
+index 61c78a7c04bf..71e3b3fb3e99 100644
 --- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
 +++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_led.c
-@@ -194,7 +194,11 @@ static int cpld_led_probe(struct i2c_client *client,
+@@ -198,7 +198,11 @@ static int cpld_led_probe(struct i2c_client *client,
  
  	if (!cpld_class)
  	{
@@ -547,10 +547,10 @@ index 3474d0507fd3..15d4a2217917 100644
  			pr_err("couldn't create sysfs class\n");
  			return PTR_ERR(cpld_class);
 diff --git a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
-index 03e84a79bbb4..bc7912f2a83b 100755
+index 54bf79bfb697..ecf7e582dc6e 100755
 --- a/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
 +++ b/packages/platforms/quanta/x86-64/modules/builds/qci_cpld_sfp28.c
-@@ -303,7 +303,11 @@ static int cpld_probe(struct i2c_client *client,
+@@ -307,7 +307,11 @@ static int cpld_probe(struct i2c_client *client,
  
  	if (!cpld_class)
  	{
@@ -611,5 +611,5 @@ index 0ee93c594f1e..d197f5be336c 100644
          VPD_ERR("Create class failure! \n");
          goto err_register_vpd_module_1;
 -- 
-2.43.0
+2.51.0
 

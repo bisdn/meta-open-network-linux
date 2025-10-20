@@ -1,4 +1,4 @@
-From 526182fa397a7b8df5ee42debac4b9e84c08c613 Mon Sep 17 00:00:00 2001
+From b9f185542476cddf294b16cd0fc11dc7440814eb Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 7 Feb 2024 17:25:24 +0100
 Subject: [PATCH 8/8] cel-questone-2a: update class_create() usage for 6.4
@@ -66,5 +66,5 @@ index cbe1dd0735ee..e867c980aa18 100644
        unregister_chrdev(majorNumber, DEVICE_NAME);
        printk(KERN_ALERT "Failed to register device class\n");
 -- 
-2.43.0
+2.51.0
 

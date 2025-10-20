@@ -1,4 +1,4 @@
-From 7653b4c4a9e7199c18b675228a1d8fe16e675e8e Mon Sep 17 00:00:00 2001
+From 7c14362b337fbfabd0136e1332895ffd09134f73 Mon Sep 17 00:00:00 2001
 From: Jostar Yang <jostar_yang@accton.com.tw>
 Date: Tue, 3 May 2022 11:37:44 +0800
 Subject: [PATCH 1/2] Support psu_fan_dir sysfs for YM-1401A PSU
@@ -12,10 +12,10 @@ Signed-off-by: Jostar Yang <jostar_yang@accton.com.tw>
  3 files changed, 44 insertions(+), 14 deletions(-)
 
 diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
-index 180136da0f6f..96e68cb8fb7c 100755
+index 496e5109402e..765ea304258a 100755
 --- a/packages/base/any/kernels/modules/ym2651y.c
 +++ b/packages/base/any/kernels/modules/ym2651y.c
-@@ -900,18 +900,25 @@ static struct ym2651y_data *ym2651y_update_device(struct device *dev)
+@@ -910,18 +910,25 @@ static struct ym2651y_data *ym2651y_update_device(struct device *dev)
                  dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
                  goto exit;
              }
@@ -52,10 +52,10 @@ index 180136da0f6f..96e68cb8fb7c 100755
          }
  
 diff --git a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
-index c2b6e7a89981..cff3ffaf884c 100644
+index 6858fbf2afb6..33124ce5f4c9 100644
 --- a/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
 +++ b/packages/platforms/accton/x86-64/as5835-54x/modules/builds/x86-64-accton-as5835-54x-psu.c
-@@ -44,6 +44,9 @@
+@@ -45,6 +45,9 @@
  #define SERIAL_NUM_LEN				18
  #define SERIAL_NUM_REG_OFFSET		0x35
  
@@ -65,7 +65,7 @@ index c2b6e7a89981..cff3ffaf884c 100644
  #define IS_POWER_GOOD(id, value)	(!!(value & BIT(id*4 + 1)))
  #define IS_PRESENT(id, value)		(!(value & BIT(id*4)))
  
-@@ -66,6 +69,7 @@ struct as5835_54x_psu_data {
+@@ -67,6 +70,7 @@ struct as5835_54x_psu_data {
  	u8  status;		  /* Status(present/power_good) register read from CPLD */
  	char model_name[MODEL_NAME_LEN+1];	/* Model name, read from eeprom */
  	char serial[SERIAL_NUM_LEN+1];		/* Serial number, read from eeprom*/
@@ -73,7 +73,7 @@ index c2b6e7a89981..cff3ffaf884c 100644
  };
  
  static struct as5835_54x_psu_data *as5835_54x_psu_update_device(struct device *dev);			 
-@@ -74,7 +78,8 @@ enum as5835_54x_psu_sysfs_attributes {
+@@ -75,7 +79,8 @@ enum as5835_54x_psu_sysfs_attributes {
  	PSU_PRESENT,
  	PSU_MODEL_NAME,
  	PSU_POWER_GOOD,
@@ -83,7 +83,7 @@ index c2b6e7a89981..cff3ffaf884c 100644
  };
  
  /* sysfs attributes for hwmon 
-@@ -83,12 +88,14 @@ static SENSOR_DEVICE_ATTR(psu_present,	S_IRUGO, show_status,	NULL, PSU_PRESENT);
+@@ -84,12 +89,14 @@ static SENSOR_DEVICE_ATTR(psu_present,	S_IRUGO, show_status,	NULL, PSU_PRESENT);
  static SENSOR_DEVICE_ATTR(psu_model_name, S_IRUGO, show_string,	NULL, PSU_MODEL_NAME);
  static SENSOR_DEVICE_ATTR(psu_power_good, S_IRUGO, show_status,	NULL, PSU_POWER_GOOD);
  static SENSOR_DEVICE_ATTR(psu_serial_numer, S_IRUGO, show_string,	NULL, PSU_SERIAL_NUMBER);
@@ -98,7 +98,7 @@ index c2b6e7a89981..cff3ffaf884c 100644
  	NULL
  };
  
-@@ -138,9 +145,13 @@ static ssize_t show_string(struct device *dev, struct device_attribute *da,
+@@ -139,9 +146,13 @@ static ssize_t show_string(struct device *dev, struct device_attribute *da,
  	if (attr->index == PSU_MODEL_NAME) {
  		str = data->model_name;
  	}
@@ -113,7 +113,7 @@ index c2b6e7a89981..cff3ffaf884c 100644
  
      mutex_unlock(&data->update_lock);
  	return sprintf(buf, "%s\n", str);
-@@ -311,6 +322,7 @@ static struct as5835_54x_psu_data *as5835_54x_psu_update_device(struct device *d
+@@ -331,6 +342,7 @@ static struct as5835_54x_psu_data *as5835_54x_psu_update_device(struct device *d
  		
  		memset(data->model_name, 0, sizeof(data->model_name));
  		memset(data->serial, 0, sizeof(data->serial));
@@ -121,7 +121,7 @@ index c2b6e7a89981..cff3ffaf884c 100644
  		
  		if (IS_PRESENT(data->index, data->status)) {
  			/* Read model name */
-@@ -339,6 +351,17 @@ static struct as5835_54x_psu_data *as5835_54x_psu_update_device(struct device *d
+@@ -359,6 +371,17 @@ static struct as5835_54x_psu_data *as5835_54x_psu_update_device(struct device *d
  			else {
  				data->serial[SERIAL_NUM_LEN] = '\0';
  			}
@@ -160,5 +160,5 @@ index 5c70da0474b2..191dae056c77 100644
 \ No newline at end of file
 +}
 -- 
-2.42.0
+2.51.0
 
