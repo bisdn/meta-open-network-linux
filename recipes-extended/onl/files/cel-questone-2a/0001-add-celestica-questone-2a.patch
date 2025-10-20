@@ -1,4 +1,4 @@
-From 20c41467cb9446b73d349c4903c4498e4160ae77 Mon Sep 17 00:00:00 2001
+From e1ce8cdf3c0dae0b0c0e8613d47c42171c2743b7 Mon Sep 17 00:00:00 2001
 From: Peerapong Jaipakdee <pjaipakdee@celestica.com>
 Date: Mon, 14 Sep 2020 17:51:55 +0700
 Subject: [PATCH 1/8] add celestica questone 2a
@@ -8010,5 +8010,5 @@ index 000000000000..3338afddaf30
 +        
 +        return True
 -- 
-2.42.0
+2.51.0
 

@@ -1,7 +1,7 @@
-From e7ce73b790ce3044501632b30054d436213861b0 Mon Sep 17 00:00:00 2001
+From ff9ae434aa3feb51512bd460c2394cc120c0059d Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 11:49:20 +0200
-Subject: [PATCH 13/18] ym2561y: add of device match table
+Subject: [PATCH 13/47] ym2561y: add of device match table
 
 For on-demand loading to work the kernel needs to know which compatibles
 are handled by the driver, so add an appropriate table.
@@ -13,7 +13,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 14 insertions(+)
 
 diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
-index aaff463c8eb8..1f641ab7a619 100755
+index aaff463c8eb8..dda8c8bbfa78 100755
 --- a/packages/base/any/kernels/modules/ym2651y.c
 +++ b/packages/base/any/kernels/modules/ym2651y.c
 @@ -33,6 +33,7 @@
@@ -49,5 +49,5 @@ index aaff463c8eb8..1f641ab7a619 100755
      .probe    = ym2651y_probe,
      .remove   = ym2651y_remove,
 -- 
-2.42.0
+2.51.0
 

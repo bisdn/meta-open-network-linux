@@ -1,4 +1,4 @@
-From 5aebecc0bb1e119f5c7fc99d3719d60f54903924 Mon Sep 17 00:00:00 2001
+From e79d6e2c7807fe5caa1360aef22292bf277b21e2 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 1 Jul 2022 16:12:29 +0200
 Subject: [PATCH 1/2] delta-ag5648: avoid multiple definitions of
@@ -60,5 +60,5 @@ index 80792c6224d1..f686ae736fde 100755
  int dni_i2c_lock_write(mux_info_t * mux_info, dev_info_t * dev_info);
  int dni_i2c_lock_read_attribute(mux_info_t * mux_info, char * fullpath);
 -- 
-2.42.0
+2.51.0
 
