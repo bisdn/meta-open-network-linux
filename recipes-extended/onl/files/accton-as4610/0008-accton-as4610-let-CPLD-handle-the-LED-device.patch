@@ -1,7 +1,7 @@
-From aa73d83e6046d67680774c4ced8d4ea7e2790cfa Mon Sep 17 00:00:00 2001
+From bf0a50a5a0931c855e98c5af116e4550346eec47 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 14:26:51 +0200
-Subject: [PATCH 8/8] accton-as4610: let CPLD handle the LED device
+Subject: [PATCH 27/54] accton-as4610: let CPLD handle the LED device
 
 The LED device directly depends on the CPLD device, so let it be created
 by the CPLD driver. This allows us to convert the LED driver to a simple
@@ -15,7 +15,7 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  2 files changed, 43 insertions(+), 54 deletions(-)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
-index ed36e041e7f0..d5a400075481 100644
+index e8008c011444..7e64775181a7 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 @@ -67,6 +67,7 @@ struct as4610_54_cpld_data {
@@ -65,7 +65,7 @@ index ed36e041e7f0..d5a400075481 100644
  exit_unregister:
      as4610_54_cpld_remove_client(client);
      /* Remove sysfs hooks */
-@@ -515,6 +530,9 @@ static int as4610_54_cpld_remove(struct i2c_client *client)
+@@ -521,6 +536,9 @@ static int as4610_54_cpld_remove(struct i2c_client *client)
  {
      struct as4610_54_cpld_data *data = i2c_get_clientdata(client);
  
@@ -76,7 +76,7 @@ index ed36e041e7f0..d5a400075481 100644
  	    platform_device_unregister(data->fan_pdev);
  
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_leds.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_leds.c
-index 5771b0a55c1a..cb3859c1fabc 100644
+index e7329b1132bb..4d1b37ca2a64 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_leds.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_leds.c
 @@ -22,6 +22,7 @@
@@ -87,7 +87,7 @@ index 5771b0a55c1a..cb3859c1fabc 100644
  #include <linux/kernel.h>
  #include <linux/init.h>
  #include <linux/platform_device.h>
-@@ -575,6 +576,19 @@ static int as4610_led_probe(struct platform_device *pdev)
+@@ -576,6 +577,19 @@ static int as4610_led_probe(struct platform_device *pdev)
  {
  	int ret = 0, i;
  
@@ -107,7 +107,7 @@ index 5771b0a55c1a..cb3859c1fabc 100644
  	for (i = 0; i < NUM_OF_LED; i++) {
  		if (!(ledctl->led_map & BIT(i))) {
  			continue;
-@@ -597,6 +611,7 @@ error:
+@@ -598,6 +612,7 @@ error:
  
  		led_classdev_unregister(&as4610_leds[i]);
  	}
@@ -115,7 +115,7 @@ index 5771b0a55c1a..cb3859c1fabc 100644
  
  	return ret;
  }
-@@ -612,72 +627,28 @@ static int as4610_led_remove(struct platform_device *pdev)
+@@ -613,6 +628,7 @@ static int as4610_led_remove(struct platform_device *pdev)
  
  		led_classdev_unregister(&as4610_leds[i]);
  	}
@@ -123,6 +123,9 @@ index 5771b0a55c1a..cb3859c1fabc 100644
  
  	return 0;
  }
+@@ -622,6 +638,12 @@ static void as4610_led_remove_6_11(struct platform_device *pdev) {
+ }
+ #endif
  
 +static const struct platform_device_id as4610_led_id[] = {
 +	{ "as4610_led", 0 },
@@ -132,7 +135,11 @@ index 5771b0a55c1a..cb3859c1fabc 100644
 +
  static struct platform_driver as4610_led_driver = {
  	.probe		= as4610_led_probe,
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+@@ -630,65 +652,14 @@ static struct platform_driver as4610_led_driver = {
+ 	
  	.remove		= as4610_led_remove,
+ #endif
 +	.id_table	= as4610_led_id,
  	.driver		= {
  	.name	= DRVNAME,
@@ -198,5 +205,5 @@ index 5771b0a55c1a..cb3859c1fabc 100644
  MODULE_AUTHOR("Brandon Chuang <brandon_chuang@accton.com.tw>");
  MODULE_DESCRIPTION("as4610_led driver");
 -- 
-2.42.0
+2.47.1
 
