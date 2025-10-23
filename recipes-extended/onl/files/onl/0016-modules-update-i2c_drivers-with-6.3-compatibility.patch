@@ -1,7 +1,7 @@
-From 8d7cc76d9261ea82d0b9ed1f007dc4092588a03d Mon Sep 17 00:00:00 2001
+From d8523ec0415d3bc23e9fb88e27cf1ba51cd6c9f0 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 21 Nov 2023 14:41:16 +0100
-Subject: [PATCH 17/18] modules: update i2c_drivers with 6.3 compatibility
+Subject: [PATCH 16/47] modules: update i2c_drivers with 6.3 compatibility
 
 i2c_probe() dropped its i2c_device_id* argument, so we need to provide
 different versions based on kernel version.
@@ -405,7 +405,7 @@ index 2bec1abd5b08..1f1e3aaf031a 100644
  	.remove = pmbus_do_remove_6_1,
  #else
 diff --git a/packages/base/any/kernels/modules/optoe.c b/packages/base/any/kernels/modules/optoe.c
-index f5bcc6a91b46..0b26c0c604c7 100644
+index f8016fa36977..b69354372bc9 100644
 --- a/packages/base/any/kernels/modules/optoe.c
 +++ b/packages/base/any/kernels/modules/optoe.c
 @@ -1192,6 +1192,12 @@ exit:
@@ -434,7 +434,7 @@ index f5bcc6a91b46..0b26c0c604c7 100644
  	.remove = optoe_remove_6_1,
  #else
 diff --git a/packages/base/any/kernels/modules/ym2651y.c b/packages/base/any/kernels/modules/ym2651y.c
-index 180136da0f6f..b7e895560415 100755
+index df28cabc865a..496e5109402e 100755
 --- a/packages/base/any/kernels/modules/ym2651y.c
 +++ b/packages/base/any/kernels/modules/ym2651y.c
 @@ -589,6 +589,12 @@ exit:
@@ -463,10 +463,10 @@ index 180136da0f6f..b7e895560415 100755
      .remove = ym2651y_remove_6_1,
  #else
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
-index db5a70f234eb..441c90b7d4db 100644
+index 910cfecea786..6d3932f576e4 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
-@@ -479,6 +479,12 @@ exit_free:
+@@ -518,6 +518,12 @@ exit_free:
  exit:
  	return ret;
  }
@@ -479,7 +479,7 @@ index db5a70f234eb..441c90b7d4db 100644
  
  static int as4610_54_cpld_remove(struct i2c_client *client)
  {
-@@ -608,7 +614,11 @@ static struct i2c_driver as4610_54_cpld_driver = {
+@@ -653,7 +659,11 @@ static struct i2c_driver as4610_54_cpld_driver = {
  		.name	= "as4610_54_cpld",
  		.owner	= THIS_MODULE,
  	},
@@ -1130,10 +1130,10 @@ index a344153407d8..6858fbf2afb6 100644
  	.remove = as5835_54x_psu_remove_6_1,
  #else
 diff --git a/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-cpld.c b/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-cpld.c
-index febb79ba90ba..001abce1bd54 100644
+index c27c15fc9e32..43c633584cb4 100644
 --- a/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-cpld.c
 +++ b/packages/platforms/accton/x86-64/as5912-54x/modules/builds/x86-64-accton-as5912-54x-cpld.c
-@@ -955,6 +955,12 @@ exit_free:
+@@ -1067,6 +1067,12 @@ exit_free:
  exit:
  	return ret;
  }
@@ -1146,7 +1146,7 @@ index febb79ba90ba..001abce1bd54 100644
  
  static int as5912_54x_cpld_remove(struct i2c_client *client)
  {
-@@ -1079,7 +1085,11 @@ static struct i2c_driver as5912_54x_cpld_driver = {
+@@ -1191,7 +1197,11 @@ static struct i2c_driver as5912_54x_cpld_driver = {
  		.name	= "as5912_54x_cpld",
  		.owner	= THIS_MODULE,
  	},
@@ -3501,10 +3501,10 @@ index 35f9f49ec88e..bf3b24dda169 100644
      .address_list = normal_i2c,
  };
 diff --git a/packages/platforms/accton/x86-64/as7946-30xb/modules/builds/x86-64-accton-as7946-30xb-cpld.c b/packages/platforms/accton/x86-64/as7946-30xb/modules/builds/x86-64-accton-as7946-30xb-cpld.c
-index 56721e2b60bb..67260a5888ea 100644
+index 6dc4ee902afe..65f7e531c5de 100644
 --- a/packages/platforms/accton/x86-64/as7946-30xb/modules/builds/x86-64-accton-as7946-30xb-cpld.c
 +++ b/packages/platforms/accton/x86-64/as7946-30xb/modules/builds/x86-64-accton-as7946-30xb-cpld.c
-@@ -763,6 +763,12 @@ exit:
+@@ -845,6 +845,12 @@ exit:
  
  	return status;
  }
@@ -3517,7 +3517,7 @@ index 56721e2b60bb..67260a5888ea 100644
  
  static int as7946_30xb_cpld_remove(struct i2c_client *client)
  {
-@@ -795,7 +801,11 @@ static struct i2c_driver as7946_30xb_cpld_driver = {
+@@ -877,7 +883,11 @@ static struct i2c_driver as7946_30xb_cpld_driver = {
  	.driver = {
  		.name = DRVNAME,
  	},
@@ -6983,5 +6983,5 @@ index 4cab782aefad..45de9dc3a5da 100644
  	.remove = pmbus_do_remove_6_1,
  #else
 -- 
-2.43.0
+2.51.0
 

@@ -1,7 +1,7 @@
-From 1c4e5568b1b7ad9a88306558722cb0d4acd111c0 Mon Sep 17 00:00:00 2001
+From d0c89f506ed537414b7c3a22eda851e6d8f66481 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Fri, 26 Aug 2022 12:09:49 +0200
-Subject: [PATCH 4/8] accton_as4610_cpld: add of device match table
+Subject: [PATCH 2/3] accton_as4610_cpld: add of device match table
 
 For on-demand loading to work the kernel needs to know which compatibles
 are handled by the driver, so add an appropriate table.
@@ -13,18 +13,18 @@ Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
  1 file changed, 8 insertions(+)
 
 diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
-index 441c90b7d4db..ec46db95738b 100644
+index 6d3932f576e4..b83e3b482284 100644
 --- a/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
 +++ b/packages/platforms/accton/armxx/arm-accton-as4610/modules/accton_as4610_cpld.c
-@@ -33,6 +33,7 @@
- #include <linux/stat.h>
+@@ -34,6 +34,7 @@
  #include <linux/hwmon-sysfs.h>
  #include <linux/delay.h>
+ #include <linux/platform_device.h>
 +#include <linux/of.h>
  
  #define I2C_RW_RETRY_COUNT				10
  #define I2C_RW_RETRY_INTERVAL			60 /* ms */
-@@ -73,6 +74,12 @@ static const struct i2c_device_id as4610_54_cpld_id[] = {
+@@ -76,6 +77,12 @@ static const struct i2c_device_id as4610_54_cpld_id[] = {
  };
  MODULE_DEVICE_TABLE(i2c, as4610_54_cpld_id);
  
@@ -37,7 +37,7 @@ index 441c90b7d4db..ec46db95738b 100644
  #define TRANSCEIVER_PRESENT_ATTR_ID(index)   	MODULE_PRESENT_##index
  #define TRANSCEIVER_TXDISABLE_ATTR_ID(index)   	MODULE_TXDISABLE_##index
  #define TRANSCEIVER_RXLOS_ATTR_ID(index)   		MODULE_RXLOS_##index
-@@ -613,6 +620,7 @@ static struct i2c_driver as4610_54_cpld_driver = {
+@@ -658,6 +665,7 @@ static struct i2c_driver as4610_54_cpld_driver = {
  	.driver		= {
  		.name	= "as4610_54_cpld",
  		.owner	= THIS_MODULE,
@@ -46,5 +46,5 @@ index 441c90b7d4db..ec46db95738b 100644
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,3,0)
  	.probe = as4610_54_cpld_probe_6_3,
 -- 
-2.42.0
+2.51.0
 

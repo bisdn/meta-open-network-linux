@@ -1,7 +1,7 @@
-From ee9d96a701656405ab57d3a6faa63926e8dfc4e9 Mon Sep 17 00:00:00 2001
+From e92c196f8daf108c660a34c50fa4326b9dd5d260 Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Wed, 19 Dec 2018 22:43:23 +0100
-Subject: [PATCH 6/13] cpld mux 2 was off by 1 to select the correct qsfp
+Subject: [PATCH 06/13] cpld mux 2 was off by 1 to select the correct qsfp
 
 Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
 ---
@@ -24,5 +24,5 @@ index 48a7d0e44a3d..ac0427abffff 100644
  // TODO mark as __initdata and copy like peripherials
  static struct i2c_mux_cpld_platform_data delta_switch_ag7648_cpld2 = {
 -- 
-2.42.0
+2.51.0
 

@@ -1,4 +1,4 @@
-From 692acdbf4a993151288ce806b1b2bf1f4a1c82de Mon Sep 17 00:00:00 2001
+From 146709556117e1aa83d109b047eec5839bcba6c9 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 23 Mar 2021 11:20:55 +0100
 Subject: [PATCH 2/8] questone-2a: fix ignoring unused result warnings
@@ -113,5 +113,5 @@ index fada4005f975..e5b51f986723 100644
      shm_map_ptr = (struct shm_map_data *)mmap(NULL, seg_size, PROT_READ|PROT_WRITE, MAP_SHARED, shm_fd, 0); 
      if(shm_map_ptr == MAP_FAILED){
 -- 
-2.42.0
+2.51.0
 

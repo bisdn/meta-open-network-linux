@@ -1,7 +1,7 @@
-From 39b5cfbeb3fdbcf3b43b747834eb161c1249b3d3 Mon Sep 17 00:00:00 2001
+From c10bc2c36eb442c7887bc226971cd732e3266100 Mon Sep 17 00:00:00 2001
 From: Tobias Jungel <tobias.jungel@bisdn.de>
 Date: Wed, 10 Oct 2018 13:37:07 +0200
-Subject: [PATCH 4/13] x86-64-delta-ag7648-i2c-mux-setting.ko: added
+Subject: [PATCH 04/13] x86-64-delta-ag7648-i2c-mux-setting.ko: added
  additional vendor
 
 Delta seems to have different settings for this. Added OEM vendor
@@ -33,5 +33,5 @@ index 36f03af55458..3fe38522dd8d 100644
  };
  MODULE_DEVICE_TABLE(dmi, delta_switch_dmi_table);
 -- 
-2.42.0
+2.51.0
 
