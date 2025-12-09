@@ -17,8 +17,8 @@ SRCREV_FORMAT = "onl_infra_bigcode"
 
 # submodules are checked out individually to support license file checking
 SRC_URI = "${URI_ONL};name=onl \
-           ${URI_INFRA};name=infra;destsuffix=git/${SUBMODULE_INFRA} \
-           ${URI_BIGCODE};name=bigcode;destsuffix=git/${SUBMODULE_BIGCODE} \
+           ${URI_INFRA};name=infra;destsuffix=${S}/${SUBMODULE_INFRA} \
+           ${URI_BIGCODE};name=bigcode;destsuffix=${S}/${SUBMODULE_BIGCODE} \
            file://onlpd.service \
 "
 
