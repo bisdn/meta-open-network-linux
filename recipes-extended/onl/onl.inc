@@ -29,7 +29,6 @@ SYSTEMD_AUTO_ENABLE = "enable"
 
 DEPENDS = "cjson i2c-tools libedit python3-pyyaml-native"
 
-S = "${WORKDIR}/git"
 PV = "1.1+git${SRCPV}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
