@@ -7,6 +7,8 @@ This enables DRM, and we have headless systems, so DRM just needlessly
 increases code size and attack surface.
 
 This reverts commit 26ae60b03262f71c03a2685aa649493b86369c1d.
+
+Upstream-Status: Inappropriate
 ---
  cfg/virtio.cfg | 8 --------
  1 file changed, 8 deletions(-)
