@@ -1,4 +1,0 @@
-define KFEATURE_DESCRIPTION "Enable additional features needed by docker"
-define KFEATURE_COMPATIBILITY board
-
-kconf non-hardware docker-extra.cfg
