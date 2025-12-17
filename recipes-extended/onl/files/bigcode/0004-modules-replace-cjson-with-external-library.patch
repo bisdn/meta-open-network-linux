@@ -1,0 +1,1176 @@
+From aeaa793dd8e4ede1f8f7465eb7ac87ebd03a14b2 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 16 Dec 2025 14:21:43 +0100
+Subject: [PATCH] modules: replace cjson with external library
+
+Bigcode is unmaintained, so drop the cjSON module and switch to a distro
+provided cJSON library that is maintained.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2023-11-16]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ modules/Manifest.mk                    |   3 +-
+ modules/cjson/.gitignore               |   1 -
+ modules/cjson/.module                  |   1 -
+ modules/cjson/Makefile                 |  22 -
+ modules/cjson/README                   | 247 -----------
+ modules/cjson/module/inc/cjson/cJSON.h | 141 ------
+ modules/cjson/module/make.mk           |  22 -
+ modules/cjson/module/src/cJSON.c       | 578 -------------------------
+ modules/cjson/module/src/make.mk       |  22 -
+ modules/cjson_util/.module             |   2 +-
+ modules/sff/utest/Makefile             |   4 +-
+ targets/utests/cjson_util/Makefile     |   4 +-
+ 12 files changed, 6 insertions(+), 1041 deletions(-)
+ delete mode 100644 modules/cjson/.gitignore
+ delete mode 100644 modules/cjson/.module
+ delete mode 100644 modules/cjson/Makefile
+ delete mode 100644 modules/cjson/README
+ delete mode 100644 modules/cjson/module/inc/cjson/cJSON.h
+ delete mode 100644 modules/cjson/module/make.mk
+ delete mode 100644 modules/cjson/module/src/cJSON.c
+ delete mode 100644 modules/cjson/module/src/make.mk
+
+diff --git a/modules/Manifest.mk b/modules/Manifest.mk
+index afd2bf262eba..8bb3ad82e56e 100644
+--- a/modules/Manifest.mk
++++ b/modules/Manifest.mk
+@@ -17,7 +17,6 @@ OS_BASEDIR := $(BASEDIR)OS
+ PPE_BASEDIR := $(BASEDIR)PPE
+ VPI_BASEDIR := $(BASEDIR)VPI
+ bloom_filter_BASEDIR := $(BASEDIR)bloom_filter
+-cjson_BASEDIR := $(BASEDIR)cjson
+ cjson_util_BASEDIR := $(BASEDIR)cjson_util
+ debug_counter_BASEDIR := $(BASEDIR)debug_counter
+ histogram_BASEDIR := $(BASEDIR)histogram
+@@ -33,4 +32,4 @@ timer_wheel_BASEDIR := $(BASEDIR)timer_wheel
+ uCli_BASEDIR := $(BASEDIR)uCli
+ 
+ 
+-ALL_MODULES := $(ALL_MODULES) BigHash BigList BigRing ELS FME IOF OS PPE VPI bloom_filter cjson cjson_util debug_counter murmur nwac orc pimu sff sff_utest slot_allocator snmp_subagent timer_wheel uCli
++ALL_MODULES := $(ALL_MODULES) BigHash BigList BigRing ELS FME IOF OS PPE VPI bloom_filter cjson_util debug_counter murmur nwac orc pimu sff sff_utest slot_allocator snmp_subagent timer_wheel uCli
+diff --git a/modules/cjson/.gitignore b/modules/cjson/.gitignore
+deleted file mode 100644
+index 9f06c702edc5..000000000000
+--- a/modules/cjson/.gitignore
++++ /dev/null
+@@ -1 +0,0 @@
+-/cjson.mk
+diff --git a/modules/cjson/.module b/modules/cjson/.module
+deleted file mode 100644
+index d3f2b7992a9f..000000000000
+--- a/modules/cjson/.module
++++ /dev/null
+@@ -1 +0,0 @@
+-name: cjson
+diff --git a/modules/cjson/Makefile b/modules/cjson/Makefile
+deleted file mode 100644
+index d9ebb6487514..000000000000
+--- a/modules/cjson/Makefile
++++ /dev/null
+@@ -1,22 +0,0 @@
+-################################################################
+-#
+-#        Copyright 2013, Big Switch Networks, Inc. 
+-# 
+-# Licensed under the Eclipse Public License, Version 1.0 (the
+-# "License"); you may not use this file except in compliance
+-# with the License. You may obtain a copy of the License at
+-# 
+-#        http://www.eclipse.org/legal/epl-v10.html
+-# 
+-# Unless required by applicable law or agreed to in writing,
+-# software distributed under the License is distributed on an
+-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+-# either express or implied. See the License for the specific
+-# language governing permissions and limitations under the
+-# License.
+-#
+-################################################################
+-include ../../init.mk
+-
+-MODULE := cjson
+-include $(BUILDER)/definemodule.mk
+diff --git a/modules/cjson/README b/modules/cjson/README
+deleted file mode 100644
+index 7531c049a6b7..000000000000
+--- a/modules/cjson/README
++++ /dev/null
+@@ -1,247 +0,0 @@
+-/*
+-  Copyright (c) 2009 Dave Gamble
+-
+-  Permission is hereby granted, free of charge, to any person obtaining a copy
+-  of this software and associated documentation files (the "Software"), to deal
+-  in the Software without restriction, including without limitation the rights
+-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-  copies of the Software, and to permit persons to whom the Software is
+-  furnished to do so, subject to the following conditions:
+-
+-  The above copyright notice and this permission notice shall be included in
+-  all copies or substantial portions of the Software.
+-
+-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+-  THE SOFTWARE.
+-*/
+-
+-Welcome to cJSON.
+-
+-cJSON aims to be the dumbest possible parser that you can get your job done with.
+-It's a single file of C, and a single header file.
+-
+-JSON is described best here: http://www.json.org/
+-It's like XML, but fat-free. You use it to move data around, store things, or just
+-generally represent your program's state.
+-
+-
+-First up, how do I build?
+-Add cJSON.c to your project, and put cJSON.h somewhere in the header search path.
+-For example, to build the test app:
+-
+-gcc cJSON.c test.c -o test -lm
+-./test
+-
+-
+-As a library, cJSON exists to take away as much legwork as it can, but not get in your way.
+-As a point of pragmatism (i.e. ignoring the truth), I'm going to say that you can use it
+-in one of two modes: Auto and Manual. Let's have a quick run-through.
+-
+-
+-I lifted some JSON from this page: http://www.json.org/fatfree.html
+-That page inspired me to write cJSON, which is a parser that tries to share the same
+-philosophy as JSON itself. Simple, dumb, out of the way.
+-
+-Some JSON:
+-{
+-    "name": "Jack (\"Bee\") Nimble", 
+-    "format": {
+-        "type":       "rect", 
+-        "width":      1920, 
+-        "height":     1080, 
+-        "interlace":  false, 
+-        "frame rate": 24
+-    }
+-}
+-
+-Assume that you got this from a file, a webserver, or magic JSON elves, whatever,
+-you have a char * to it. Everything is a cJSON struct.
+-Get it parsed:
+-	cJSON *root = cJSON_Parse(my_json_string);
+-
+-This is an object. We're in C. We don't have objects. But we do have structs.
+-What's the framerate?
+-
+-	cJSON *format = cJSON_GetObjectItem(root,"format");
+-	int framerate = cJSON_GetObjectItem(format,"frame rate")->valueint;
+-
+-
+-Want to change the framerate?
+-	cJSON_GetObjectItem(format,"frame rate")->valueint=25;
+-	
+-Back to disk?
+-	char *rendered=cJSON_Print(root);
+-
+-Finished? Delete the root (this takes care of everything else).
+-	cJSON_Delete(root);
+-
+-That's AUTO mode. If you're going to use Auto mode, you really ought to check pointers
+-before you dereference them. If you want to see how you'd build this struct in code?
+-	cJSON *root,*fmt;
+-	root=cJSON_CreateObject();	
+-	cJSON_AddItemToObject(root, "name", cJSON_CreateString("Jack (\"Bee\") Nimble"));
+-	cJSON_AddItemToObject(root, "format", fmt=cJSON_CreateObject());
+-	cJSON_AddStringToObject(fmt,"type",		"rect");
+-	cJSON_AddNumberToObject(fmt,"width",		1920);
+-	cJSON_AddNumberToObject(fmt,"height",		1080);
+-	cJSON_AddFalseToObject (fmt,"interlace");
+-	cJSON_AddNumberToObject(fmt,"frame rate",	24);
+-
+-Hopefully we can agree that's not a lot of code? There's no overhead, no unnecessary setup.
+-Look at test.c for a bunch of nice examples, mostly all ripped off the json.org site, and
+-a few from elsewhere.
+-
+-What about manual mode? First up you need some detail.
+-Let's cover how the cJSON objects represent the JSON data.
+-cJSON doesn't distinguish arrays from objects in handling; just type.
+-Each cJSON has, potentially, a child, siblings, value, a name.
+-
+-The root object has: Object Type and a Child
+-The Child has name "name", with value "Jack ("Bee") Nimble", and a sibling:
+-Sibling has type Object, name "format", and a child.
+-That child has type String, name "type", value "rect", and a sibling:
+-Sibling has type Number, name "width", value 1920, and a sibling:
+-Sibling has type Number, name "height", value 1080, and a sibling:
+-Sibling hs type False, name "interlace", and a sibling:
+-Sibling has type Number, name "frame rate", value 24
+-
+-Here's the structure:
+-typedef struct cJSON {
+-	struct cJSON *next,*prev;
+-	struct cJSON *child;
+-
+-	int type;
+-
+-	char *valuestring;
+-	int valueint;
+-	double valuedouble;
+-
+-	char *string;
+-} cJSON;
+-
+-By default all values are 0 unless set by virtue of being meaningful.
+-
+-next/prev is a doubly linked list of siblings. next takes you to your sibling,
+-prev takes you back from your sibling to you.
+-Only objects and arrays have a "child", and it's the head of the doubly linked list.
+-A "child" entry will have prev==0, but next potentially points on. The last sibling has next=0.
+-The type expresses Null/True/False/Number/String/Array/Object, all of which are #defined in
+-cJSON.h
+-
+-A Number has valueint and valuedouble. If you're expecting an int, read valueint, if not read
+-valuedouble.
+-
+-Any entry which is in the linked list which is the child of an object will have a "string"
+-which is the "name" of the entry. When I said "name" in the above example, that's "string".
+-"string" is the JSON name for the 'variable name' if you will.
+-
+-Now you can trivially walk the lists, recursively, and parse as you please.
+-You can invoke cJSON_Parse to get cJSON to parse for you, and then you can take
+-the root object, and traverse the structure (which is, formally, an N-tree),
+-and tokenise as you please. If you wanted to build a callback style parser, this is how
+-you'd do it (just an example, since these things are very specific):
+-
+-void parse_and_callback(cJSON *item,const char *prefix)
+-{
+-	while (item)
+-	{
+-		char *newprefix=malloc(strlen(prefix)+strlen(item->name)+2);
+-		sprintf(newprefix,"%s/%s",prefix,item->name);
+-		int dorecurse=callback(newprefix, item->type, item);
+-		if (item->child && dorecurse) parse_and_callback(item->child,newprefix);
+-		item=item->next;
+-		free(newprefix);
+-	}
+-}
+-
+-The prefix process will build you a separated list, to simplify your callback handling.
+-The 'dorecurse' flag would let the callback decide to handle sub-arrays on it's own, or
+-let you invoke it per-item. For the item above, your callback might look like this:
+-
+-int callback(const char *name,int type,cJSON *item)
+-{
+-	if (!strcmp(name,"name"))	{ /* populate name */ }
+-	else if (!strcmp(name,"format/type")	{ /* handle "rect" */ }
+-	else if (!strcmp(name,"format/width")	{ /* 800 */ }
+-	else if (!strcmp(name,"format/height")	{ /* 600 */ }
+-	else if (!strcmp(name,"format/interlace")	{ /* false */ }
+-	else if (!strcmp(name,"format/frame rate")	{ /* 24 */ }
+-	return 1;
+-}
+-
+-Alternatively, you might like to parse iteratively.
+-You'd use:
+-
+-void parse_object(cJSON *item)
+-{
+-	int i; for (i=0;i<cJSON_GetArraySize(item);i++)
+-	{
+-		cJSON *subitem=cJSON_GetArrayItem(item,i);
+-		// handle subitem.	
+-	}
+-}
+-
+-Or, for PROPER manual mode:
+-
+-void parse_object(cJSON *item)
+-{
+-	cJSON *subitem=item->child;
+-	while (subitem)
+-	{
+-		// handle subitem
+-		if (subitem->child) parse_object(subitem->child);
+-		
+-		subitem=subitem->next;
+-	}
+-}
+-
+-Of course, this should look familiar, since this is just a stripped-down version
+-of the callback-parser.
+-
+-This should cover most uses you'll find for parsing. The rest should be possible
+-to infer.. and if in doubt, read the source! There's not a lot of it! ;)
+-
+-
+-In terms of constructing JSON data, the example code above is the right way to do it.
+-You can, of course, hand your sub-objects to other functions to populate.
+-Also, if you find a use for it, you can manually build the objects.
+-For instance, suppose you wanted to build an array of objects?
+-
+-cJSON *objects[24];
+-
+-cJSON *Create_array_of_anything(cJSON **items,int num)
+-{
+-	int i;cJSON *prev, *root=cJSON_CreateArray();
+-	for (i=0;i<24;i++)
+-	{
+-		if (!i)	root->child=objects[i];
+-		else	prev->next=objects[i], objects[i]->prev=prev;
+-		prev=objects[i];
+-	}
+-	return root;
+-}
+-	
+-and simply: Create_array_of_anything(objects,24);
+-
+-cJSON doesn't make any assumptions about what order you create things in.
+-You can attach the objects, as above, and later add children to each
+-of those objects.
+-
+-As soon as you call cJSON_Print, it renders the structure to text.
+-
+-
+-
+-The test.c code shows how to handle a bunch of typical cases. If you uncomment
+-the code, it'll load, parse and print a bunch of test files, also from json.org,
+-which are more complex than I'd care to try and stash into a const char array[].
+-
+-
+-Enjoy cJSON!
+-
+-
+-- Dave Gamble, Aug 2009
+diff --git a/modules/cjson/module/inc/cjson/cJSON.h b/modules/cjson/module/inc/cjson/cJSON.h
+deleted file mode 100644
+index cf613356c5e9..000000000000
+--- a/modules/cjson/module/inc/cjson/cJSON.h
++++ /dev/null
+@@ -1,141 +0,0 @@
+-/*
+-  Copyright (c) 2009 Dave Gamble
+-
+-  Permission is hereby granted, free of charge, to any person obtaining a copy
+-  of this software and associated documentation files (the "Software"), to deal
+-  in the Software without restriction, including without limitation the rights
+-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-  copies of the Software, and to permit persons to whom the Software is
+-  furnished to do so, subject to the following conditions:
+-
+-  The above copyright notice and this permission notice shall be included in
+-  all copies or substantial portions of the Software.
+-
+-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+-  THE SOFTWARE.
+-*/
+-
+-#ifndef cJSON__h
+-#define cJSON__h
+-
+-#ifdef __cplusplus
+-extern "C"
+-{
+-#endif
+-
+-/* cJSON Types: */
+-#define cJSON_False 0
+-#define cJSON_True 1
+-#define cJSON_NULL 2
+-#define cJSON_Number 3
+-#define cJSON_String 4
+-#define cJSON_Array 5
+-#define cJSON_Object 6
+-
+-#define cJSON_IsReference 256
+-
+-/* The cJSON structure: */
+-typedef struct cJSON {
+-	struct cJSON *next,*prev;	/* next/prev allow you to walk array/object chains. Alternatively, use GetArraySize/GetArrayItem/GetObjectItem */
+-	struct cJSON *child;		/* An array or object item will have a child pointer pointing to a chain of the items in the array/object. */
+-
+-	int type;					/* The type of the item, as above. */
+-
+-	char *valuestring;			/* The item's string, if type==cJSON_String */
+-	int valueint;				/* The item's number, if type==cJSON_Number */
+-	double valuedouble;			/* The item's number, if type==cJSON_Number */
+-
+-	char *string;				/* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
+-} cJSON;
+-
+-typedef struct cJSON_Hooks {
+-      void *(*malloc_fn)(size_t sz);
+-      void (*free_fn)(void *ptr);
+-} cJSON_Hooks;
+-
+-/* Supply malloc, realloc and free functions to cJSON */
+-extern void cJSON_InitHooks(cJSON_Hooks* hooks);
+-
+-
+-/* Supply a block of JSON, and this returns a cJSON object you can interrogate. Call cJSON_Delete when finished. */
+-extern cJSON *cJSON_Parse(const char *value);
+-/* Render a cJSON entity to text for transfer/storage. Free the char* when finished. */
+-extern char  *cJSON_Print(cJSON *item);
+-/* Render a cJSON entity to text for transfer/storage without any formatting. Free the char* when finished. */
+-extern char  *cJSON_PrintUnformatted(cJSON *item);
+-/* Delete a cJSON entity and all subentities. */
+-extern void   cJSON_Delete(cJSON *c);
+-
+-/* Returns the number of items in an array (or object). */
+-extern int	  cJSON_GetArraySize(cJSON *array);
+-/* Retrieve item number "item" from array "array". Returns NULL if unsuccessful. */
+-extern cJSON *cJSON_GetArrayItem(cJSON *array,int item);
+-/* Get item "string" from object. Case insensitive. */
+-extern cJSON *cJSON_GetObjectItem(cJSON *object,const char *string);
+-
+-/* For analysing failed parses. This returns a pointer to the parse error. You'll probably need to look a few chars back to make sense of it. Defined when cJSON_Parse() returns 0. 0 when cJSON_Parse() succeeds. */
+-extern const char *cJSON_GetErrorPtr(void);
+-
+-/* These calls create a cJSON item of the appropriate type. */
+-extern cJSON *cJSON_CreateNull(void);
+-extern cJSON *cJSON_CreateTrue(void);
+-extern cJSON *cJSON_CreateFalse(void);
+-extern cJSON *cJSON_CreateBool(int b);
+-extern cJSON *cJSON_CreateNumber(double num);
+-extern cJSON *cJSON_CreateString(const char *string);
+-extern cJSON *cJSON_CreateArray(void);
+-extern cJSON *cJSON_CreateObject(void);
+-
+-/* These utilities create an Array of count items. */
+-extern cJSON *cJSON_CreateIntArray(int *numbers,int count);
+-extern cJSON *cJSON_CreateFloatArray(float *numbers,int count);
+-extern cJSON *cJSON_CreateDoubleArray(double *numbers,int count);
+-extern cJSON *cJSON_CreateStringArray(const char **strings,int count);
+-
+-/* Append item to the specified array/object. */
+-extern void cJSON_AddItemToArray(cJSON *array, cJSON *item);
+-extern void	cJSON_AddItemToObject(cJSON *object,const char *string,cJSON *item);
+-/* Append reference to item to the specified array/object. Use this when you want to add an existing cJSON to a new cJSON, but don't want to corrupt your existing cJSON. */
+-extern void cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item);
+-extern void	cJSON_AddItemReferenceToObject(cJSON *object,const char *string,cJSON *item);
+-
+-/* Remove/Detatch items from Arrays/Objects. */
+-extern cJSON *cJSON_DetachItemFromArray(cJSON *array,int which);
+-extern void   cJSON_DeleteItemFromArray(cJSON *array,int which);
+-extern cJSON *cJSON_DetachItemFromObject(cJSON *object,const char *string);
+-extern void   cJSON_DeleteItemFromObject(cJSON *object,const char *string);
+-
+-/* Update array items. */
+-extern void cJSON_ReplaceItemInArray(cJSON *array,int which,cJSON *newitem);
+-extern void cJSON_ReplaceItemInObject(cJSON *object,const char *string,cJSON *newitem);
+-
+-/* Duplicate a cJSON item */
+-extern cJSON *cJSON_Duplicate(cJSON *item,int recurse);
+-/* Duplicate will create a new, identical cJSON item to the one you pass, in new memory that will
+-need to be released. With recurse!=0, it will duplicate any children connected to the item.
+-The item->next and ->prev pointers are always zero on return from Duplicate. */
+-
+-/* ParseWithOpts allows you to require (and check) that the JSON is null terminated, and to retrieve the pointer to the final byte parsed. */
+-extern cJSON *cJSON_ParseWithOpts(const char *value,const char **return_parse_end,int require_null_terminated);
+-
+-/* Macros for creating things quickly. */
+-#define cJSON_AddNullToObject(object,name)		cJSON_AddItemToObject(object, name, cJSON_CreateNull())
+-#define cJSON_AddTrueToObject(object,name)		cJSON_AddItemToObject(object, name, cJSON_CreateTrue())
+-#define cJSON_AddFalseToObject(object,name)		cJSON_AddItemToObject(object, name, cJSON_CreateFalse())
+-#define cJSON_AddBoolToObject(object,name,b)	cJSON_AddItemToObject(object, name, cJSON_CreateBool(b))
+-#define cJSON_AddNumberToObject(object,name,n)	cJSON_AddItemToObject(object, name, cJSON_CreateNumber(n))
+-#define cJSON_AddStringToObject(object,name,s)	cJSON_AddItemToObject(object, name, cJSON_CreateString(s))
+-
+-/* When assigning an integer value, it needs to be propagated to valuedouble too. */
+-#define cJSON_SetIntValue(object,val)			((object)?(object)->valueint=(object)->valuedouble=(val):(val))
+-
+-#ifdef __cplusplus
+-}
+-#endif
+-
+-#endif
+diff --git a/modules/cjson/module/make.mk b/modules/cjson/module/make.mk
+deleted file mode 100644
+index 354ab30e079b..000000000000
+--- a/modules/cjson/module/make.mk
++++ /dev/null
+@@ -1,22 +0,0 @@
+-################################################################
+-#
+-#        Copyright 2013, Big Switch Networks, Inc. 
+-# 
+-# Licensed under the Eclipse Public License, Version 1.0 (the
+-# "License"); you may not use this file except in compliance
+-# with the License. You may obtain a copy of the License at
+-# 
+-#        http://www.eclipse.org/legal/epl-v10.html
+-# 
+-# Unless required by applicable law or agreed to in writing,
+-# software distributed under the License is distributed on an
+-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+-# either express or implied. See the License for the specific
+-# language governing permissions and limitations under the
+-# License.
+-#
+-################################################################
+-
+-THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+-cjson_INCLUDES := -I $(THIS_DIR)inc
+-cjson_INTERNAL_INCLUDES := -I $(THIS_DIR)src
+diff --git a/modules/cjson/module/src/cJSON.c b/modules/cjson/module/src/cJSON.c
+deleted file mode 100644
+index b8974f71c418..000000000000
+--- a/modules/cjson/module/src/cJSON.c
++++ /dev/null
+@@ -1,578 +0,0 @@
+-/*
+-  Copyright (c) 2009 Dave Gamble
+-
+-  Permission is hereby granted, free of charge, to any person obtaining a copy
+-  of this software and associated documentation files (the "Software"), to deal
+-  in the Software without restriction, including without limitation the rights
+-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-  copies of the Software, and to permit persons to whom the Software is
+-  furnished to do so, subject to the following conditions:
+-
+-  The above copyright notice and this permission notice shall be included in
+-  all copies or substantial portions of the Software.
+-
+-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+-  THE SOFTWARE.
+-*/
+-
+-/* cJSON */
+-/* JSON parser in C. */
+-
+-#include <string.h>
+-#include <stdio.h>
+-#include <math.h>
+-#include <stdlib.h>
+-#include <float.h>
+-#include <limits.h>
+-#include <ctype.h>
+-#include <cjson/cJSON.h>
+-
+-static const char *ep;
+-
+-const char *cJSON_GetErrorPtr(void) {return ep;}
+-
+-static int cJSON_strcasecmp(const char *s1,const char *s2)
+-{
+-    if (!s1)
+-        return (s1==s2)?0:1;
+-    if (!s2)
+-        return 1;
+-    for(; tolower(*s1) == tolower(*s2); ++s1, ++s2)	if(*s1 == 0)	return 0;
+-    return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
+-}
+-
+-static void *(*cJSON_malloc)(size_t sz) = malloc;
+-static void (*cJSON_free)(void *ptr) = free;
+-
+-static char* cJSON_strdup(const char* str)
+-{
+-      size_t len;
+-      char* copy;
+-
+-      len = strlen(str) + 1;
+-      if (!(copy = (char*)cJSON_malloc(len))) return 0;
+-      memcpy(copy,str,len);
+-      return copy;
+-}
+-
+-void cJSON_InitHooks(cJSON_Hooks* hooks)
+-{
+-    if (!hooks) { /* Reset hooks */
+-        cJSON_malloc = malloc;
+-        cJSON_free = free;
+-        return;
+-    }
+-
+-	cJSON_malloc = (hooks->malloc_fn)?hooks->malloc_fn:malloc;
+-	cJSON_free	 = (hooks->free_fn)?hooks->free_fn:free;
+-}
+-
+-/* Internal constructor. */
+-static cJSON *cJSON_New_Item(void)
+-{
+-	cJSON* node = (cJSON*)cJSON_malloc(sizeof(cJSON));
+-	if (node) memset(node,0,sizeof(cJSON));
+-	return node;
+-}
+-
+-/* Delete a cJSON structure. */
+-void cJSON_Delete(cJSON *c)
+-{
+-	cJSON *next;
+-	while (c)
+-	{
+-		next=c->next;
+-		if (!(c->type&cJSON_IsReference) && c->child) cJSON_Delete(c->child);
+-		if (!(c->type&cJSON_IsReference) && c->valuestring) cJSON_free(c->valuestring);
+-		if (c->string) cJSON_free(c->string);
+-		cJSON_free(c);
+-		c=next;
+-	}
+-}
+-
+-/* Parse the input text to generate a number, and populate the result into item. */
+-static const char *parse_number(cJSON *item,const char *num)
+-{
+-	double n=0,sign=1,scale=0;int subscale=0,signsubscale=1;
+-
+-	/* Could use sscanf for this? */
+-	if (*num=='-') sign=-1,num++;	/* Has sign? */
+-	if (*num=='0') num++;			/* is zero */
+-	if (*num>='1' && *num<='9')	do	n=(n*10.0)+(*num++ -'0');	while (*num>='0' && *num<='9');	/* Number? */
+-	if (*num=='.' && num[1]>='0' && num[1]<='9') {num++;		do	n=(n*10.0)+(*num++ -'0'),scale--; while (*num>='0' && *num<='9');}	/* Fractional part? */
+-	if (*num=='e' || *num=='E')		/* Exponent? */
+-	{	num++;if (*num=='+') num++;	else if (*num=='-') signsubscale=-1,num++;		/* With sign? */
+-		while (*num>='0' && *num<='9') subscale=(subscale*10)+(*num++ - '0');	/* Number? */
+-	}
+-
+-	n=sign*n*pow(10.0,(scale+subscale*signsubscale));	/* number = +/- number.fraction * 10^+/- exponent */
+-
+-	item->valuedouble=n;
+-	item->valueint=(int)n;
+-	item->type=cJSON_Number;
+-	return num;
+-}
+-
+-/* Render the number nicely from the given item into a string. */
+-static char *print_number(cJSON *item)
+-{
+-	char *str;
+-	double d=item->valuedouble;
+-	if (fabs(((double)item->valueint)-d)<=DBL_EPSILON && d<=INT_MAX && d>=INT_MIN)
+-	{
+-		str=(char*)cJSON_malloc(21);	/* 2^64+1 can be represented in 21 chars. */
+-		if (str) sprintf(str,"%d",item->valueint);
+-	}
+-	else
+-	{
+-		str=(char*)cJSON_malloc(64);	/* This is a nice tradeoff. */
+-		if (str)
+-		{
+-			if (fabs(floor(d)-d)<=DBL_EPSILON && fabs(d)<1.0e60)sprintf(str,"%.0f",d);
+-			else if (fabs(d)<1.0e-6 || fabs(d)>1.0e9)			sprintf(str,"%e",d);
+-			else												sprintf(str,"%f",d);
+-		}
+-	}
+-	return str;
+-}
+-
+-/* Parse the input text into an unescaped cstring, and populate item. */
+-static const unsigned char firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+-static const char *parse_string(cJSON *item,const char *str)
+-{
+-	const char *ptr=str+1;char *ptr2;char *out;int len=0;unsigned uc,uc2;
+-	if (*str!='\"') {ep=str;return 0;}	/* not a string! */
+-
+-	while (*ptr!='\"' && *ptr && ++len) if (*ptr++ == '\\') ptr++;	/* Skip escaped quotes. */
+-
+-	out=(char*)cJSON_malloc(len+1);	/* This is how long we need for the string, roughly. */
+-	if (!out) return 0;
+-
+-	ptr=str+1;ptr2=out;
+-	while (*ptr!='\"' && *ptr)
+-	{
+-		if (*ptr!='\\') *ptr2++=*ptr++;
+-		else
+-		{
+-			ptr++;
+-			switch (*ptr)
+-			{
+-				case 'b': *ptr2++='\b';	break;
+-				case 'f': *ptr2++='\f';	break;
+-				case 'n': *ptr2++='\n';	break;
+-				case 'r': *ptr2++='\r';	break;
+-				case 't': *ptr2++='\t';	break;
+-				case 'u':	 /* transcode utf16 to utf8. */
+-					sscanf(ptr+1,"%4x",&uc);ptr+=4;	/* get the unicode char. */
+-
+-					if ((uc>=0xDC00 && uc<=0xDFFF) || uc==0)	break;	/* check for invalid.	*/
+-
+-					if (uc>=0xD800 && uc<=0xDBFF)	/* UTF16 surrogate pairs.	*/
+-					{
+-						if (ptr[1]!='\\' || ptr[2]!='u')	break;	/* missing second-half of surrogate.	*/
+-						sscanf(ptr+3,"%4x",&uc2);ptr+=6;
+-						if (uc2<0xDC00 || uc2>0xDFFF)		break;	/* invalid second-half of surrogate.	*/
+-						uc=0x10000 + (((uc&0x3FF)<<10) | (uc2&0x3FF));
+-					}
+-
+-					len=4;if (uc<0x80) len=1;else if (uc<0x800) len=2;else if (uc<0x10000) len=3; ptr2+=len;
+-
+-					switch (len) {
+-						case 4: *--ptr2 =((uc | 0x80) & 0xBF); uc >>= 6;
+-						case 3: *--ptr2 =((uc | 0x80) & 0xBF); uc >>= 6;
+-						case 2: *--ptr2 =((uc | 0x80) & 0xBF); uc >>= 6;
+-						case 1: *--ptr2 =(uc | firstByteMark[len]);
+-					}
+-					ptr2+=len;
+-					break;
+-				default:  *ptr2++=*ptr; break;
+-			}
+-			ptr++;
+-		}
+-	}
+-	*ptr2=0;
+-	if (*ptr=='\"') ptr++;
+-	item->valuestring=out;
+-	item->type=cJSON_String;
+-	return ptr;
+-}
+-
+-/* Render the cstring provided to an escaped version that can be printed. */
+-static char *print_string_ptr(const char *str)
+-{
+-	const char *ptr;char *ptr2,*out;int len=0;unsigned char token;
+-
+-	if (!str) return cJSON_strdup("");
+-	ptr=str;while ((token=*ptr) && ++len) {if (strchr("\"\\\b\f\n\r\t",token)) len++; else if (token<32) len+=5;ptr++;}
+-
+-	out=(char*)cJSON_malloc(len+3);
+-	if (!out) return 0;
+-
+-	ptr2=out;ptr=str;
+-	*ptr2++='\"';
+-	while (*ptr)
+-	{
+-		if ((unsigned char)*ptr>31 && *ptr!='\"' && *ptr!='\\') *ptr2++=*ptr++;
+-		else
+-		{
+-			*ptr2++='\\';
+-			switch (token=*ptr++)
+-			{
+-				case '\\':	*ptr2++='\\';	break;
+-				case '\"':	*ptr2++='\"';	break;
+-				case '\b':	*ptr2++='b';	break;
+-				case '\f':	*ptr2++='f';	break;
+-				case '\n':	*ptr2++='n';	break;
+-				case '\r':	*ptr2++='r';	break;
+-				case '\t':	*ptr2++='t';	break;
+-				default: sprintf(ptr2,"u%04x",token);ptr2+=5;	break;	/* escape and print */
+-			}
+-		}
+-	}
+-	*ptr2++='\"';*ptr2++=0;
+-	return out;
+-}
+-/* Invote print_string_ptr (which is useful) on an item. */
+-static char *print_string(cJSON *item)	{return print_string_ptr(item->valuestring);}
+-
+-/* Predeclare these prototypes. */
+-static const char *parse_value(cJSON *item,const char *value);
+-static char *print_value(cJSON *item,int depth,int fmt);
+-static const char *parse_array(cJSON *item,const char *value);
+-static char *print_array(cJSON *item,int depth,int fmt);
+-static const char *parse_object(cJSON *item,const char *value);
+-static char *print_object(cJSON *item,int depth,int fmt);
+-
+-/* Utility to jump whitespace and cr/lf */
+-static const char *skip(const char *in) {while (in && *in && (unsigned char)*in<=32) in++; return in;}
+-
+-/* Parse an object - create a new root, and populate. */
+-cJSON *cJSON_ParseWithOpts(const char *value,const char **return_parse_end,int require_null_terminated)
+-{
+-	const char *end=0;
+-	cJSON *c=cJSON_New_Item();
+-	ep=0;
+-	if (!c) return 0;       /* memory fail */
+-
+-	end=parse_value(c,skip(value));
+-	if (!end)	{cJSON_Delete(c);return 0;}	/* parse failure. ep is set. */
+-
+-	/* if we require null-terminated JSON without appended garbage, skip and then check for a null terminator */
+-	if (require_null_terminated) {end=skip(end);if (*end) {cJSON_Delete(c);ep=end;return 0;}}
+-	if (return_parse_end) *return_parse_end=end;
+-	return c;
+-}
+-/* Default options for cJSON_Parse */
+-cJSON *cJSON_Parse(const char *value) {return cJSON_ParseWithOpts(value,0,0);}
+-
+-/* Render a cJSON item/entity/structure to text. */
+-char *cJSON_Print(cJSON *item)				{return print_value(item,0,1);}
+-char *cJSON_PrintUnformatted(cJSON *item)	{return print_value(item,0,0);}
+-
+-/* Parser core - when encountering text, process appropriately. */
+-static const char *parse_value(cJSON *item,const char *value)
+-{
+-	if (!value)						return 0;	/* Fail on null. */
+-	if (!strncmp(value,"null",4))	{ item->type=cJSON_NULL;  return value+4; }
+-	if (!strncmp(value,"false",5))	{ item->type=cJSON_False; return value+5; }
+-	if (!strncmp(value,"true",4))	{ item->type=cJSON_True; item->valueint=1;	return value+4; }
+-	if (*value=='\"')				{ return parse_string(item,value); }
+-	if (*value=='-' || (*value>='0' && *value<='9'))	{ return parse_number(item,value); }
+-	if (*value=='[')				{ return parse_array(item,value); }
+-	if (*value=='{')				{ return parse_object(item,value); }
+-
+-	ep=value;return 0;	/* failure. */
+-}
+-
+-/* Render a value to text. */
+-static char *print_value(cJSON *item,int depth,int fmt)
+-{
+-	char *out=0;
+-	if (!item) return 0;
+-	switch ((item->type)&255)
+-	{
+-		case cJSON_NULL:	out=cJSON_strdup("null");	break;
+-		case cJSON_False:	out=cJSON_strdup("false");break;
+-		case cJSON_True:	out=cJSON_strdup("true"); break;
+-		case cJSON_Number:	out=print_number(item);break;
+-		case cJSON_String:	out=print_string(item);break;
+-		case cJSON_Array:	out=print_array(item,depth,fmt);break;
+-		case cJSON_Object:	out=print_object(item,depth,fmt);break;
+-	}
+-	return out;
+-}
+-
+-/* Build an array from input text. */
+-static const char *parse_array(cJSON *item,const char *value)
+-{
+-	cJSON *child;
+-	if (*value!='[')	{ep=value;return 0;}	/* not an array! */
+-
+-	item->type=cJSON_Array;
+-	value=skip(value+1);
+-	if (*value==']') return value+1;	/* empty array. */
+-
+-	item->child=child=cJSON_New_Item();
+-	if (!item->child) return 0;		 /* memory fail */
+-	value=skip(parse_value(child,skip(value)));	/* skip any spacing, get the value. */
+-	if (!value) return 0;
+-
+-	while (*value==',')
+-	{
+-		cJSON *new_item;
+-		if (!(new_item=cJSON_New_Item())) return 0; 	/* memory fail */
+-		child->next=new_item;new_item->prev=child;child=new_item;
+-		value=skip(parse_value(child,skip(value+1)));
+-		if (!value) return 0;	/* memory fail */
+-	}
+-
+-	if (*value==']') return value+1;	/* end of array */
+-	ep=value;return 0;	/* malformed. */
+-}
+-
+-/* Render an array to text */
+-static char *print_array(cJSON *item,int depth,int fmt)
+-{
+-	char **entries;
+-	char *out=0,*ptr,*ret;int len=5;
+-	cJSON *child=item->child;
+-	int numentries=0,i=0,fail=0;
+-
+-	/* How many entries in the array? */
+-	while (child) numentries++,child=child->next;
+-	/* Explicitly handle numentries==0 */
+-	if (!numentries)
+-	{
+-		out=(char*)cJSON_malloc(3);
+-		if (out) strcpy(out,"[]");
+-		return out;
+-	}
+-	/* Allocate an array to hold the values for each */
+-	entries=(char**)cJSON_malloc(numentries*sizeof(char*));
+-	if (!entries) return 0;
+-	memset(entries,0,numentries*sizeof(char*));
+-	/* Retrieve all the results: */
+-	child=item->child;
+-	while (child && !fail)
+-	{
+-		ret=print_value(child,depth+1,fmt);
+-		entries[i++]=ret;
+-		if (ret) len+=strlen(ret)+2+(fmt?1:0); else fail=1;
+-		child=child->next;
+-	}
+-
+-	/* If we didn't fail, try to malloc the output string */
+-	if (!fail) out=(char*)cJSON_malloc(len);
+-	/* If that fails, we fail. */
+-	if (!out) fail=1;
+-
+-	/* Handle failure. */
+-	if (fail)
+-	{
+-		for (i=0;i<numentries;i++) if (entries[i]) cJSON_free(entries[i]);
+-		cJSON_free(entries);
+-		return 0;
+-	}
+-
+-	/* Compose the output array. */
+-	*out='[';
+-	ptr=out+1;*ptr=0;
+-	for (i=0;i<numentries;i++)
+-	{
+-		strcpy(ptr,entries[i]);ptr+=strlen(entries[i]);
+-		if (i!=numentries-1) {*ptr++=',';if(fmt)*ptr++=' ';*ptr=0;}
+-		cJSON_free(entries[i]);
+-	}
+-	cJSON_free(entries);
+-	*ptr++=']';*ptr++=0;
+-	return out;
+-}
+-
+-/* Build an object from the text. */
+-static const char *parse_object(cJSON *item,const char *value)
+-{
+-	cJSON *child;
+-	if (*value!='{')	{ep=value;return 0;}	/* not an object! */
+-
+-	item->type=cJSON_Object;
+-	value=skip(value+1);
+-	if (*value=='}') return value+1;	/* empty array. */
+-
+-	item->child=child=cJSON_New_Item();
+-	if (!item->child) return 0;
+-	value=skip(parse_string(child,skip(value)));
+-	if (!value) return 0;
+-	child->string=child->valuestring;child->valuestring=0;
+-	if (*value!=':') {ep=value;return 0;}	/* fail! */
+-	value=skip(parse_value(child,skip(value+1)));	/* skip any spacing, get the value. */
+-	if (!value) return 0;
+-
+-	while (*value==',')
+-	{
+-		cJSON *new_item;
+-		if (!(new_item=cJSON_New_Item()))	return 0; /* memory fail */
+-		child->next=new_item;new_item->prev=child;child=new_item;
+-		value=skip(parse_string(child,skip(value+1)));
+-		if (!value) return 0;
+-		child->string=child->valuestring;child->valuestring=0;
+-		if (*value!=':') {ep=value;return 0;}	/* fail! */
+-		value=skip(parse_value(child,skip(value+1)));	/* skip any spacing, get the value. */
+-		if (!value) return 0;
+-	}
+-
+-	if (*value=='}') return value+1;	/* end of array */
+-	ep=value;return 0;	/* malformed. */
+-}
+-
+-/* Render an object to text. */
+-static char *print_object(cJSON *item,int depth,int fmt)
+-{
+-	char **entries=0,**names=0;
+-	char *out=0,*ptr,*ret,*str;int len=7,i=0,j;
+-	cJSON *child=item->child;
+-	int numentries=0,fail=0;
+-	/* Count the number of entries. */
+-	while (child) numentries++,child=child->next;
+-	/* Explicitly handle empty object case */
+-	if (!numentries)
+-	{
+-		out=(char*)cJSON_malloc(fmt?depth+3:3);
+-		if (!out)	return 0;
+-		ptr=out;*ptr++='{';
+-		if (fmt) {*ptr++='\n';for (i=0;i<depth-1;i++) *ptr++='\t';}
+-		*ptr++='}';*ptr++=0;
+-		return out;
+-	}
+-	/* Allocate space for the names and the objects */
+-	entries=(char**)cJSON_malloc(numentries*sizeof(char*));
+-	if (!entries) return 0;
+-	names=(char**)cJSON_malloc(numentries*sizeof(char*));
+-	if (!names) {cJSON_free(entries);return 0;}
+-	memset(entries,0,sizeof(char*)*numentries);
+-	memset(names,0,sizeof(char*)*numentries);
+-
+-	/* Collect all the results into our arrays: */
+-	child=item->child;depth++;if (fmt) len+=depth;
+-	while (child)
+-	{
+-		names[i]=str=print_string_ptr(child->string);
+-		entries[i++]=ret=print_value(child,depth,fmt);
+-		if (str && ret) len+=strlen(ret)+strlen(str)+2+(fmt?2+depth:0); else fail=1;
+-		child=child->next;
+-	}
+-
+-	/* Try to allocate the output string */
+-	if (!fail) out=(char*)cJSON_malloc(len);
+-	if (!out) fail=1;
+-
+-	/* Handle failure */
+-	if (fail)
+-	{
+-		for (i=0;i<numentries;i++) {if (names[i]) cJSON_free(names[i]);if (entries[i]) cJSON_free(entries[i]);}
+-		cJSON_free(names);cJSON_free(entries);
+-		return 0;
+-	}
+-
+-	/* Compose the output: */
+-	*out='{';ptr=out+1;if (fmt)*ptr++='\n';*ptr=0;
+-	for (i=0;i<numentries;i++)
+-	{
+-		if (fmt) for (j=0;j<depth;j++) *ptr++='\t';
+-		strcpy(ptr,names[i]);ptr+=strlen(names[i]);
+-		*ptr++=':';if (fmt) *ptr++='\t';
+-		strcpy(ptr,entries[i]);ptr+=strlen(entries[i]);
+-		if (i!=numentries-1) *ptr++=',';
+-		if (fmt)
+-                    *ptr++='\n';
+-                *ptr=0;
+-		cJSON_free(names[i]);cJSON_free(entries[i]);
+-	}
+-
+-	cJSON_free(names);cJSON_free(entries);
+-	if (fmt) for (i=0;i<depth-1;i++) *ptr++='\t';
+-	*ptr++='}';*ptr++=0;
+-	return out;
+-}
+-
+-/* Get Array size/item / object item. */
+-int    cJSON_GetArraySize(cJSON *array)							{cJSON *c=array->child;int i=0;while(c)i++,c=c->next;return i;}
+-cJSON *cJSON_GetArrayItem(cJSON *array,int item)				{cJSON *c=array->child;  while (c && item>0) item--,c=c->next; return c;}
+-cJSON *cJSON_GetObjectItem(cJSON *object,const char *string)	{cJSON *c=object->child; while (c && cJSON_strcasecmp(c->string,string)) c=c->next; return c;}
+-
+-/* Utility for array list handling. */
+-static void suffix_object(cJSON *prev,cJSON *item) {prev->next=item;item->prev=prev;}
+-/* Utility for handling references. */
+-static cJSON *create_reference(cJSON *item) {cJSON *ref=cJSON_New_Item();if (!ref) return 0;memcpy(ref,item,sizeof(cJSON));ref->string=0;ref->type|=cJSON_IsReference;ref->next=ref->prev=0;return ref;}
+-
+-/* Add item to array/object. */
+-void   cJSON_AddItemToArray(cJSON *array, cJSON *item)						{cJSON *c=array->child;if (!item) return; if (!c) {array->child=item;} else {while (c && c->next) c=c->next; suffix_object(c,item);}}
+-void   cJSON_AddItemToObject(cJSON *object,const char *string,cJSON *item)	{if (!item) return; if (item->string) cJSON_free(item->string);item->string=cJSON_strdup(string);cJSON_AddItemToArray(object,item);}
+-void	cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item)						{cJSON_AddItemToArray(array,create_reference(item));}
+-void	cJSON_AddItemReferenceToObject(cJSON *object,const char *string,cJSON *item)	{cJSON_AddItemToObject(object,string,create_reference(item));}
+-
+-cJSON *cJSON_DetachItemFromArray(cJSON *array,int which)			{cJSON *c=array->child;while (c && which>0) c=c->next,which--;if (!c) return 0;
+-    if (c->prev)
+-        c->prev->next=c->next;
+-    if (c->next)
+-        c->next->prev=c->prev;
+-    if (c==array->child)
+-        array->child=c->next;
+-    c->prev=c->next=0;return c;}
+-void   cJSON_DeleteItemFromArray(cJSON *array,int which)			{cJSON_Delete(cJSON_DetachItemFromArray(array,which));}
+-cJSON *cJSON_DetachItemFromObject(cJSON *object,const char *string) {int i=0;cJSON *c=object->child;while (c && cJSON_strcasecmp(c->string,string)) i++,c=c->next;if (c) return cJSON_DetachItemFromArray(object,i);return 0;}
+-void   cJSON_DeleteItemFromObject(cJSON *object,const char *string) {cJSON_Delete(cJSON_DetachItemFromObject(object,string));}
+-
+-/* Replace array/object items with new ones. */
+-void   cJSON_ReplaceItemInArray(cJSON *array,int which,cJSON *newitem)		{cJSON *c=array->child;while (c && which>0) c=c->next,which--;if (!c) return;
+-	newitem->next=c->next;newitem->prev=c->prev;if (newitem->next) newitem->next->prev=newitem;
+-	if (c==array->child) array->child=newitem; else newitem->prev->next=newitem;c->next=c->prev=0;cJSON_Delete(c);}
+-void   cJSON_ReplaceItemInObject(cJSON *object,const char *string,cJSON *newitem){int i=0;cJSON *c=object->child;while(c && cJSON_strcasecmp(c->string,string))i++,c=c->next;if(c){newitem->string=cJSON_strdup(string);cJSON_ReplaceItemInArray(object,i,newitem);}}
+-
+-/* Create basic types: */
+-cJSON *cJSON_CreateNull(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_NULL;return item;}
+-cJSON *cJSON_CreateTrue(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_True;return item;}
+-cJSON *cJSON_CreateFalse(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_False;return item;}
+-cJSON *cJSON_CreateBool(int b)					{cJSON *item=cJSON_New_Item();if(item)item->type=b?cJSON_True:cJSON_False;return item;}
+-cJSON *cJSON_CreateNumber(double num)			{cJSON *item=cJSON_New_Item();if(item){item->type=cJSON_Number;item->valuedouble=num;item->valueint=(int)num;}return item;}
+-cJSON *cJSON_CreateString(const char *string)	{cJSON *item=cJSON_New_Item();if(item){item->type=cJSON_String;item->valuestring=cJSON_strdup(string);}return item;}
+-cJSON *cJSON_CreateArray(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_Array;return item;}
+-cJSON *cJSON_CreateObject(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_Object;return item;}
+-
+-/* Create Arrays: */
+-cJSON *cJSON_CreateIntArray(int *numbers,int count)				{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
+-cJSON *cJSON_CreateFloatArray(float *numbers,int count)			{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
+-cJSON *cJSON_CreateDoubleArray(double *numbers,int count)		{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
+-cJSON *cJSON_CreateStringArray(const char **strings,int count)	{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateString(strings[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}
+-
+-/* Duplication */
+-cJSON *cJSON_Duplicate(cJSON *item,int recurse)
+-{
+-	cJSON *newitem,*cptr,*nptr=0,*newchild;
+-	/* Bail on bad ptr */
+-	if (!item) return 0;
+-	/* Create new item */
+-	newitem=cJSON_New_Item();
+-	if (!newitem) return 0;
+-	/* Copy over all vars */
+-	newitem->type=item->type&(~cJSON_IsReference),newitem->valueint=item->valueint,newitem->valuedouble=item->valuedouble;
+-	if (item->valuestring)	{newitem->valuestring=cJSON_strdup(item->valuestring);	if (!newitem->valuestring)	{cJSON_Delete(newitem);return 0;}}
+-	if (item->string)		{newitem->string=cJSON_strdup(item->string);			if (!newitem->string)		{cJSON_Delete(newitem);return 0;}}
+-	/* If non-recursive, then we're done! */
+-	if (!recurse) return newitem;
+-	/* Walk the ->next chain for the child. */
+-	cptr=item->child;
+-	while (cptr)
+-	{
+-		newchild=cJSON_Duplicate(cptr,1);		/* Duplicate (with recurse) each item in the ->next chain */
+-		if (!newchild) {cJSON_Delete(newitem);return 0;}
+-		if (nptr)	{nptr->next=newchild,newchild->prev=nptr;nptr=newchild;}	/* If newitem->child already set, then crosswire ->prev and ->next and move on */
+-		else		{newitem->child=newchild;nptr=newchild;}					/* Set newitem->child and move to it */
+-		cptr=cptr->next;
+-	}
+-	return newitem;
+-}
+diff --git a/modules/cjson/module/src/make.mk b/modules/cjson/module/src/make.mk
+deleted file mode 100644
+index 221bd27658db..000000000000
+--- a/modules/cjson/module/src/make.mk
++++ /dev/null
+@@ -1,22 +0,0 @@
+-################################################################
+-#
+-#        Copyright 2013, Big Switch Networks, Inc. 
+-# 
+-# Licensed under the Eclipse Public License, Version 1.0 (the
+-# "License"); you may not use this file except in compliance
+-# with the License. You may obtain a copy of the License at
+-# 
+-#        http://www.eclipse.org/legal/epl-v10.html
+-# 
+-# Unless required by applicable law or agreed to in writing,
+-# software distributed under the License is distributed on an
+-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+-# either express or implied. See the License for the specific
+-# language governing permissions and limitations under the
+-# License.
+-#
+-################################################################
+-
+-LIBRARY := cjson
+-$(LIBRARY)_SUBDIR := $(dir $(lastword $(MAKEFILE_LIST)))
+-include $(BUILDER)/lib.mk
+diff --git a/modules/cjson_util/.module b/modules/cjson_util/.module
+index c85af98f654e..c65cec16bf91 100644
+--- a/modules/cjson_util/.module
++++ b/modules/cjson_util/.module
+@@ -1,2 +1,2 @@
+ name: cjson_util
+-depends: [ cjson, IOF ]
++depends: [ IOF ]
+diff --git a/modules/sff/utest/Makefile b/modules/sff/utest/Makefile
+index aa5a1d456605..9b57019bfdbc 100644
+--- a/modules/sff/utest/Makefile
++++ b/modules/sff/utest/Makefile
+@@ -6,10 +6,10 @@
+ include ../../../init.mk
+ MODULE := sff_utest
+ TEST_MODULE := sff
+-DEPENDMODULES := AIM BigList cjson_util cjson IOF
++DEPENDMODULES := AIM BigList cjson_util IOF
+ GLOBAL_CFLAGS += -DAIM_CONFIG_INCLUDE_MODULES_INIT=1
+ GLOBAL_CFLAGS += -DAIM_CONFIG_INCLUDE_MAIN=1
+ GLOBAL_CFLAGS += -DSFF_CONFIG_INCLUDE_EXT_CC_CHECK=1
+ GLOBAL_CFLAGS += -DSFF_CONFIG_INCLUDE_DATABASE=1
+-GLOBAL_LINK_LIBS += -lrt -lpthread -lm
++GLOBAL_LINK_LIBS += -lrt -lpthread -lm -lcjson
+ include $(BUILDER)/build-unit-test.mk
+diff --git a/targets/utests/cjson_util/Makefile b/targets/utests/cjson_util/Makefile
+index 4bfd651e3405..becc6f9965e1 100644
+--- a/targets/utests/cjson_util/Makefile
++++ b/targets/utests/cjson_util/Makefile
+@@ -22,8 +22,8 @@
+ include ../../../init.mk
+ MODULE := cjson_util_utest
+ TEST_MODULE := cjson_util
+-DEPENDMODULES := AIM cjson IOF
++DEPENDMODULES := AIM IOF
+ GLOBAL_CFLAGS += -DAIM_CONFIG_INCLUDE_MODULES_INIT=1
+ GLOBAL_CFLAGS += -DAIM_CONFIG_INCLUDE_MAIN=1
+-GLOBAL_LINK_LIBS += -lm -lpthread
++GLOBAL_LINK_LIBS += -lm -lpthread -lcjson
+ include $(BUILDER)/build-unit-test.mk
+-- 
+2.51.0
+

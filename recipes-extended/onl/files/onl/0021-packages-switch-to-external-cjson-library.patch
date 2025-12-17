@@ -1,0 +1,107 @@
+From 67dc30f812b888a7a79f953bc2f1714afb83c82a Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 16 Dec 2025 14:06:38 +0100
+Subject: [PATCH 21/21] packages: switch to external cjson library
+
+ONL is unmaintainted, so stop using the bigcode provided cJSON module
+and switch to a distro provided cJSON library that is maintained.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ packages/base/any/onlp-snmpd/builds/Makefile    | 4 ++--
+ packages/base/any/onlp/builds/onlp/Makefile     | 4 ++--
+ packages/base/any/onlp/builds/platform/onlps.mk | 4 ++--
+ packages/base/any/oom-shim/builds/Makefile      | 4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/packages/base/any/onlp-snmpd/builds/Makefile b/packages/base/any/onlp-snmpd/builds/Makefile
+index c33629f63998..139aa4dae1f3 100644
+--- a/packages/base/any/onlp-snmpd/builds/Makefile
++++ b/packages/base/any/onlp-snmpd/builds/Makefile
+@@ -3,7 +3,7 @@ include $(ONL)/make/any.mk
+ MODULE := onlp-snmpd
+ include $(BUILDER)/standardinit.mk
+ 
+-DEPENDMODULES := onlp_snmp AIM OS snmp_subagent IOF onlplib cjson cjson_util
++DEPENDMODULES := onlp_snmp AIM OS snmp_subagent IOF onlplib cjson_util
+ DEPENDMODULE_HEADERS := onlp
+ 
+ include $(BUILDER)/dependmodules.mk
+@@ -26,7 +26,7 @@ GLOBAL_CFLAGS += -g
+ 
+ $(eval $(call onlpm_find_file,LIBONLP,onlp:$(ARCH),libonlp.so))
+ 
+-GLOBAL_LINK_LIBS += -lpthread $(LIBONLP)
++GLOBAL_LINK_LIBS += -lpthread -lcjson $(LIBONLP)
+ GLOBAL_LINK_LIBS += -Wl,--unresolved-symbols=ignore-in-shared-libs
+ 
+ .DEFAULT_GOAL := onlp-snmpd
+diff --git a/packages/base/any/onlp/builds/onlp/Makefile b/packages/base/any/onlp/builds/onlp/Makefile
+index fb0df874bc76..7c0272612d18 100644
+--- a/packages/base/any/onlp/builds/onlp/Makefile
++++ b/packages/base/any/onlp/builds/onlp/Makefile
+@@ -27,7 +27,7 @@ include $(ONL)/make/any.mk
+ MODULE := libonlp-module
+ include $(BUILDER)/standardinit.mk
+ 
+-DEPENDMODULES := AIM onlplib onlp cjson cjson_util sff IOF timer_wheel OS
++DEPENDMODULES := AIM onlplib onlp cjson_util sff IOF timer_wheel OS
+ 
+ LIBONLP_PLATFORM_DEFAULTS := ../onlp-platform-defaults/$(BUILD_DIR)/bin/libonlp-platform-defaults.so
+ LIBONLP_PLATFORM := ../onlp-platform/$(BUILD_DIR)/bin/libonlp-platform.so
+@@ -48,7 +48,7 @@ GLOBAL_CFLAGS += -DAIM_CONFIG_INCLUDE_PVS_SYSLOG=1
+ GLOBAL_CFLAGS += -DAIM_CONFIG_INCLUDE_DAEMONIZE=1
+ 
+ GLOBAL_CFLAGS += -fPIC
+-GLOBAL_LINK_LIBS += -lpthread $(LIBONLP_PLATFORM) $(LIBONLP_PLATFORM_DEFAULTS)
++GLOBAL_LINK_LIBS += -lpthread -lcjson $(LIBONLP_PLATFORM) $(LIBONLP_PLATFORM_DEFAULTS)
+ 
+ include $(BUILDER)/targets.mk
+ 
+diff --git a/packages/base/any/onlp/builds/platform/onlps.mk b/packages/base/any/onlp/builds/platform/onlps.mk
+index edaf7864704a..5e7ff8b34651 100644
+--- a/packages/base/any/onlp/builds/platform/onlps.mk
++++ b/packages/base/any/onlp/builds/platform/onlps.mk
+@@ -25,7 +25,7 @@ include $(ONL)/packages/base/any/onlp/builds/platform/common.mk
+ MODULE := onlps
+ include $(BUILDER)/standardinit.mk
+ 
+-DEPENDMODULES := $(DEPENDMODULES) AIM IOF onlp onlplib $(PLATFORM_MODULE) $(EXTRA_MODULES) sff cjson cjson_util timer_wheel OS uCli ELS onlp_platform_defaults
++DEPENDMODULES := $(DEPENDMODULES) AIM IOF onlp onlplib $(PLATFORM_MODULE) $(EXTRA_MODULES) sff cjson_util timer_wheel OS uCli ELS onlp_platform_defaults
+ 
+ include $(BUILDER)/dependmodules.mk
+ 
+@@ -38,6 +38,6 @@ GLOBAL_CFLAGS += -DAIM_CONFIG_INCLUDE_MODULES_INIT=1
+ GLOBAL_CFLAGS += -DAIM_CONFIG_INCLUDE_MAIN=1
+ GLOBAL_CFLAGS += -DUCLI_CONFIG_INCLUDE_ELS_LOOP=1
+ GLOBAL_CFLAGS += -DONLP_CONFIG_INCLUDE_UCLI=1
+-GLOBAL_LINK_LIBS += -lpthread -lm -ledit
++GLOBAL_LINK_LIBS += -lpthread -lm -ledit -lcjson
+ 
+ include $(BUILDER)/targets.mk
+diff --git a/packages/base/any/oom-shim/builds/Makefile b/packages/base/any/oom-shim/builds/Makefile
+index c044f478c92e..a7d33bb1e116 100644
+--- a/packages/base/any/oom-shim/builds/Makefile
++++ b/packages/base/any/oom-shim/builds/Makefile
+@@ -27,7 +27,7 @@ include $(ONL)/make/any.mk
+ MODULE := oom_shim
+ include $(BUILDER)/standardinit.mk
+ 
+-DEPENDMODULES := AIM onlplib onlp oom_shim cjson cjson_util sff IOF timer_wheel OS
++DEPENDMODULES := AIM onlplib onlp oom_shim cjson_util sff IOF timer_wheel OS
+ 
+ $(eval $(call onlpm_find_file,LIBONLP, onlp:$(ARCH), libonlp.so))
+ 
+@@ -45,7 +45,7 @@ GLOBAL_CFLAGS += -DONLP_CONFIG_API_LOCK_GLOBAL_SHARED=1
+ GLOBAL_CFLAGS += -DONLP_CONFIG_INCLUDE_SHLOCK_GLOBAL_INIT=1
+ 
+ GLOBAL_CFLAGS += -fPIC
+-GLOBAL_LINK_LIBS += -lpthread $(LIBONLP)
++GLOBAL_LINK_LIBS += -lpthread -lcjson $(LIBONLP)
+ 
+ include $(BUILDER)/targets.mk
+ 
+-- 
+2.51.0
+
