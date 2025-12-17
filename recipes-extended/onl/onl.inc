@@ -27,7 +27,7 @@ inherit systemd python3native module-base kernel-module-split
 SYSTEMD_SERVICE:${PN} = "onlpd.service"
 SYSTEMD_AUTO_ENABLE = "enable"
 
-DEPENDS = "i2c-tools libedit python3-pyyaml-native"
+DEPENDS = "cjson i2c-tools libedit python3-pyyaml-native"
 
 S = "${WORKDIR}/git"
 PV = "1.1+git${SRCPV}"
@@ -181,7 +181,6 @@ do_install() {
     ${D}${includedir}/AIM \
     ${D}${includedir}/BigList \
     ${D}${includedir}/IOF \
-    ${D}${includedir}/cjson \
     ${D}${includedir}/onlp \
     ${D}${includedir}/onlplib \
     ${D}${libdir} \
@@ -197,7 +196,6 @@ do_install() {
   install -m 0644 packages/base/any/onlp/src/onlplib/module/inc/onlplib/*.h ${D}${includedir}/onlplib/
   install -m 0644 sm/bigcode/modules/BigData/BigList/module/inc/BigList/*.h ${D}${includedir}/BigList/
   install -m 0644 sm/bigcode/modules/IOF/module/inc/IOF/*.h ${D}${includedir}/IOF/
-  install -m 0644 sm/bigcode/modules/cjson/module/inc/cjson/*.h ${D}${includedir}/cjson/
   install -m 0644 sm/infra/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
 
   # install base kernel modules
