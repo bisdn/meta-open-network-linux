@@ -1,6 +1,7 @@
 [Unit]
 Description=onlpd platform manager daemon
 After=network.target
+ConditionPathExists=/etc/onl/platform
 
 [Service]
 ExecStart=@BINDIR@/onlpd -M /run/onlpd.pid
