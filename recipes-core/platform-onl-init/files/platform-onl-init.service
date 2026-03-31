@@ -1,6 +1,7 @@
 [Unit]
 Description=Setup ONL platform
 After=systemd-modules-load.service
+ConditionPathExists=/etc/onl/platform
 
 [Service]
 Type=oneshot
