@@ -1,7 +1,7 @@
 From 67dc30f812b888a7a79f953bc2f1714afb83c82a Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 16 Dec 2025 14:06:38 +0100
-Subject: [PATCH 21/21] packages: switch to external cjson library
+Subject: [PATCH 21/22] packages: switch to external cjson library
 
 ONL is unmaintainted, so stop using the bigcode provided cJSON module
 and switch to a distro provided cJSON library that is maintained.

@@ -1,7 +1,7 @@
 From 1b682a5b0f408650a682578676e74d30810ce4dd Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Sun, 9 Feb 2025 16:35:13 +0100
-Subject: [PATCH 18/21] modules: replace strlcpy() with strscpy() for 6.8
+Subject: [PATCH 18/22] modules: replace strlcpy() with strscpy() for 6.8
 
 Replace all occurencies of strlcpy() with strscpy() since strlcpy() was
 removed in Linux 6.8 via the following semantic patch:

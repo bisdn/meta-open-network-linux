@@ -1,0 +1,478 @@
+From ae23b1a14ce69c775ac1454134858945db8f0727 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 31 Mar 2026 17:16:15 +0200
+Subject: [PATCH 22/22] modules: don't use legacy paths for accessing EEPROM
+
+The path /sys/class/i2c-adapter/ was provided by I2C_COMPAT, which was
+dropped in 6.12 with commit 7e722083fcc3 ("i2c: Remove I2C_COMPAT config
+symbol and related code").
+
+This breaks reading out the ONIE EEPROM, so fix up all usages by
+replacing the path with the "modern" one.
+
+Done via the following command
+
+grep -r -l i2c-adapter --include="*.h" packages/platforms | \
+	xargs -n 1 -- sed -i -e \
+		's|/sys/class/i2c-adapter/i2c-[0-9]*|/sys/bus/i2c/devices|g'
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../builds/x86_64_accton_as5822_54x/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as5835_54t/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as5835_54x/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as5912_54x/module/src/platform_lib.h | 2 +-
+ .../x86_64_accton_as5912_54xk/module/src/platform_lib.h       | 2 +-
+ .../builds/x86_64_accton_as5915_18x/module/src/platform_lib.h | 2 +-
+ .../x86_64_accton_as5916_54xm/module/src/platform_lib.h       | 4 ++--
+ .../builds/x86_64_accton_as6712_32x/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as6812_32x/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as7312_54x/module/src/platform_lib.h | 2 +-
+ .../x86_64_accton_as7312_54xs/module/src/platform_lib.h       | 2 +-
+ .../builds/x86_64_accton_as7315_30x/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as7512_32x/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as7712_32x/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as7726_32x/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_as9716_32d/module/src/platform_lib.h | 4 ++--
+ .../builds/x86_64_accton_as9926_24d/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_accton_asxvolt16/module/src/platform_lib.h  | 2 +-
+ .../builds/x86_64_accton_csp9250/module/src/platform_lib.h    | 2 +-
+ .../builds/x86_64_accton_es7632bt3/module/src/platform_lib.h  | 2 +-
+ .../x86_64_accton_wedge100_32x/module/src/platform_lib.h      | 2 +-
+ .../x86_64_accton_wedge100bf_32x/module/src/platform_lib.h    | 2 +-
+ .../x86_64_accton_wedge100bf_65x/module/src/platform_lib.h    | 2 +-
+ .../x86_64_accton_wedge100s_32x/module/src/platform_lib.h     | 2 +-
+ .../builds/x86_64_delta_ag9032v2/module/src/platform_lib.h    | 2 +-
+ .../builds/x86_64_delta_ag9032v2a/module/src/platform_lib.h   | 2 +-
+ .../onlp/builds/x86_64_delta_ag9064/module/src/platform_lib.h | 2 +-
+ .../builds/x86_64_delta_agc5648s/module/src/platform_lib.h    | 2 +-
+ .../builds/x86_64_delta_agc7008s/module/src/platform_lib.h    | 2 +-
+ .../x86_64_delta_agc7646slv1b/module/src/platform_lib.h       | 2 +-
+ .../builds/x86_64_delta_agc7646v1/module/src/platform_lib.h   | 2 +-
+ .../builds/x86_64_delta_agc7648sv1/module/src/platform_lib.h  | 2 +-
+ 32 files changed, 34 insertions(+), 34 deletions(-)
+
+diff --git a/packages/platforms/accton/x86-64/as5822-54x/onlp/builds/x86_64_accton_as5822_54x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as5822-54x/onlp/builds/x86_64_accton_as5822_54x/module/src/platform_lib.h
+index b460d7a0ef0d..f2c72d57d619 100644
+--- a/packages/platforms/accton/x86-64/as5822-54x/onlp/builds/x86_64_accton_as5822_54x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as5822-54x/onlp/builds/x86_64_accton_as5822_54x/module/src/platform_lib.h
+@@ -49,7 +49,7 @@
+ #define FAN_BOARD_PATH	"/sys/devices/platform/as5822_54x_fan/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int onlp_file_write_integer(char *filename, int value);
+ int onlp_file_read_binary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as5835-54t/onlp/builds/x86_64_accton_as5835_54t/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as5835-54t/onlp/builds/x86_64_accton_as5835_54t/module/src/platform_lib.h
+index 6b81768b6823..3ab1aa8673ec 100644
+--- a/packages/platforms/accton/x86-64/as5835-54t/onlp/builds/x86_64_accton_as5835_54t/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as5835-54t/onlp/builds/x86_64_accton_as5835_54t/module/src/platform_lib.h
+@@ -49,7 +49,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/3-0063/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int psu_ym1401_pmbus_info_get(int id, char *node, int *value);
+ int psu_ym1401_pmbus_info_set(int id, char *node, int value);
+diff --git a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.h
+index d49ff7df3175..a42c82d720d3 100644
+--- a/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as5835-54x/onlp/builds/x86_64_accton_as5835_54x/module/src/platform_lib.h
+@@ -49,7 +49,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/3-0063/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int psu_ym1401_pmbus_info_get(int id, char *node, int *value);
+ int psu_ym1401_pmbus_info_set(int id, char *node, int value);
+diff --git a/packages/platforms/accton/x86-64/as5912-54x/onlp/builds/x86_64_accton_as5912_54x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as5912-54x/onlp/builds/x86_64_accton_as5912_54x/module/src/platform_lib.h
+index 35f5cb532eea..9b184ddfac23 100755
+--- a/packages/platforms/accton/x86-64/as5912-54x/onlp/builds/x86_64_accton_as5912_54x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as5912-54x/onlp/builds/x86_64_accton_as5912_54x/module/src/platform_lib.h
+@@ -51,7 +51,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/2-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int onlp_file_write_integer(char *filename, int value);
+ int onlp_file_read_binary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as5912-54xk/onlp/builds/x86_64_accton_as5912_54xk/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as5912-54xk/onlp/builds/x86_64_accton_as5912_54xk/module/src/platform_lib.h
+index 4470fabaf368..800c1cb48cba 100644
+--- a/packages/platforms/accton/x86-64/as5912-54xk/onlp/builds/x86_64_accton_as5912_54xk/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as5912-54xk/onlp/builds/x86_64_accton_as5912_54xk/module/src/platform_lib.h
+@@ -51,7 +51,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/2-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ enum onlp_thermal_id
+ {
+diff --git a/packages/platforms/accton/x86-64/as5915-18x/onlp/builds/x86_64_accton_as5915_18x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as5915-18x/onlp/builds/x86_64_accton_as5915_18x/module/src/platform_lib.h
+index cfd54b86ab0c..0a1e9f76d096 100644
+--- a/packages/platforms/accton/x86-64/as5915-18x/onlp/builds/x86_64_accton_as5915_18x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as5915-18x/onlp/builds/x86_64_accton_as5915_18x/module/src/platform_lib.h
+@@ -46,7 +46,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/32-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0056/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0056/eeprom"
+ 
+ enum onlp_thermal_id
+ {
+diff --git a/packages/platforms/accton/x86-64/as5916-54xm/onlp/builds/x86_64_accton_as5916_54xm/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as5916-54xm/onlp/builds/x86_64_accton_as5916_54xm/module/src/platform_lib.h
+index 626e2f63ad69..9977fc316e16 100755
+--- a/packages/platforms/accton/x86-64/as5916-54xm/onlp/builds/x86_64_accton_as5916_54xm/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as5916-54xm/onlp/builds/x86_64_accton_as5916_54xm/module/src/platform_lib.h
+@@ -86,8 +86,8 @@ enum onlp_thermal_id
+ #define DEBUG_MODE 0
+ 
+ /*Old board's eeprom i2c-addr is 0x56, new board eeprom i2c-addr is 0x57*/
+-#define IDPROM_PATH_1 "/sys/class/i2c-adapter/i2c-0/0-0056/eeprom"
+-#define IDPROM_PATH_2 "/sys/class/i2c-adapter/i2c-0/0-0057/eeprom"
++#define IDPROM_PATH_1 "/sys/bus/i2c/devices/0-0056/eeprom"
++#define IDPROM_PATH_2 "/sys/bus/i2c/devices/0-0057/eeprom"
+ #if (DEBUG_MODE == 1)
+ 	#define DEBUG_PRINT(fmt, args...)                                        \
+ 		printf("%s:%s[%d]: " fmt "\r\n", __FILE__, __FUNCTION__, __LINE__, ##args)
+diff --git a/packages/platforms/accton/x86-64/as6712-32x/onlp/builds/x86_64_accton_as6712_32x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as6712-32x/onlp/builds/x86_64_accton_as6712_32x/module/src/platform_lib.h
+index f2bd0fead4ec..b81dacd9c9bf 100644
+--- a/packages/platforms/accton/x86-64/as6712-32x/onlp/builds/x86_64_accton_as6712_32x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as6712-32x/onlp/builds/x86_64_accton_as6712_32x/module/src/platform_lib.h
+@@ -55,7 +55,7 @@
+ #define PSU1_AC_3YPOWER_EEPROM_NODE(node) PSU1_AC_3YPOWER_EEPROM_PREFIX#node
+ #define PSU2_AC_3YPOWER_EEPROM_NODE(node) PSU2_AC_3YPOWER_EEPROM_PREFIX#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int deviceNodeWriteInt(char *filename, int value, int data_len);
+ int deviceNodeReadBinary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as6812-32x/onlp/builds/x86_64_accton_as6812_32x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as6812-32x/onlp/builds/x86_64_accton_as6812_32x/module/src/platform_lib.h
+index 7cc3f21a067a..1cb310db933c 100755
+--- a/packages/platforms/accton/x86-64/as6812-32x/onlp/builds/x86_64_accton_as6812_32x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as6812-32x/onlp/builds/x86_64_accton_as6812_32x/module/src/platform_lib.h
+@@ -55,7 +55,7 @@
+ #define PSU1_AC_3YPOWER_EEPROM_NODE(node) PSU1_AC_3YPOWER_EEPROM_PREFIX#node
+ #define PSU2_AC_3YPOWER_EEPROM_NODE(node) PSU2_AC_3YPOWER_EEPROM_PREFIX#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int deviceNodeWriteInt(char *filename, int value, int data_len);
+ int deviceNodeReadBinary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as7312-54x/onlp/builds/x86_64_accton_as7312_54x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as7312-54x/onlp/builds/x86_64_accton_as7312_54x/module/src/platform_lib.h
+index 08eaf810c7c2..2e027243435e 100644
+--- a/packages/platforms/accton/x86-64/as7312-54x/onlp/builds/x86_64_accton_as7312_54x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as7312-54x/onlp/builds/x86_64_accton_as7312_54x/module/src/platform_lib.h
+@@ -55,7 +55,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/2-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int onlp_file_write_integer(char *filename, int value);
+ int onlp_file_read_binary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as7312-54xs/onlp/builds/x86_64_accton_as7312_54xs/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as7312-54xs/onlp/builds/x86_64_accton_as7312_54xs/module/src/platform_lib.h
+index 8ab365ae02b9..15f2543a9bca 100755
+--- a/packages/platforms/accton/x86-64/as7312-54xs/onlp/builds/x86_64_accton_as7312_54xs/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as7312-54xs/onlp/builds/x86_64_accton_as7312_54xs/module/src/platform_lib.h
+@@ -55,7 +55,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/2-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int onlp_file_write_integer(char *filename, int value);
+ int onlp_file_read_binary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as7315-30x/onlp/builds/x86_64_accton_as7315_30x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as7315-30x/onlp/builds/x86_64_accton_as7315_30x/module/src/platform_lib.h
+index 2b1cdb96954a..845081ee87ff 100644
+--- a/packages/platforms/accton/x86-64/as7315-30x/onlp/builds/x86_64_accton_as7315_30x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as7315-30x/onlp/builds/x86_64_accton_as7315_30x/module/src/platform_lib.h
+@@ -45,7 +45,7 @@
+ #define FAN_BOARD_PATH "/sys/bus/i2c/devices/41-0066/"
+ #define FAN_EEPROM_PATH "/sys/bus/i2c/devices/41-0050/"
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0056/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0056/eeprom"
+ 
+ enum onlp_thermal_id {
+     THERMAL_RESERVED = 0,
+diff --git a/packages/platforms/accton/x86-64/as7512-32x/onlp/builds/x86_64_accton_as7512_32x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as7512-32x/onlp/builds/x86_64_accton_as7512_32x/module/src/platform_lib.h
+index 70912f80a9f0..8f18c6eae266 100644
+--- a/packages/platforms/accton/x86-64/as7512-32x/onlp/builds/x86_64_accton_as7512_32x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as7512-32x/onlp/builds/x86_64_accton_as7512_32x/module/src/platform_lib.h
+@@ -46,7 +46,7 @@
+ #define PSU1_AC_HWMON_NODE(node) PSU1_AC_HWMON_PREFIX#node
+ #define PSU2_AC_HWMON_NODE(node) PSU2_AC_HWMON_PREFIX#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int deviceNodeWriteInt(char *filename, int value, int data_len);
+ int deviceNodeReadBinary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as7712-32x/onlp/builds/x86_64_accton_as7712_32x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as7712-32x/onlp/builds/x86_64_accton_as7712_32x/module/src/platform_lib.h
+index a7e06c87f381..46e80cf78522 100644
+--- a/packages/platforms/accton/x86-64/as7712-32x/onlp/builds/x86_64_accton_as7712_32x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as7712-32x/onlp/builds/x86_64_accton_as7712_32x/module/src/platform_lib.h
+@@ -48,7 +48,7 @@
+ #define PSU1_AC_HWMON_NODE(node) PSU1_AC_HWMON_PREFIX#node
+ #define PSU2_AC_HWMON_NODE(node) PSU2_AC_HWMON_PREFIX#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int deviceNodeWriteInt(char *filename, int value, int data_len);
+ int deviceNodeReadBinary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/platform_lib.h
+index 82341b63a35a..fab4d7aa24a0 100755
+--- a/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/platform_lib.h
+@@ -63,7 +63,7 @@
+ #define FAN_BOARD_CPLD_WDT_DISABLE      0x0
+ 
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-0/0-0056/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/0-0056/eeprom"
+ 
+ int onlp_file_write_integer(char *filename, int value);
+ int onlp_file_read_binary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as9716_32d/onlp/builds/x86_64_accton_as9716_32d/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as9716_32d/onlp/builds/x86_64_accton_as9716_32d/module/src/platform_lib.h
+index 3d0714695639..e25ebbc39678 100755
+--- a/packages/platforms/accton/x86-64/as9716_32d/onlp/builds/x86_64_accton_as9716_32d/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as9716_32d/onlp/builds/x86_64_accton_as9716_32d/module/src/platform_lib.h
+@@ -62,8 +62,8 @@
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+ /*Old board's eeprom i2c-addr is 0x56, new board eeprom i2c-addr is 0x57*/
+-#define IDPROM_PATH_1 "/sys/class/i2c-adapter/i2c-0/0-0057/eeprom"
+-#define IDPROM_PATH_2 "/sys/class/i2c-adapter/i2c-0/0-0056/eeprom"
++#define IDPROM_PATH_1 "/sys/bus/i2c/devices/0-0057/eeprom"
++#define IDPROM_PATH_2 "/sys/bus/i2c/devices/0-0056/eeprom"
+ 
+ int onlp_file_write_integer(char *filename, int value);
+ int onlp_file_read_binary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/as9926-24d/onlp/builds/x86_64_accton_as9926_24d/module/src/platform_lib.h b/packages/platforms/accton/x86-64/as9926-24d/onlp/builds/x86_64_accton_as9926_24d/module/src/platform_lib.h
+index 69613cb18a19..657b9bd631c5 100644
+--- a/packages/platforms/accton/x86-64/as9926-24d/onlp/builds/x86_64_accton_as9926_24d/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/as9926-24d/onlp/builds/x86_64_accton_as9926_24d/module/src/platform_lib.h
+@@ -49,7 +49,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/17-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-23/23-0055/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/23-0055/eeprom"
+ 
+ int psu_acbel_pmbus_info_get(int id, char *node, int *value);
+ int psu_acbel_pmbus_info_set(int id, char *node, int value);
+diff --git a/packages/platforms/accton/x86-64/asxvolt16/onlp/builds/x86_64_accton_asxvolt16/module/src/platform_lib.h b/packages/platforms/accton/x86-64/asxvolt16/onlp/builds/x86_64_accton_asxvolt16/module/src/platform_lib.h
+index 1b039106712e..63774e4175af 100755
+--- a/packages/platforms/accton/x86-64/asxvolt16/onlp/builds/x86_64_accton_asxvolt16/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/asxvolt16/onlp/builds/x86_64_accton_asxvolt16/module/src/platform_lib.h
+@@ -51,7 +51,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/9-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-0/0-0056/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/0-0056/eeprom"
+ 
+ typedef enum psu_type {
+     PSU_TYPE_UNKNOWN,
+diff --git a/packages/platforms/accton/x86-64/csp9250/onlp/builds/x86_64_accton_csp9250/module/src/platform_lib.h b/packages/platforms/accton/x86-64/csp9250/onlp/builds/x86_64_accton_csp9250/module/src/platform_lib.h
+index a4be53484f08..fa3da40f5a7f 100755
+--- a/packages/platforms/accton/x86-64/csp9250/onlp/builds/x86_64_accton_csp9250/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/csp9250/onlp/builds/x86_64_accton_csp9250/module/src/platform_lib.h
+@@ -55,7 +55,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/2-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int onlp_file_write_integer(char *filename, int value);
+ int onlp_file_read_binary(char *filename, char *buffer, int buf_size, int data_len);
+diff --git a/packages/platforms/accton/x86-64/es7632bt3/onlp/builds/x86_64_accton_es7632bt3/module/src/platform_lib.h b/packages/platforms/accton/x86-64/es7632bt3/onlp/builds/x86_64_accton_es7632bt3/module/src/platform_lib.h
+index ccc18c469e66..066eac160591 100644
+--- a/packages/platforms/accton/x86-64/es7632bt3/onlp/builds/x86_64_accton_es7632bt3/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/es7632bt3/onlp/builds/x86_64_accton_es7632bt3/module/src/platform_lib.h
+@@ -56,7 +56,7 @@
+ #define FAN_BOARD_PATH	"/sys/bus/i2c/devices/55-0066/"
+ #define FAN_NODE(node)	FAN_BOARD_PATH#node
+ 
+-//#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0057/eeprom"
++//#define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ #define IDPROM_PATH "/sys/bus/i2c/devices/1-0057/eeprom"
+ 
+ int psu_ym2651y_pmbus_info_get(int id, char *node, int *value);
+diff --git a/packages/platforms/accton/x86-64/wedge100-32x/onlp/builds/x86_64_accton_wedge100_32x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/wedge100-32x/onlp/builds/x86_64_accton_wedge100_32x/module/src/platform_lib.h
+index 315933744da0..2645c1af2239 100644
+--- a/packages/platforms/accton/x86-64/wedge100-32x/onlp/builds/x86_64_accton_wedge100_32x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/wedge100-32x/onlp/builds/x86_64_accton_wedge100_32x/module/src/platform_lib.h
+@@ -42,7 +42,7 @@
+ #define CHASSIS_LED_COUNT     2
+ #define CHASSIS_PSU_COUNT     2
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-39/39-0050/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/39-0050/eeprom"
+ 
+ enum onlp_thermal_id
+ {
+diff --git a/packages/platforms/accton/x86-64/wedge100bf-32x/onlp/builds/x86_64_accton_wedge100bf_32x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/wedge100bf-32x/onlp/builds/x86_64_accton_wedge100bf_32x/module/src/platform_lib.h
+index 4eb6906abafb..9cc64cc319ef 100644
+--- a/packages/platforms/accton/x86-64/wedge100bf-32x/onlp/builds/x86_64_accton_wedge100bf_32x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/wedge100bf-32x/onlp/builds/x86_64_accton_wedge100bf_32x/module/src/platform_lib.h
+@@ -42,7 +42,7 @@
+ #define CHASSIS_LED_COUNT     2
+ #define CHASSIS_PSU_COUNT     2
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-40/40-0050/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/40-0050/eeprom"
+ 
+ enum onlp_thermal_id
+ {
+diff --git a/packages/platforms/accton/x86-64/wedge100bf-65x/onlp/builds/x86_64_accton_wedge100bf_65x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/wedge100bf-65x/onlp/builds/x86_64_accton_wedge100bf_65x/module/src/platform_lib.h
+index 5b119b89560c..da719035f607 100644
+--- a/packages/platforms/accton/x86-64/wedge100bf-65x/onlp/builds/x86_64_accton_wedge100bf_65x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/wedge100bf-65x/onlp/builds/x86_64_accton_wedge100bf_65x/module/src/platform_lib.h
+@@ -42,7 +42,7 @@
+ #define CHASSIS_LED_COUNT     2
+ #define CHASSIS_PSU_COUNT     2
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-41/41-0050/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/41-0050/eeprom"
+ 
+ enum onlp_thermal_id
+ {
+diff --git a/packages/platforms/accton/x86-64/wedge100s-32x/onlp/builds/x86_64_accton_wedge100s_32x/module/src/platform_lib.h b/packages/platforms/accton/x86-64/wedge100s-32x/onlp/builds/x86_64_accton_wedge100s_32x/module/src/platform_lib.h
+index e73383786a88..353841747315 100644
+--- a/packages/platforms/accton/x86-64/wedge100s-32x/onlp/builds/x86_64_accton_wedge100s_32x/module/src/platform_lib.h
++++ b/packages/platforms/accton/x86-64/wedge100s-32x/onlp/builds/x86_64_accton_wedge100s_32x/module/src/platform_lib.h
+@@ -42,7 +42,7 @@
+ #define CHASSIS_LED_COUNT     2
+ #define CHASSIS_PSU_COUNT     2
+ 
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-40/40-0050/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/40-0050/eeprom"
+ 
+ enum onlp_thermal_id
+ {
+diff --git a/packages/platforms/delta/x86-64/ag9032v2/onlp/builds/x86_64_delta_ag9032v2/module/src/platform_lib.h b/packages/platforms/delta/x86-64/ag9032v2/onlp/builds/x86_64_delta_ag9032v2/module/src/platform_lib.h
+index dc606f907fcc..4e68b6a9c3bf 100644
+--- a/packages/platforms/delta/x86-64/ag9032v2/onlp/builds/x86_64_delta_ag9032v2/module/src/platform_lib.h
++++ b/packages/platforms/delta/x86-64/ag9032v2/onlp/builds/x86_64_delta_ag9032v2/module/src/platform_lib.h
+@@ -47,7 +47,7 @@ typedef unsigned int    UINT4;
+ #define PSU_NUM_LENGTH    (15)
+ #define UPDATE_THRESHOLD  (2) //second
+ #define MAX_FAN_SPEED     (23000)
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0053/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0053/eeprom"
+ 
+ /* REG define*/
+ #define SWPLD_1_ADDR         (0x6A)
+diff --git a/packages/platforms/delta/x86-64/ag9032v2a/onlp/builds/x86_64_delta_ag9032v2a/module/src/platform_lib.h b/packages/platforms/delta/x86-64/ag9032v2a/onlp/builds/x86_64_delta_ag9032v2a/module/src/platform_lib.h
+index b03e35fe48c2..78015ec895d3 100755
+--- a/packages/platforms/delta/x86-64/ag9032v2a/onlp/builds/x86_64_delta_ag9032v2a/module/src/platform_lib.h
++++ b/packages/platforms/delta/x86-64/ag9032v2a/onlp/builds/x86_64_delta_ag9032v2a/module/src/platform_lib.h
+@@ -57,7 +57,7 @@ typedef unsigned int    UINT4;
+ #define PSU_NODE_MAX_PATH_LEN        (64)
+ 
+ #define CPU_CPLD_VERSION "/sys/devices/platform/delta-ag9032v2a-cpld.0/cpld_ver"
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-2/2-0053/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/2-0053/eeprom"
+ #define SWPLD1_PATH    "/sys/devices/platform/delta-ag9032v2a-swpld1.0"
+ #define SWPLD2_PATH "/sys/devices/platform/delta-ag9032v2a-swpld2.0"
+ #define FAN1_FRONT "/sys/bus/i2c/device/i2c-26/26-002c/fan1_input"
+diff --git a/packages/platforms/delta/x86-64/ag9064/onlp/builds/x86_64_delta_ag9064/module/src/platform_lib.h b/packages/platforms/delta/x86-64/ag9064/onlp/builds/x86_64_delta_ag9064/module/src/platform_lib.h
+index 05c5a3c1e717..dd08beef6c0b 100755
+--- a/packages/platforms/delta/x86-64/ag9064/onlp/builds/x86_64_delta_ag9064/module/src/platform_lib.h
++++ b/packages/platforms/delta/x86-64/ag9064/onlp/builds/x86_64_delta_ag9064/module/src/platform_lib.h
+@@ -73,7 +73,7 @@ typedef unsigned int UINT4;
+ #define MAX_REAR_FAN_SPEED        20500
+ 
+ #define CPU_CPLD_VERSION "/sys/devices/platform/delta-ag9064-cpld.0/cpld_ver"
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-0/0-0056/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/0-0056/eeprom"
+ #define PORT_EEPROM_FORMAT "/sys/bus/i2c/devices/%d-0050/eeprom"
+ #define CHECK_TIME_FILE "/tmp/check_time_file"
+ #define BMC_INFO_TABLE "/tmp/bmc_info"
+diff --git a/packages/platforms/delta/x86-64/agc5648s/onlp/builds/x86_64_delta_agc5648s/module/src/platform_lib.h b/packages/platforms/delta/x86-64/agc5648s/onlp/builds/x86_64_delta_agc5648s/module/src/platform_lib.h
+index 63b5c4f70a34..252f81d17767 100755
+--- a/packages/platforms/delta/x86-64/agc5648s/onlp/builds/x86_64_delta_agc5648s/module/src/platform_lib.h
++++ b/packages/platforms/delta/x86-64/agc5648s/onlp/builds/x86_64_delta_agc5648s/module/src/platform_lib.h
+@@ -27,7 +27,7 @@
+ 
+ #include "x86_64_delta_agc5648s_log.h"
+ 
+-#define IDPROM_PATH                     "/sys/class/i2c-adapter/i2c-0/0-0053/eeprom"
++#define IDPROM_PATH                     "/sys/bus/i2c/devices/0-0053/eeprom"
+ #define OS_MAX_MSG_SIZE                 100
+ 
+ #define I2C_BMC_BUS_1                   0x01
+diff --git a/packages/platforms/delta/x86-64/agc7008s/onlp/builds/x86_64_delta_agc7008s/module/src/platform_lib.h b/packages/platforms/delta/x86-64/agc7008s/onlp/builds/x86_64_delta_agc7008s/module/src/platform_lib.h
+index d5945d669c50..a19fde0591fc 100755
+--- a/packages/platforms/delta/x86-64/agc7008s/onlp/builds/x86_64_delta_agc7008s/module/src/platform_lib.h
++++ b/packages/platforms/delta/x86-64/agc7008s/onlp/builds/x86_64_delta_agc7008s/module/src/platform_lib.h
+@@ -73,7 +73,7 @@ typedef unsigned int UINT4;
+ #define MAX_REAR_FAN_SPEED        20500
+ 
+ #define CPU_CPLD_VERSION "/sys/devices/platform/delta-agc7008s-cpld.0/cpu_cpld_ver"
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-0/0-0056/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/0-0056/eeprom"
+ #define PORT_EEPROM_FORMAT "/sys/bus/i2c/devices/%d-0050/eeprom"
+ #define CHECK_TIME_FILE "/tmp/check_time_file"
+ #define BMC_INFO_TABLE "/tmp/bmc_info"
+diff --git a/packages/platforms/delta/x86-64/agc7646slv1b/onlp/builds/x86_64_delta_agc7646slv1b/module/src/platform_lib.h b/packages/platforms/delta/x86-64/agc7646slv1b/onlp/builds/x86_64_delta_agc7646slv1b/module/src/platform_lib.h
+index dde6742533b5..e49790a666c1 100755
+--- a/packages/platforms/delta/x86-64/agc7646slv1b/onlp/builds/x86_64_delta_agc7646slv1b/module/src/platform_lib.h
++++ b/packages/platforms/delta/x86-64/agc7646slv1b/onlp/builds/x86_64_delta_agc7646slv1b/module/src/platform_lib.h
+@@ -59,7 +59,7 @@ typedef unsigned int    UINT4;
+ #define SWPLD_NUM                    (3)
+ 
+ #define CPU_CPLD_VERSION "/sys/devices/platform/delta-agc7646slv1b-cpld.0/cpuld_ver"
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0053/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0053/eeprom"
+ #define PORT_EEPROM_FORMAT "/sys/bus/i2c/devices/%d-0050/eeprom"
+ #define CHECK_TIME_FILE "/tmp/check_time_file"
+ #define BMC_INFO_TABLE "/tmp/bmc_info"
+diff --git a/packages/platforms/delta/x86-64/agc7646v1/onlp/builds/x86_64_delta_agc7646v1/module/src/platform_lib.h b/packages/platforms/delta/x86-64/agc7646v1/onlp/builds/x86_64_delta_agc7646v1/module/src/platform_lib.h
+index 0c6b82b22766..564f577f0dc5 100755
+--- a/packages/platforms/delta/x86-64/agc7646v1/onlp/builds/x86_64_delta_agc7646v1/module/src/platform_lib.h
++++ b/packages/platforms/delta/x86-64/agc7646v1/onlp/builds/x86_64_delta_agc7646v1/module/src/platform_lib.h
+@@ -69,7 +69,7 @@ typedef unsigned int    UINT4;
+ #define SWPLD_NUM                    (3)
+ 
+ #define CPU_CPLD_VERSION "/sys/devices/platform/delta-agc7646v1-cpld.0/cpuld_ver"
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0053/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0053/eeprom"
+ #define PORT_EEPROM_FORMAT "/sys/bus/i2c/devices/%d-0050/eeprom"
+ #define CHECK_TIME_FILE "/tmp/check_time_file"
+ #define BMC_INFO_TABLE "/tmp/bmc_info"
+diff --git a/packages/platforms/delta/x86-64/agc7648sv1/onlp/builds/x86_64_delta_agc7648sv1/module/src/platform_lib.h b/packages/platforms/delta/x86-64/agc7648sv1/onlp/builds/x86_64_delta_agc7648sv1/module/src/platform_lib.h
+index 8849151d5949..e423e2f8b37a 100755
+--- a/packages/platforms/delta/x86-64/agc7648sv1/onlp/builds/x86_64_delta_agc7648sv1/module/src/platform_lib.h
++++ b/packages/platforms/delta/x86-64/agc7648sv1/onlp/builds/x86_64_delta_agc7648sv1/module/src/platform_lib.h
+@@ -56,7 +56,7 @@ typedef unsigned int    UINT4;
+ #define DEV_NUM                      (32)
+ 
+ #define CPU_CPLD_VERSION "/sys/devices/platform/delta-agc7648sv1-cpld.0/cpuld_ver"
+-#define IDPROM_PATH "/sys/class/i2c-adapter/i2c-1/1-0053/eeprom"
++#define IDPROM_PATH "/sys/bus/i2c/devices/1-0053/eeprom"
+ #define PORT_EEPROM_FORMAT      "/sys/bus/i2c/devices/%d-0050/eeprom"
+ #define CHECK_TIME_FILE "/tmp/check_time_file"
+ #define BMC_INFO_TABLE "/tmp/bmc_info"
+-- 
+2.53.0
+
