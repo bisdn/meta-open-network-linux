@@ -1,7 +1,7 @@
 From 851111373c635111686703a5355760287425ca8e Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Tue, 18 Feb 2025 21:32:39 +0100
-Subject: [PATCH 19/21] modules: update i2c_mux_add_adapter() usage for 6.10
+Subject: [PATCH 19/22] modules: update i2c_mux_add_adapter() usage for 6.10
 
 Update i2c_mux_add_adapter() usage for 6.10 which lost its last
 paramter.
