@@ -1,0 +1,36 @@
+From f327da52a68c60ba616358c111785bac033c9f0f Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 2 Apr 2026 14:55:55 +0200
+Subject: [PATCH 2/2] sff: add missing include to cJSON.h
+
+dom.h uses cJSON defines, but does not include it iself. Add an include
+to ensure all required headers files are included.
+
+Fixes the following build issue:
+
+| In file included from ../../../../../../sm/bigcode/modules/sff/module/src/dom.c:13:
+| ../../../../../../sm/bigcode/modules/sff/module/inc/sff/dom.h:128:47: error: unknown type name 'cJSON'
+|   128 | int sff_dom_info_to_json(sff_dom_info_t* sdi, cJSON** cjp);
+|       |                                               ^~~~~
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2023-11-16]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ modules/sff/module/inc/sff/dom.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/modules/sff/module/inc/sff/dom.h b/modules/sff/module/inc/sff/dom.h
+index a6cc60507cb2..ffa9bb1ade41 100644
+--- a/modules/sff/module/inc/sff/dom.h
++++ b/modules/sff/module/inc/sff/dom.h
+@@ -25,6 +25,7 @@
+ #ifndef __SFF_DOM_H__
+ #define __SFF_DOM_H__
+ 
++#include <cjson/cJSON.h>
+ #include <sff/sff.h>
+ 
+ #define SFF_DOM_CHANNEL_COUNT_MAX 4
+-- 
+2.53.0
+

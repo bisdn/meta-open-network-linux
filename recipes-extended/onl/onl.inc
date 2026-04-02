@@ -183,6 +183,7 @@ do_install() {
     ${D}${includedir}/IOF \
     ${D}${includedir}/onlp \
     ${D}${includedir}/onlplib \
+    ${D}${includedir}/sff \
     ${D}${libdir} \
     ${D}${nonarch_base_libdir}/modules
 
@@ -196,6 +197,7 @@ do_install() {
   install -m 0644 packages/base/any/onlp/src/onlplib/module/inc/onlplib/*.h ${D}${includedir}/onlplib/
   install -m 0644 sm/bigcode/modules/BigData/BigList/module/inc/BigList/*.h ${D}${includedir}/BigList/
   install -m 0644 sm/bigcode/modules/IOF/module/inc/IOF/*.h ${D}${includedir}/IOF/
+  install -m 0644 sm/bigcode/modules/sff/module/inc/sff/*.h ${D}${includedir}/sff/
   install -m 0644 sm/infra/modules/AIM/module/inc/AIM/*.h ${D}${includedir}/AIM/
 
   # install base kernel modules

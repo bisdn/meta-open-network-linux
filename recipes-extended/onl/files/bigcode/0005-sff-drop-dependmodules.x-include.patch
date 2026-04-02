@@ -1,0 +1,31 @@
+From 5c005262a3f64b89bdfe2571beaf0c2951527c96 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 2 Apr 2026 14:47:57 +0200
+Subject: [PATCH 1/2] sff: drop dependmodules.x include
+
+dependmodules.x isn't available outside of the infra build system, so
+drop the include to allow sff.h to be included by external programs and
+link against it.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2023-11-16]
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ modules/sff/module/inc/sff/sff.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/modules/sff/module/inc/sff/sff.h b/modules/sff/module/inc/sff/sff.h
+index 87b041be8f59..1d2f01daae06 100644
+--- a/modules/sff/module/inc/sff/sff.h
++++ b/modules/sff/module/inc/sff/sff.h
+@@ -28,8 +28,6 @@
+ #include <sff/sff_config.h>
+ #include <AIM/aim_pvs.h>
+ 
+-#include <dependmodules.x>
+-
+ /* <auto.start.enum(tag:sff).header> */
+ /** sff_media_type */
+ typedef enum sff_media_type_e {
+-- 
+2.53.0
+
