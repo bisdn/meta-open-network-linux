@@ -96,6 +96,9 @@ FILES:${PN} = " \
 # - "broken" - does not build (mostly as "known broken" list)
 PACKAGECONFIG ??= ""
 
+PACKAGECONFIG[unsupported] = ""
+PACKAGECONFIG[broken] = ""
+
 ONL_PLATFORMS_BUILD = " \
     ${ONL_PLATFORMS_SUPPORTED} \
     ${@bb.utils.contains('PACKAGECONFIG', 'unsupported', '${ONL_PLATFORMS_UNSUPPORTED}', '', d)} \
