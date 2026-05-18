@@ -17,7 +17,7 @@ SRCREV_machine ?= "3b9f64db049687c0d38b4b3ef2f297f0642179af"
 SRCREV_meta ?= "7d4cafa710da4e27a86cb015e50d91cf458af06f"
 
 SRC_URI += "\
-    git://git.yoctoproject.org/yocto-kernel-cache;type=kmeta;name=meta;branch=yocto-6.6;destsuffix=kernel-meta \
+    git://git.yoctoproject.org/yocto-kernel-cache;protocol=https;type=kmeta;name=meta;branch=yocto-6.6;destsuffix=kernel-meta \
     file://bisdn-kmeta;type=kmeta;name=bisdn-kmeta;destsuffix=bisdn-kmeta \
 "
 
