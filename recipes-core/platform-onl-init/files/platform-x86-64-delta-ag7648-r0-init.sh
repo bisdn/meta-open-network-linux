@@ -56,4 +56,15 @@ wait_for_file /sys/bus/i2c/devices/i2c-0
 modprobe i2c-ismt
 
 wait_for_file /sys/bus/i2c/devices/0-0069 && set_clocksouce
+
+# initialize SFP devices
+for port in {1..48}; do
+	add_port optoe2 $port $((port + 9))
+done
+
+# initialize QSFP devices
+for port in {49..54}; do
+	add_port optoe1 $port $((port + 9))
+done
+
 wait_for_file /sys/bus/i2c/devices/i2c-2 && enable_tx && enable_qsfp

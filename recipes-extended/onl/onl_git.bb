@@ -85,6 +85,8 @@ SRC_URI += " \
            file://delta-ag7648/0013-delta-ag7648-prevent-potential-deadlock-on-probe.patch \
            file://delta-ag7648/0014-delta-ag7648-update-i2c_mux_add_adapter-usage-for-6..patch \
            file://delta-ag7648/0015-delta-ag7648-update-platform_drivers-with-6.11-compa.patch \
+           file://delta-ag7648/0016-delta-ag7648-convert-to-optoe-driver.patch \
+           file://delta-ag7648/0017-delta-ag7648-fix-reading-DOM-EEPROM.patch \
 "
 
 FILES:${PN} = " \

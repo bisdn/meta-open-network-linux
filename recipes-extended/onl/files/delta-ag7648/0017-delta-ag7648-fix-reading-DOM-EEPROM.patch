@@ -1,0 +1,104 @@
+From b14e5d34bb710be22ddb1454c2a429a0bfaf82d7 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 22 May 2026 15:56:48 +0200
+Subject: [PATCH 2/2] delta-ag7648: fix reading DOM EEPROM
+
+Curently delta-ag7648 just returns the EEPROM data when accessing the
+DOM data. This is wrong, as the DOM data is actually the EEPROM from I2C
+address A2, not A0.
+
+Now that we use the optoe driver, we can easily fix this, as this is
+exposed by it as EEPROM offset 256, so make this a read from there.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86_64_delta_ag7648/module/src/sfpi.c     | 38 +++++++++++++------
+ 1 file changed, 27 insertions(+), 11 deletions(-)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c b/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
+index 9ee41d4996d4..f23f244ac99c 100755
+--- a/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
++++ b/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
+@@ -303,8 +303,8 @@ onlp_sfpi_rx_los_bitmap_get(onlp_sfp_bitmap_t* dst)
+ 
+ #define PORT_EEPROM_FORMAT "/sys/bus/i2c/devices/%d-0050/eeprom"
+ 
+-int
+-onlp_sfpi_eeprom_read(int port, uint8_t data[256])
++static int
++ag7648_eeprom_read(int port, int offset, int len, uint8_t *data)
+ {
+     /*
+      * Read the SFP eeprom into data[]
+@@ -313,30 +313,41 @@ onlp_sfpi_eeprom_read(int port, uint8_t data[256])
+      * Return OK if eeprom is read
+      */
+ 
++    FILE* fp;
++    char file[64] = {0};
+     int size = 0;
+ 
+-    memset(data, 0, 256);
++    memset(data, 0, len);
+ 
+     if (port < SFP_PLUS_MIN_PORT || port > QSFP_MAX_PORT)
+     {
+         AIM_LOG_ERROR("port %d is not invalid\r\n", port);
+         return ONLP_STATUS_E_INVALID;
+     }
++
+     if (onlp_sfpi_is_present(port) <= 0)
+     {
+         AIM_LOG_WARN("port %d is note present or error\r\n", port);
+         return ONLP_STATUS_E_MISSING;
+     }
+ 
+-    if (onlp_file_read(data, 256, &size, PORT_EEPROM_FORMAT, gPortCtrl[port - 1].i2cbus) != ONLP_STATUS_OK)
+-    {
+-        AIM_LOG_ERROR("Unable to read the port %d eeprom\r\n", port);
++    sprintf(file, PORT_EEPROM_FORMAT, gPortCtrl[port - 1].i2cbus);
++    fp = fopen(file, "r");
++    if(fp == NULL) {
++        AIM_LOG_ERROR("Unable to open the eeprom device file of port(%d)", port);
+         return ONLP_STATUS_E_INTERNAL;
+     }
+ 
+-    if (size != 256)
+-    {
+-        AIM_LOG_ERROR("Unable to read the port %d eeprom, unexpected size %i\r\n", port, size);
++    if (fseek(fp, offset, SEEK_CUR) != 0) {
++        fclose(fp);
++        AIM_LOG_ERROR("Unable to set the file position indicator of port(%d)", port);
++        return ONLP_STATUS_E_INTERNAL;
++    }
++
++    size = fread(data, 1, len, fp);
++    fclose(fp);
++    if (size != len) {
++        AIM_LOG_ERROR("Unable to read the module_eeprom device file of port(%d)", port);
+         return ONLP_STATUS_E_INTERNAL;
+     }
+ 
+@@ -344,10 +355,15 @@ onlp_sfpi_eeprom_read(int port, uint8_t data[256])
+ }
+ 
+ int
+-onlp_sfpi_dom_read(int port, uint8_t data[256])
++onlp_sfpi_eeprom_read(int port, uint8_t data[256])
+ {
++    return ag7648_eeprom_read(port, 0, 256, data);
++}
+ 
+-    return onlp_sfpi_eeprom_read( port, data);
++int
++onlp_sfpi_dom_read(int port, uint8_t data[256])
++{
++    return ag7648_eeprom_read(port, 256, 256, data);
+ }
+ 
+ int
+-- 
+2.54.0
+
