@@ -68,6 +68,8 @@ SRC_URI += " \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
            file://delta-ag5648/0002-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
            file://delta-ag5648/0003-delta-modules-update-i2c_mux_add_adapter-usage-for-6.patch \
+           file://delta-ag5648/0004-delta-ag5648-convert-to-I2C-mux-and-use-optoe.patch \
+           file://delta-ag5648/0005-delta-ag5648-implement-reading-DOM-EEPROM.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
            file://delta-ag7648/0003-bump-kernel-to-4.9.patch \

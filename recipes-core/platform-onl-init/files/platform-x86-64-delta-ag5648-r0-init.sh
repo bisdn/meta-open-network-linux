@@ -60,7 +60,17 @@ create_i2c_dev tmp75 0x4f 3
 # Insert sfp module
 modprobe dni_ag5648_sfp
 echo 0x18 > /sys/bus/i2c/devices/2-0035/data
-create_i2c_dev dni_ag5648_sfp 0x50 4
+create_i2c_dev dni_ag5648_sfp 0x31 4
+
+# initialize SFP devices
+for port in {1..48}; do
+	add_port optoe2 $port $((port + 9))
+done
+
+# initialize QSFP devices
+for port in {49..54}; do
+	add_port optoe1 $port $((port + 9))
+done
 
 # set front panel sys light
 echo 0x04 > /sys/bus/i2c/devices/2-0039/addr
