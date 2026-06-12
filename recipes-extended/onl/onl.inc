@@ -114,7 +114,7 @@ EXTRA_OEMAKE = "\
   'BUILDER_MODULE_MANIFEST=${BUILDER_MODULE_MANIFEST}' \
   'MODULEMANIFEST=${MODULEMANIFEST}' \
   'GCC=${CC}' \
-  'GCC_FLAGS=${CFLAGS} -DONLPLIB_CONFIG_I2C_USE_CUSTOM_HEADER=0 -Wno-error=unused-result -Wno-error=address -Wno-error=pointer-to-int-cast' \
+  'GCC_FLAGS=${CFLAGS} -DONLPLIB_CONFIG_I2C_USE_CUSTOM_HEADER=0 -Wno-error=unused-result -Wno-error=address -Wno-error=pointer-to-int-cast -Wno-error=discarded-qualifiers' \
   'MODULEMANIFEST=${MODULEMANIFEST}' \
   'NO_USE_GCC_VERSION_TOOL=${NO_USE_GCC_VERSION_TOOL}' \
   'ONL=${ONL}' \
