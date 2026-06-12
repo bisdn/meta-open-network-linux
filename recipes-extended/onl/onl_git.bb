@@ -13,6 +13,10 @@ URI_ONL ?= "git://github.com/opencomputeproject/OpenNetworkLinux.git;protocol=ht
 # commit date (UTC) of ${SRCREV_onl}
 PV = "2024-09-21+git${SRCPV}"
 
+# onl builds kernel modules in /tmp, which eventually leaks into the modules
+WARN_QA:append = " buildpaths"
+ERROR_QA:remove = " buildpaths"
+
 # submodules are checked out individually to support license file checking
 SRC_URI += " \
            file://onl/0001-platform_manager-do-not-ignore-write-return-value.patch \
