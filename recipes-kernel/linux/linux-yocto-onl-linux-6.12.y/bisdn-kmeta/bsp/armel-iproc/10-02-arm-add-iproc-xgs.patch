@@ -1,7 +1,7 @@
 From 970fab9182ae1fa443ddb7b29642fc03c3c28afb Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 09:48:32 +0200
-Subject: [PATCH 02/21] arm: add iproc-xgs
+Subject: [PATCH 02/19] arm: add iproc-xgs
 
 ---
  arch/arm/Kconfig                              |   2 +

@@ -1,7 +1,7 @@
 From 2b674f9cedb3bd3b8dd31de747a13fe2413f9eca Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 10:09:06 +0200
-Subject: [PATCH 19/21] watchdog: sp805_wdt: clear bootstatus
+Subject: [PATCH 18/19] watchdog: sp805_wdt: clear bootstatus
 
 ---
  drivers/watchdog/sp805_wdt.c | 33 +++++++++++++++++++++++++++++++++

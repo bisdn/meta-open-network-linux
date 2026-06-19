@@ -1,7 +1,7 @@
 From f1933b6eaf694aae66abcbe782798fd728e2e0c9 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 09:50:55 +0200
-Subject: [PATCH 06/21] clk: clk-iproc-armpll: avoid overflow
+Subject: [PATCH 05/19] clk: clk-iproc-armpll: avoid overflow
 
 ---
  drivers/clk/bcm/clk-iproc-armpll.c | 8 +++++---

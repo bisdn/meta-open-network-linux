@@ -1,7 +1,7 @@
 From 596e4907229f22e2a7c633c37a6323ab6e969de5 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 21 Jul 2022 13:28:03 +0200
-Subject: [PATCH 09/21] i2c: allow i2c-bcm-iproc for ARCH_XGS_IPROC as well
+Subject: [PATCH 08/19] i2c: allow i2c-bcm-iproc for ARCH_XGS_IPROC as well
 
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---

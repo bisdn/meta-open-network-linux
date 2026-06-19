@@ -1,7 +1,7 @@
 From 731f8be080320bd5fe1302f2d9041abe2c1334af Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 10:03:01 +0200
-Subject: [PATCH 13/21] phy: xgs-iproc-serdes
+Subject: [PATCH 12/19] phy: xgs-iproc-serdes
 
 ---
  drivers/net/phy/Kconfig                |   6 +

@@ -1,7 +1,7 @@
 From a785d577dfb7f3f7161be0935a356d743ad6e8e3 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 10:03:46 +0200
-Subject: [PATCH 14/21] pci: pcie-xgs-iproc
+Subject: [PATCH 13/19] pci: pcie-xgs-iproc
 
 ---
  drivers/pci/controller/Kconfig          |  11 +-

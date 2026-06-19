@@ -1,7 +1,7 @@
 From 8c9fb0c8afce922275527456647eeec72787f22d Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 10:00:19 +0200
-Subject: [PATCH 11/21] bgmac: xgs-iproc changes
+Subject: [PATCH 10/19] bgmac: xgs-iproc changes
 
 ---
  drivers/net/ethernet/broadcom/Kconfig         |   4 +-

@@ -1,7 +1,7 @@
 From 665c72e17591499bf9f5c054b19d4a53087707d2 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Wed, 13 Oct 2021 12:30:26 +0200
-Subject: [PATCH 08/21] gpio: allow xgs-iproc for ARCH_XGS_IPROC as well
+Subject: [PATCH 07/19] gpio: allow xgs-iproc for ARCH_XGS_IPROC as well
 
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---

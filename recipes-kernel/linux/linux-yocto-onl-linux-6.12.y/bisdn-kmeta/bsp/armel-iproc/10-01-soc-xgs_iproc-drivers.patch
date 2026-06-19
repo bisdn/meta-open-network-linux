@@ -1,7 +1,7 @@
 From 75e91a538fa668e2709725501d306a48069121d7 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 09:59:49 +0200
-Subject: [PATCH 01/21] soc: xgs_iproc drivers
+Subject: [PATCH 01/19] soc: xgs_iproc drivers
 
 ---
  drivers/soc/bcm/Makefile                      |   1 +
