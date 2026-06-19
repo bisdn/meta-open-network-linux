@@ -1,7 +1,7 @@
 From 5435061c646dc4dea480deeb59836cfc571bd12b Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 21 Jul 2022 11:03:32 +0200
-Subject: [PATCH 12/21] mdio: allow mdio-bcm-iproc for ARCH_XGS_IPROC as well
+Subject: [PATCH 11/19] mdio: allow mdio-bcm-iproc for ARCH_XGS_IPROC as well
 
 Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
 ---

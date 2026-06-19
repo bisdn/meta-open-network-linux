@@ -1,7 +1,7 @@
 From 4afb4183318f926bab59d251a000a70152770033 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 10:08:28 +0200
-Subject: [PATCH 18/21] usb: phy: phy-xgs-iproc
+Subject: [PATCH 17/19] usb: phy: phy-xgs-iproc
 
 ---
  drivers/usb/phy/Kconfig         |   7 +

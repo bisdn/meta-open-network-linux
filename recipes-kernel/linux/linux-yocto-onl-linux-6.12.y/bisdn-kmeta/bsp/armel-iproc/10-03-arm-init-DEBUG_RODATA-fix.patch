@@ -1,7 +1,7 @@
 From 642075747ee6652c80d4e16144014085fcf65096 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 09:48:32 +0200
-Subject: [PATCH 04/21] arm: init: DEBUG_RODATA fix(?)
+Subject: [PATCH 03/19] arm: init: DEBUG_RODATA fix(?)
 
 ---
  arch/arm/mm/init.c | 10 ++++++++++

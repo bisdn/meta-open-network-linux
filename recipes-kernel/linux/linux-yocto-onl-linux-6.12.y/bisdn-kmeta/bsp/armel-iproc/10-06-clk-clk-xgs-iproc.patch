@@ -1,7 +1,7 @@
 From ca7ff4e677192a2cda642c01d53444e8509231db Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 09:51:43 +0200
-Subject: [PATCH 07/21] clk: clk-xgs-iproc
+Subject: [PATCH 06/19] clk: clk-xgs-iproc
 
 ---
  drivers/clk/bcm/Kconfig         |   8 ++

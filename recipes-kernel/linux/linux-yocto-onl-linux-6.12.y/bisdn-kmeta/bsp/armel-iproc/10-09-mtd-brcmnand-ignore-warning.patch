@@ -1,7 +1,7 @@
 From 0b9c80073e88ae050e697b4732146dab5280e006 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 09:54:18 +0200
-Subject: [PATCH 10/21] mtd: brcmnand: ignore warning
+Subject: [PATCH 09/19] mtd: brcmnand: ignore warning
 
 ---
  drivers/mtd/nand/raw/brcmnand/brcmnand.c | 4 ++++

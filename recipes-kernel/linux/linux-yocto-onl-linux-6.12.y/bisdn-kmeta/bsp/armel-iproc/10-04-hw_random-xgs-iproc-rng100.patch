@@ -1,7 +1,7 @@
 From 6c06d16642e2b1ffacf0fdc514fc5b9f04a98d04 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 09:49:47 +0200
-Subject: [PATCH 05/21] hw_random: xgs-iproc-rng100
+Subject: [PATCH 04/19] hw_random: xgs-iproc-rng100
 
 ---
  drivers/char/hw_random/Kconfig            |  12 ++

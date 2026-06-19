@@ -1,7 +1,7 @@
 From a468e224825b50dfff7aa2b31ecd5eeecc7eca34 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 10:04:16 +0200
-Subject: [PATCH 15/21] spi: spi-iproc-qspi: xgs-iproc support
+Subject: [PATCH 14/19] spi: spi-iproc-qspi: xgs-iproc support
 
 ---
  drivers/spi/Kconfig          |   4 +-

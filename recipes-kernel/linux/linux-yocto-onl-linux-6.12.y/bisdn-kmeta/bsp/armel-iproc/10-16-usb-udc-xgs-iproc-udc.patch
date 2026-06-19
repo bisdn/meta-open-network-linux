@@ -1,7 +1,7 @@
 From a9c74c4308ad1ccc25be69f73b3a0df1623ecb0d Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 10:07:45 +0200
-Subject: [PATCH 17/21] usb: udc: xgs-iproc-udc
+Subject: [PATCH 16/19] usb: udc: xgs-iproc-udc
 
 ---
  drivers/usb/gadget/udc/Kconfig               |   11 +
