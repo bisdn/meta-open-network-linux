@@ -1,0 +1,79 @@
+From 1e102d99f2c28e93913838d40cd6e62a50b810bd Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 23 Jun 2026 10:13:08 +0200
+Subject: [PATCH] net: ipv4: notify about nexthop and route deletion
+
+When an interface goes down, and has associated nexthop objects, the
+kernel will silently remove all nexthop objects without notifying
+userspace. If there are any routes via these nexthop objects, they will
+be silently deleted as well.
+
+This is an issue for baseboxd / libnl trying to keep track of all
+routes, as route deletions will not be noticed.
+
+Work around this by making the kernel send out notifications in these
+cases.
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ net/ipv4/fib_trie.c | 6 +++---
+ net/ipv4/nexthop.c  | 8 +++++---
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
+index fa54b36b241a..5a5f67da1178 100644
+--- a/net/ipv4/fib_trie.c
++++ b/net/ipv4/fib_trie.c
+@@ -2069,9 +2069,9 @@ int fib_table_flush(struct net *net, struct fib_table *tb, bool flush_all)
+ 
+ 			fib_notify_alias_delete(net, n->key, &n->leaf, fa,
+ 						NULL);
+-			if (fi->pfsrc_removed)
+-				rtmsg_fib(RTM_DELROUTE, htonl(n->key), fa,
+-					  KEYLENGTH - fa->fa_slen, tb->tb_id, &info, 0);
++
++			rtmsg_fib(RTM_DELROUTE, htonl(n->key), fa,
++				  KEYLENGTH - fa->fa_slen, tb->tb_id, &info, 0);
+ 			hlist_del_rcu(&fa->fa_list);
+ 			fib_release_info(fa->fa_info);
+ 			alias_free_mem_rcu(fa);
+diff --git a/net/ipv4/nexthop.c b/net/ipv4/nexthop.c
+index 8d41b0394219..8fccf25767b8 100644
+--- a/net/ipv4/nexthop.c
++++ b/net/ipv4/nexthop.c
+@@ -1912,10 +1912,9 @@ static void remove_nexthop(struct net *net, struct nexthop *nh,
+ 	/* remove from the tree */
+ 	rb_erase(&nh->rb_node, &net->nexthop.rb_root);
+ 
++	__remove_nexthop(net, nh, nlinfo);
+ 	if (nlinfo)
+ 		nexthop_notify(RTM_DELNEXTHOP, nh, nlinfo);
+-
+-	__remove_nexthop(net, nh, nlinfo);
+ 	nh_base_seq_inc(net);
+ 
+ 	nexthop_put(nh);
+@@ -2402,6 +2401,9 @@ static void nexthop_flush_dev(struct net_device *dev, unsigned long event)
+ 	struct hlist_head *head = &net->nexthop.devhash[hash];
+ 	struct hlist_node *n;
+ 	struct nh_info *nhi;
++	struct nl_info nlinfo = {
++		.nl_net = dev_net(dev),
++	};
+ 
+ 	hlist_for_each_entry_safe(nhi, n, head, dev_hash) {
+ 		if (nhi->fib_nhc.nhc_dev != dev)
+@@ -2411,7 +2413,7 @@ static void nexthop_flush_dev(struct net_device *dev, unsigned long event)
+ 		    (event == NETDEV_DOWN || event == NETDEV_CHANGE))
+ 			continue;
+ 
+-		remove_nexthop(net, nhi->nh_parent, NULL);
++		remove_nexthop(net, nhi->nh_parent, &nlinfo);
+ 	}
+ }
+ 
+-- 
+2.54.0
+
