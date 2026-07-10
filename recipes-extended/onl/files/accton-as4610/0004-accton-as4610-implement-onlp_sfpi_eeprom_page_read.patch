@@ -1,0 +1,111 @@
+From 0bcb30b84c861de0bc8cacd3515903bbfc4086df Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 22 May 2026 15:33:48 +0200
+Subject: [PATCH] accton-as4610: implement onlp_sfpi_eeprom_page_read()
+
+The optoe driver exposes QSFP pages via offsets, with offset 0 the lower
+page, offset 128 page 0, offset 256 page 1 etc.
+
+So implement reading pages by reading from appropriate offsets.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../arm_accton_as4610/module/src/sfpi.c       | 50 ++++++++++---------
+ 1 file changed, 26 insertions(+), 24 deletions(-)
+
+diff --git a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/sfpi.c b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/sfpi.c
+index de01502c7209..c80735e52ee3 100644
+--- a/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/sfpi.c
++++ b/packages/platforms/accton/armxx/arm-accton-as4610/arm_accton_as4610/module/src/sfpi.c
+@@ -203,8 +203,8 @@ onlp_sfpi_rx_los_bitmap_get(onlp_sfp_bitmap_t* dst)
+     return ONLP_STATUS_OK;
+ }
+ 
+-int
+-onlp_sfpi_eeprom_read(int port, uint8_t data[256])
++static int
++as4610_eeprom_read(int port, int offset, int len uint8_t *data)
+ {
+     /*
+      * Read the SFP eeprom into data[]
+@@ -212,28 +212,12 @@ onlp_sfpi_eeprom_read(int port, uint8_t data[256])
+      * Return MISSING if SFP is missing.
+      * Return OK if eeprom is read
+      */
++    char file[64] = {0};
+     int size = 0;
+-    memset(data, 0, 256);
+-
+-	if(onlp_file_read(data, 256, &size, PORT_EEPROM_FORMAT, front_port_bus_index(port)) != ONLP_STATUS_OK) {
+-        AIM_LOG_ERROR("Unable to read eeprom from port(%d)\r\n", port);
+-        return ONLP_STATUS_E_INTERNAL;
+-    }
+-
+-    if (size != 256) {
+-        AIM_LOG_ERROR("Unable to read eeprom from port(%d), size is different!\r\n", port);
+-        return ONLP_STATUS_E_INTERNAL;
+-    }
++    FILE* fp;
+ 
+-    return ONLP_STATUS_OK;
+-}
++    memset(data, 0, 256);
+ 
+-int
+-onlp_sfpi_dom_read(int port, uint8_t data[256])
+-{
+-    FILE* fp;
+-    char file[64] = {0};
+-    
+     sprintf(file, PORT_EEPROM_FORMAT, front_port_bus_index(port));
+     fp = fopen(file, "r");
+     if(fp == NULL) {
+@@ -241,15 +225,15 @@ onlp_sfpi_dom_read(int port, uint8_t data[256])
+         return ONLP_STATUS_E_INTERNAL;
+     }
+ 
+-    if (fseek(fp, 256, SEEK_CUR) != 0) {
++    if (fseek(fp, offset, SEEK_CUR) != 0) {
+         fclose(fp);
+         AIM_LOG_ERROR("Unable to set the file position indicator of port(%d)", port);
+         return ONLP_STATUS_E_INTERNAL;
+     }
+ 
+-    int ret = fread(data, 1, 256, fp);
++    size = fread(data, 1, len, fp);
+     fclose(fp);
+-    if (ret != 256) {
++    if (size != len) {
+         AIM_LOG_ERROR("Unable to read the module_eeprom device file of port(%d)", port);
+         return ONLP_STATUS_E_INTERNAL;
+     }
+@@ -257,6 +241,24 @@ onlp_sfpi_dom_read(int port, uint8_t data[256])
+     return ONLP_STATUS_OK;
+ }
+ 
++int
++onlp_sfpi_eeprom_read(int port, uint8_t data[256])
++{
++    return as4610_eeprom_read(port, 0, 256, data);
++}
++
++int
++onlp_sfpi_dom_read(int port, uint8_t data[256])
++{
++    return as4610_eeprom_read(port, 256, 256, data);
++}
++
++int
++onlp_sfpi_eeprom_read_page(int port, uint8_t page, uint8_t data[128])
++{
++    return as4610_eeprom_read(port, (page + 1), 128, data);
++}
++
+ int
+ onlp_sfpi_control_set(int port, onlp_sfp_control_t control, int value)
+ {
+-- 
+2.54.0
+

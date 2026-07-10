@@ -1,0 +1,117 @@
+From 10ed9f1b85896909d5b27ed828672fa779a26f53 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Mon, 13 Apr 2026 09:43:26 +0200
+Subject: [PATCH] onlp: add sfp eeprom page read operation
+
+In order to access the QSFP diagnostics page 3, add a read operation for
+accessing arbitrary pages.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../src/onlp/module/inc/onlp/platformi/sfpi.h   |  7 +++++++
+ .../any/onlp/src/onlp/module/inc/onlp/sfp.h     | 12 ++++++++++++
+ .../onlp/module/python/onlp/onlp/__init__.py    |  3 +++
+ .../base/any/onlp/src/onlp/module/src/sfp.c     | 17 +++++++++++++++++
+ .../onlp_platform_defaults/module/src/sfpi.c    |  1 +
+ 5 files changed, 40 insertions(+)
+
+diff --git a/packages/base/any/onlp/src/onlp/module/inc/onlp/platformi/sfpi.h b/packages/base/any/onlp/src/onlp/module/inc/onlp/platformi/sfpi.h
+index cc2bfcac6b27..f0fd9fc2f8b9 100644
+--- a/packages/base/any/onlp/src/onlp/module/inc/onlp/platformi/sfpi.h
++++ b/packages/base/any/onlp/src/onlp/module/inc/onlp/platformi/sfpi.h
+@@ -118,6 +118,13 @@ int onlp_sfpi_dev_write(int port, uint8_t devaddr, uint8_t addr, uint8_t* data,
+  * @param data Receives the SFP data.
+  */
+ int onlp_sfpi_dom_read(int port, uint8_t data[256]);
++/**
++ * @brief Read the SFP EEPROM page.
++ * @param port The port number.
++ * @param page The page number.
++ * @param data Receives the SFP data.
++ */
++int onlp_sfpi_eeprom_read_page(int port, uint8_t page, uint8_t data[128]);
+ 
+ /**
+  * @brief Perform any actions required after an SFP is inserted.
+diff --git a/packages/base/any/onlp/src/onlp/module/inc/onlp/sfp.h b/packages/base/any/onlp/src/onlp/module/inc/onlp/sfp.h
+index 1652cad22702..36de67e7045b 100644
+--- a/packages/base/any/onlp/src/onlp/module/inc/onlp/sfp.h
++++ b/packages/base/any/onlp/src/onlp/module/inc/onlp/sfp.h
+@@ -132,6 +132,18 @@ int onlp_sfp_eeprom_read(int port, uint8_t** rv);
+  * has advertised DOM support.
+  */
+ int onlp_sfp_dom_read(int port, uint8_t** rv);
++/**
++ * @brief Read an upper page from the given port.
++ * @param port The SFP Port
++ * @param page The page
++ * @param rv Receives a buffer containing the EEPROM data.
++ * @notes The buffer must be freed after use.
++ * @returns The size of the eeprom data, if successful
++ * @returns -1 on error.
++ * @note This should only be called if the SFP
++ * has advertised pages support.
++ */
++int onlp_sfp_eeprom_read_page(int port, uint8_t page, uint8_t** rv);
+ 
+ /**
+  * @brief Deinitialize the SFP subsystem.
+diff --git a/packages/base/any/onlp/src/onlp/module/python/onlp/onlp/__init__.py b/packages/base/any/onlp/src/onlp/module/python/onlp/onlp/__init__.py
+index d32ce721cdc8..611d43d038f2 100644
+--- a/packages/base/any/onlp/src/onlp/module/python/onlp/onlp/__init__.py
++++ b/packages/base/any/onlp/src/onlp/module/python/onlp/onlp/__init__.py
+@@ -602,6 +602,9 @@ def onlp_sfp_init_prototypes():
+     libonlp.onlp_sfp_dom_read.restype = ctypes.c_int
+     libonlp.onlp_sfp_dom_read.argtypes = (ctypes.c_int, ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)),)
+ 
++    libonlp.onlp_sfp_eeprom_read_page.restype = ctypes.c_int
++    libonlp.onlp_sfp_eeprom_read_page.argtypes = (ctypes.c_int,, ctypes.c_ubyte, ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte,)),)
++
+     libonlp.onlp_sfp_denit.restype = ctypes.c_int
+ 
+     libonlp.onlp_sfp_rx_los_bitmap_get.restype = ctypes.c_int
+diff --git a/packages/base/any/onlp/src/onlp/module/src/sfp.c b/packages/base/any/onlp/src/onlp/module/src/sfp.c
+index 8dc75d8c9a8d..52b16ccd634c 100644
+--- a/packages/base/any/onlp/src/onlp/module/src/sfp.c
++++ b/packages/base/any/onlp/src/onlp/module/src/sfp.c
+@@ -173,6 +173,23 @@ onlp_sfp_dom_read_locked__(int port, uint8_t** datap)
+ }
+ ONLP_LOCKED_API2(onlp_sfp_dom_read, int, port, uint8_t**, rv);
+ 
++static int
++onlp_sfp_eeprom_read_page_locked__(int port, uint8_t page, uint8_t** datap)
++{
++    int rv;
++    uint8_t* data;
++    ONLP_SFP_PORT_VALIDATE_AND_MAP(port);
++
++    data = aim_zmalloc(128);
++    if((rv = onlp_sfpi_eeprom_read_page(port, page, data)) < 0) {
++        aim_free(data);
++        data = NULL;
++    }
++    *datap = data;
++    return rv;
++}
++ONLP_LOCKED_API3(onlp_sfp_eeprom_read_page, int, port, uint8_t, page, uint8_t**, rv);
++
+ void
+ onlp_sfp_dump(aim_pvs_t* pvs)
+ {
+diff --git a/packages/base/any/onlp/src/onlp_platform_defaults/module/src/sfpi.c b/packages/base/any/onlp/src/onlp_platform_defaults/module/src/sfpi.c
+index ecb0ee6d87dc..8feed1af7d52 100644
+--- a/packages/base/any/onlp/src/onlp_platform_defaults/module/src/sfpi.c
++++ b/packages/base/any/onlp/src/onlp_platform_defaults/module/src/sfpi.c
+@@ -32,6 +32,7 @@ __ONLP_DEFAULTI_IMPLEMENTATION(onlp_sfpi_presence_bitmap_get(onlp_sfp_bitmap_t*
+ __ONLP_DEFAULTI_IMPLEMENTATION(onlp_sfpi_rx_los_bitmap_get(onlp_sfp_bitmap_t* dst));
+ __ONLP_DEFAULTI_IMPLEMENTATION(onlp_sfpi_eeprom_read(int port, uint8_t data[256]));
+ __ONLP_DEFAULTI_IMPLEMENTATION(onlp_sfpi_dom_read(int port, uint8_t data[256]));
++__ONLP_DEFAULTI_IMPLEMENTATION(onlp_sfpi_eeprom_read_page(int port, uint8_t page, uint8_t data[128]));
+ __ONLP_DEFAULTI_IMPLEMENTATION(onlp_sfpi_post_insert(int port, sff_info_t* sff_info));
+ __ONLP_DEFAULTI_IMPLEMENTATION(onlp_sfpi_port_map(int port, int* rport));
+ __ONLP_DEFAULTI_IMPLEMENTATION(onlp_sfpi_denit(void));
+-- 
+2.54.0
+

@@ -1,0 +1,113 @@
+From f3d66271569adb085903336974e0822330836437 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 22 May 2026 15:33:35 +0200
+Subject: [PATCH] accton-as7726-32x: implement onlp_sfpi_eeprom_page_read()
+
+The optoe driver exposes QSFP pages via offsets, with offset 0 the lower
+page, offset 128 page 0, offset 256 page 1 etc.
+
+So implement reading pages by reading from appropriate offsets.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../module/src/sfpi.c                         | 51 ++++++++++---------
+ 1 file changed, 27 insertions(+), 24 deletions(-)
+
+diff --git a/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/sfpi.c b/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/sfpi.c
+index 45909907e68d..6f40d0f2045f 100755
+--- a/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/sfpi.c
++++ b/packages/platforms/accton/x86-64/as7726-32x/onlp/builds/x86_64_accton_as7726_32x/module/src/sfpi.c
+@@ -189,8 +189,8 @@ onlp_sfpi_rx_los_bitmap_get(onlp_sfp_bitmap_t* dst)
+     return ONLP_STATUS_OK;
+ }
+ 
+-int
+-onlp_sfpi_eeprom_read(int port, uint8_t data[256])
++static int
++as7726_32x_eeprom_read(int port, int offset, int len, uint8_t *data)
+ {
+     /*
+      * Read the SFP eeprom into data[]
+@@ -198,29 +198,14 @@ onlp_sfpi_eeprom_read(int port, uint8_t data[256])
+      * Return MISSING if SFP is missing.
+      * Return OK if eeprom is read
+      */
++    char file[64] = {0};
+     int size = 0;
+-    if(port <0 || port > 34)
+-        return ONLP_STATUS_E_INTERNAL;
+-    memset(data, 0, 256);
+-
+-	if(onlp_file_read(data, 256, &size, PORT_EEPROM_FORMAT, onlp_sfpi_map_bus_index(port)) != ONLP_STATUS_OK) {
+-        AIM_LOG_ERROR("Unable to read eeprom from port(%d)\r\n", port);
+-        return ONLP_STATUS_E_INTERNAL;
+-    }
++    FILE* fp;
+ 
+-    if (size != 256) {
+-        AIM_LOG_ERROR("Unable to read eeprom from port(%d), size is different!\r\n", port);
++    if(port < 0 || port > 34)
+         return ONLP_STATUS_E_INTERNAL;
+-    }
+-
+-    return ONLP_STATUS_OK;
+-}
+ 
+-int
+-onlp_sfpi_dom_read(int port, uint8_t data[256])
+-{
+-    FILE* fp;
+-    char file[64] = {0};
++    memset(data, 0, len);
+ 
+     sprintf(file, PORT_EEPROM_FORMAT, onlp_sfpi_map_bus_index(port));
+     fp = fopen(file, "r");
+@@ -229,15 +214,15 @@ onlp_sfpi_dom_read(int port, uint8_t data[256])
+         return ONLP_STATUS_E_INTERNAL;
+     }
+ 
+-    if (fseek(fp, 256, SEEK_CUR) != 0) {
++    if (fseek(fp, offset, SEEK_CUR) != 0) {
+         fclose(fp);
+         AIM_LOG_ERROR("Unable to set the file position indicator of port(%d)", port);
+         return ONLP_STATUS_E_INTERNAL;
+     }
+ 
+-    int ret = fread(data, 1, 256, fp);
++    size = fread(data, 1, len, fp);
+     fclose(fp);
+-    if (ret != 256) {
++    if (size != len) {
+         AIM_LOG_ERROR("Unable to read the module_eeprom device file of port(%d)", port);
+         return ONLP_STATUS_E_INTERNAL;
+     }
+@@ -245,6 +230,24 @@ onlp_sfpi_dom_read(int port, uint8_t data[256])
+     return ONLP_STATUS_OK;
+ }
+ 
++int
++onlp_sfpi_eeprom_read(int port, uint8_t data[256])
++{
++    return as7726_32x_eeprom_read(port, 0, 256, data);
++}
++
++int
++onlp_sfpi_dom_read(int port, uint8_t data[256])
++{
++    return as7726_32x_eeprom_read(port, 256, 256, data);
++}
++
++int
++onlp_sfpi_eeprom_read_page(int port, uint8_t page, uint8_t data[128])
++{
++    return as7726_32x_eeprom_read(port, (page + 1) * 128, 128, data);
++}
++
+ int
+ onlp_sfpi_dev_readb(int port, uint8_t devaddr, uint8_t addr)
+ {
+-- 
+2.54.0
+

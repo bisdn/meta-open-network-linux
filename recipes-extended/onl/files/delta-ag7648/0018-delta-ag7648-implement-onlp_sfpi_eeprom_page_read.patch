@@ -1,0 +1,37 @@
+From d1901b84df32f2b445d333a52963e960ff2008b4 Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Fri, 22 May 2026 15:58:01 +0200
+Subject: [PATCH] delta-ag7648: implement onlp_sfpi_eeprom_page_read()
+
+The optoe driver exposes QSFP pages via offsets, with offset 0 the lower
+page, offset 128 page 0, offset 256 page 1 etc.
+
+So implement reading pages by reading from appropriate offsets.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c       | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c b/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
+index f23f244ac99c..9ff832ca4c84 100755
+--- a/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
++++ b/packages/platforms/delta/x86-64/ag7648/onlp/builds/x86_64_delta_ag7648/module/src/sfpi.c
+@@ -366,6 +366,12 @@ onlp_sfpi_dom_read(int port, uint8_t data[256])
+     return ag7648_eeprom_read(port, 256, 256, data);
+ }
+ 
++int
++onlp_sfpi_eeprom_read_page(int port, uint8_t page, uint8_t data[128])
++{
++    return ag7648_eeprom_read(port, (page + 1) * 128, 128, data);
++}
++
+ int
+ onlp_sfpi_control_set(int port, onlp_sfp_control_t control, int value)
+ {
+-- 
+2.54.0
+

@@ -1,0 +1,86 @@
+From 9c585f197df7cd1965fd7abaf75bea0dfddaa73c Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 28 May 2026 15:14:36 +0200
+Subject: [PATCH] cel-questone-2a: implement reading DOM EEPROM
+
+Implement reading DOM EEPROM, which is exposed by the optoe driver as
+bytes 256 - 511 of the eeprom.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../x86_64_cel_questone_2a/module/src/sfpi.c  | 42 +++++++++++++++----
+ 1 file changed, 34 insertions(+), 8 deletions(-)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c b/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
+index b54ada96ce8e..de2008bc6e2e 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
+@@ -161,13 +161,10 @@ int onlp_sfpi_presence_bitmap_get(onlp_sfp_bitmap_t *dst)
+     return ONLP_STATUS_OK;
+ }
+ 
+-/*
+- * This function reads the SFPs idrom and returns in
+- * in the data buffer provided.
+- */
+-int onlp_sfpi_eeprom_read(int port, uint8_t data[256])
++static int questone_2a_eeprom_read(int port, int offset, int len, uint8_t *data)
+ {
+     char *path;
++    FILE *fp;
+ 
+     path = cel_questone_2a_sfp_qsfp_get_eeprom_path(port + 1, "eeprom");
+ 
+@@ -177,15 +174,44 @@ int onlp_sfpi_eeprom_read(int port, uint8_t data[256])
+      * Return MISSING if SFP is missing.
+      * Return OK if eeprom is read
+      */
+-    memset(data, 0, 256);
+-    if (read_device_node_binary(path, (char*)data, 256, 256) != 0) {
+-        AIM_LOG_ERROR("Unable to read eeprom from port(%d)\r\n", port);
++    memset(data, 0, len);
++
++    fp = fopen(path, "r");
++    if(fp == NULL) {
++        AIM_LOG_ERROR("Unable to open the eeprom device file of port(%d)", port);
++        return ONLP_STATUS_E_INTERNAL;
++    }
++
++    if (fseek(fp, offset, SEEK_CUR) != 0) {
++        fclose(fp);
++        AIM_LOG_ERROR("Unable to set the file position indicator of port(%d)", port);
++        return ONLP_STATUS_E_INTERNAL;
++    }
++
++    int ret = fread(data, 1, len, fp);
++    fclose(fp);
++    if (ret != len) {
++        AIM_LOG_ERROR("Unable to read the module_eeprom device file of port(%d)", port);
+         return ONLP_STATUS_E_INTERNAL;
+     }
+ 
+     return ONLP_STATUS_OK;
+ }
+ 
++/*
++ * This function reads the SFPs idrom and returns in
++ * in the data buffer provided.
++ */
++int onlp_sfpi_eeprom_read(int port, uint8_t data[256])
++{
++    return questone_2a_eeprom_read(port, 0, 256, data);
++}
++
++int onlp_sfpi_dom_read(int port, uint8_t data[256])
++{
++    return questone_2a_eeprom_read(port, 256, 256, data);
++}
++
+ int onlp_sfpi_rx_los_bitmap_get(onlp_sfp_bitmap_t *dst)
+ {
+     return ONLP_STATUS_OK;
+-- 
+2.54.0
+

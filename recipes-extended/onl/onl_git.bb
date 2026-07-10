@@ -37,6 +37,7 @@ SRC_URI += " \
            file://onl/0020-modules-update-platform_drivers-with-6.11-compatibil.patch \
            file://onl/0021-packages-switch-to-external-cjson-library.patch \
            file://onl/0022-modules-don-t-use-legacy-paths-for-accessing-EEPROM.patch \
+           file://onl/0023-onlp-add-sfp-eeprom-page-read-operation.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
@@ -51,10 +52,15 @@ SRC_URI += " \
            file://accton-as4610/0001-accton-as4610-do-not-enable-v_out-i_out-p_out-caps.patch \
            file://accton-as4610/0002-accton_as4610_cpld-add-of-device-match-table.patch \
            file://accton-as4610/0003-accton_as4610_psu-add-of-device-match-table.patch \
+           file://accton-as4610/0004-accton-as4610-implement-onlp_sfpi_eeprom_page_read.patch \
            file://accton-as4630-54pe/0001-accton-as4630-54pe-Avoid-undefined-behaviour.patch \
+           file://accton-as4630-54pe/0002-accton-a4630-54pe-implement-onlp_sfpi_eeprom_page_re.patch \
            file://accton-as4630-54te/0001-accton-as4630-54te-do-not-acccess-PSU-via-pmbus.patch \
+           file://accton-as4630-54te/0002-accton-a4630-54te-implement-onlp_sfpi_eeprom_page_re.patch \
            file://accton-as5835-54x/0001-Support-psu_fan_dir-sysfs-for-YM-1401A-PSU.patch \
            file://accton-as5835-54x/0002-as5835-rename-psu_serial_numer-psu_serial_number.patch \
+           file://accton-as5835-54x/0003-accton-as5835-54x-implement-onlp_sfpi_eeprom_page_re.patch \
+           file://accton-as7726-32x/0001-accton-as7726-32x-implement-onlp_sfpi_eeprom_page_re.patch \
            file://cel-questone-2a/0001-add-celestica-questone-2a.patch \
            file://cel-questone-2a/0002-questone-2a-fix-ignoring-unused-result-warnings.patch \
            file://cel-questone-2a/0003-cel-questone-2a-delete-unused-global-variables.patch \
@@ -65,11 +71,14 @@ SRC_URI += " \
            file://cel-questone-2a/0008-cel-questone-2a-update-class_create-usage-for-6.4.patch \
            file://cel-questone-2a/0009-cel-questone-2a-adapt-i2c-adapter-class-usage-for-6..patch \
            file://cel-questone-2a/0010-cel-questone-2a-update-platform_drivers-with-6.11-co.patch \
+           file://cel-questone-2a/0011-cel-questone-2a-implement-reading-DOM-EEPROM.patch \
+           file://cel-questone-2a/0012-cel-questone-2a-implement-onlp_sfpi_eeprom_page_read.patch \
            file://delta-ag5648/0001-delta-ag5648-avoid-multiple-definitions-of-mutex-mut.patch \
            file://delta-ag5648/0002-ag5648-update-modules-to-compile-and-work-on-recent-.patch \
            file://delta-ag5648/0003-delta-modules-update-i2c_mux_add_adapter-usage-for-6.patch \
            file://delta-ag5648/0004-delta-ag5648-convert-to-I2C-mux-and-use-optoe.patch \
            file://delta-ag5648/0005-delta-ag5648-implement-reading-DOM-EEPROM.patch \
+           file://delta-ag5648/0006-delta-ag5648-implement-onlp_sfpi_eeprom_page_read.patch \
            file://delta-ag7648/0001-agema-ag7648-fix-buffer-overflow-while-reading-therm.patch \
            file://delta-ag7648/0002-agema-ag7648-don-t-create-random-rx_los-bitmap-value.patch \
            file://delta-ag7648/0003-bump-kernel-to-4.9.patch \
@@ -87,6 +96,7 @@ SRC_URI += " \
            file://delta-ag7648/0015-delta-ag7648-update-platform_drivers-with-6.11-compa.patch \
            file://delta-ag7648/0016-delta-ag7648-convert-to-optoe-driver.patch \
            file://delta-ag7648/0017-delta-ag7648-fix-reading-DOM-EEPROM.patch \
+           file://delta-ag7648/0018-delta-ag7648-implement-onlp_sfpi_eeprom_page_read.patch \
 "
 
 FILES:${PN} = " \

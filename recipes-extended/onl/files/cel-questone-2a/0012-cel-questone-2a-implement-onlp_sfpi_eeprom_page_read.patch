@@ -1,0 +1,36 @@
+From 7f3055343302be4448ce527c1e260aaff27c971e Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 28 May 2026 15:21:38 +0200
+Subject: [PATCH] cel-questone-2a: implement onlp_sfpi_eeprom_page_read()
+
+The optoe driver exposes QSFP pages via offsets, with offset 0 the lower
+page, offset 128 page 0, offset 256 page 1 etc.
+
+So implement reading pages by reading from appropriate offsets.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ .../onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c     | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c b/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
+index de2008bc6e2e..58668b2e382b 100644
+--- a/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
++++ b/packages/platforms/celestica/x86-64/questone-2a/onlp/builds/x86_64_cel_questone_2a/module/src/sfpi.c
+@@ -212,6 +212,11 @@ int onlp_sfpi_dom_read(int port, uint8_t data[256])
+     return questone_2a_eeprom_read(port, 256, 256, data);
+ }
+ 
++int onlp_sfpi_eeprom_read_page(int port, uint8_t page, uint8_t data[128])
++{
++    return questone_2a_eeprom_read(port, (page + 1) * 128, 128, data);
++}
++
+ int onlp_sfpi_rx_los_bitmap_get(onlp_sfp_bitmap_t *dst)
+ {
+     return ONLP_STATUS_OK;
+-- 
+2.54.0
+
