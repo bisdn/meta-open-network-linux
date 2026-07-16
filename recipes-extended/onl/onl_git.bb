@@ -37,6 +37,7 @@ SRC_URI += " \
            file://onl/0020-modules-update-platform_drivers-with-6.11-compatibil.patch \
            file://onl/0021-packages-switch-to-external-cjson-library.patch \
            file://onl/0022-modules-don-t-use-legacy-paths-for-accessing-EEPROM.patch \
+           file://onl/0023-optoe-register-nvmem-device.patch \
            file://bigcode/0001-WIP-convert-to-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0002-dynamically-determine-location-of-python3.patch;patchdir=${SUBMODULE_BIGCODE} \
            file://bigcode/0003-avoid-multiple-global-definitions-for-not_empty.patch;patchdir=${SUBMODULE_BIGCODE} \
