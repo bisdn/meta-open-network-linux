@@ -1,0 +1,106 @@
+From 5aed0da5f8d4f02bf4e561227b9554e71aebc18d Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Tue, 14 Jul 2026 12:38:33 +0200
+Subject: [PATCH] optoe: register nvmem device
+
+To allow KNET easy access to module EEPROMs, register an nvmem device
+based on port_name.
+
+Upstream-Status: Inactive-Upstream [lastcommit: 2024-09-21]
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ packages/base/any/kernels/modules/optoe.c | 56 +++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
+
+diff --git a/packages/base/any/kernels/modules/optoe.c b/packages/base/any/kernels/modules/optoe.c
+index b69354372bc9..cbfd54a78247 100644
+--- a/packages/base/any/kernels/modules/optoe.c
++++ b/packages/base/any/kernels/modules/optoe.c
+@@ -127,6 +127,7 @@
+ #include <linux/i2c.h>
+ #include <linux/of.h>
+ #include <linux/version.h>
++#include <linux/nvmem-provider.h>
+ 
+ #ifdef EEPROM_CLASS
+ #include <linux/eeprom_class.h>
+@@ -204,6 +205,7 @@ struct optoe_data {
+ #ifdef EEPROM_CLASS
+ 	struct eeprom_device *eeprom_dev;
+ #endif
++	struct nvmem_device *nvmem;
+ 
+ 	/* dev_class: ONE_ADDR (QSFP) or TWO_ADDR (SFP) */
+ 	int dev_class;
+@@ -916,6 +918,59 @@ static ssize_t set_dev_class(struct device *dev,
+  */
+ #ifndef EEPROM_CLASS
+ 
++static int optoe_read(void *priv, unsigned int off, void *buf, size_t count)
++{
++	struct optoe_data *optoe = priv;
++	ssize_t ret;
++
++	ret = optoe_read_write(optoe, buf, off, count, OPTOE_READ_OP);
++
++	return ret == count ? 0 : ret;
++}
++
++static int optoe_write(void *priv, unsigned int off, void *buf, size_t count)
++{
++	struct optoe_data *optoe = priv;
++	ssize_t ret;
++
++	ret = optoe_read_write(optoe, buf, off, count, OPTOE_WRITE_OP);
++
++	return ret == count ? 0 : ret;
++}
++
++static int optoe_register_nvmem(struct i2c_client *client)
++{
++	struct optoe_data *optoe = i2c_get_clientdata(client);
++	struct nvmem_config nvmem_config = { };
++	struct nvmem_device *nvmem;
++
++	nvmem_config.id = NVMEM_DEVID_NONE;
++	nvmem_config.name = optoe->port_name;
++	nvmem_config.type = NVMEM_TYPE_EEPROM;
++	nvmem_config.dev = &client->dev;
++	nvmem_config.read_only = false;
++	nvmem_config.root_only = false;
++	nvmem_config.base_dev = &client->dev;
++	nvmem_config.reg_read = optoe_read;
++	nvmem_config.reg_write = optoe_write;
++	nvmem_config.priv = optoe;
++	nvmem_config.stride = 1;
++	nvmem_config.word_size = 1;
++	nvmem_config.size = optoe->bin.size;
++
++	nvmem = devm_nvmem_register(&client->dev, &nvmem_config);
++	if (IS_ERR(nvmem)) {
++		if (PTR_ERR(nvmem) == -EOPNOTSUPP)
++			return 0;
++
++		dev_err(&client->dev, "failed to register nvmem: %pe\n", nvmem);
++		return PTR_ERR(nvmem);
++	}
++	optoe->nvmem = nvmem;
++
++	return 0;
++}
++
+ static ssize_t show_port_name(struct device *dev,
+ 			struct device_attribute *dattr, char *buf)
+ {
+@@ -945,6 +1000,7 @@ static ssize_t set_port_name(struct device *dev,
+ 
+ 	mutex_lock(&optoe->lock);
+ 	strcpy(optoe->port_name, port_name);
++	optoe_register_nvmem(client);
+ 	mutex_unlock(&optoe->lock);
+ 
+ 	return count;
+-- 
+2.55.0
+
