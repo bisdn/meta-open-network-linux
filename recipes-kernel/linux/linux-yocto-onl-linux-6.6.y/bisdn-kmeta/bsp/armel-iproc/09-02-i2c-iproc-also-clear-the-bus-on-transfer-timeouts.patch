@@ -137,9 +137,9 @@ index dd3006f1598d..580412e899b8 100644
 +		if (bcm_iproc_i2c_get_sda(&iproc_i2c->adapter) == 0)
 +			i2c_generic_scl_recovery(&iproc_i2c->adapter);
 +
- 		if (!!(iproc_i2c_rd_reg(iproc_i2c,
- 				M_CMD_OFFSET) & BIT(M_CMD_START_BUSY_SHIFT))) {
- 			/* re-initialize i2c for recovery */
+ 		/* check if START_BUSY did not clear */
+ 		if (!!(iproc_i2c_rd_reg(iproc_i2c, M_CMD_OFFSET) &
+ 		       BIT(M_CMD_START_BUSY_SHIFT))) {
 @@ -997,6 +1087,16 @@ static const struct i2c_adapter_quirks bcm_iproc_i2c_quirks = {
  	.max_read_len = M_RX_MAX_READ_LEN,
  };
