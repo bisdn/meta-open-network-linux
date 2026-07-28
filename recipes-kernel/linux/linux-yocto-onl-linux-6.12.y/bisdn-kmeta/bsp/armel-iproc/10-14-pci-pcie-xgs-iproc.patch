@@ -56,17 +56,17 @@ diff --git a/drivers/pci/controller/pcie-iproc.h b/drivers/pci/controller/pcie-i
 index 969ded03b8c2..c6eef4e61a19 100644
 --- a/drivers/pci/controller/pcie-iproc.h
 +++ b/drivers/pci/controller/pcie-iproc.h
-@@ -91,6 +91,9 @@ struct iproc_pcie {
+@@ -90,6 +90,9 @@ struct iproc_pcie {
  	phys_addr_t base_addr;
  	struct resource mem;
  	struct phy *phy;
 +#ifdef CONFIG_PCIE_XGS_IPROC
 +	struct phy_device *mdio_phy;
 +#endif
- 	int (*map_irq)(const struct pci_dev *, u8, u8);
  	bool ep_is_internal;
  	bool iproc_cfg_read;
-@@ -110,9 +113,11 @@ struct iproc_pcie {
+ 	bool rej_unconfig_pf;
+@@ -109,9 +112,11 @@ struct iproc_pcie {
  	struct iproc_msi *msi;
  };
  
@@ -83,7 +83,7 @@ new file mode 100644
 index 000000000000..0168f24fbb19
 --- /dev/null
 +++ b/drivers/pci/controller/pcie-xgs-iproc.c
-@@ -0,0 +1,499 @@
+@@ -0,0 +1,497 @@
 +/*
 + * Copyright (C) 2014 Hauke Mehrtens <hauke@hauke-m.de>
 + * Copyright (C) 2015 Broadcom Corporation
@@ -470,7 +470,7 @@ index 000000000000..0168f24fbb19
 +	host->dev.parent = dev;
 +	host->ops = &iproc_pcie_ops;
 +	host->sysdata = pcie;
-+	host->map_irq = pcie->map_irq;
++	host->map_irq = of_irq_parse_and_map_pci;
 +	host->swizzle_irq = pci_common_swizzle;
 +
 +	ret = pci_host_probe(host);
@@ -537,8 +537,6 @@ index 000000000000..0168f24fbb19
 +
 +	/* HX4/KT2/HR2 */
 +	pcie_sw_wa_func("pcie_wrong_gen2", pcie);
-+
-+	pcie->map_irq = of_irq_parse_and_map_pci;
 +
 +	ret = iproc_pcie_setup(pcie, &bridge->windows);
 +	if (ret)
