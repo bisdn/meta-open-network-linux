@@ -7,9 +7,9 @@ KCONF_BSP_AUDIT_LEVEL = "1"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-LINUX_VERSION ?= "6.12.93"
+LINUX_VERSION ?= "6.12.94"
 # https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=linux-6.12.y
-SRCREV_machine ?= "1d3a00d3bacff25652c96e1527610c69e91f7c38"
+SRCREV_machine ?= "0b8f247169e487eff2d4c2dd531bc43f7efda2cb"
 
 # Use commit for kver matching (or close to) LINUX_VERSION
 # https://git.yoctoproject.org/yocto-kernel-cache/log/kver?h=yocto-6.12
