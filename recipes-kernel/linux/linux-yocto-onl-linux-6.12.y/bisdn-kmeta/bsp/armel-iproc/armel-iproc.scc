@@ -4,8 +4,7 @@ define KARCH arm
 
 # submitted upstream
 
-patch 09-01-i2c-iproc-reset-bus-after-timeout-if-START_BUSY-is-s.patch
-patch 09-02-i2c-iproc-also-clear-the-bus-on-transfer-timeouts.patch
+patch 09-01-i2c-iproc-recover-the-bus-on-transfer-timeouts.patch
 
 # platform support
 
