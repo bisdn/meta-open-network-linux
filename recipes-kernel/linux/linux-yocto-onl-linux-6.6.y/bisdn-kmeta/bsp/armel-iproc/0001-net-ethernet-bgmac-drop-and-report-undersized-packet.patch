@@ -1,0 +1,45 @@
+From c266be789e668fe41fd70784353484174cdce6ad Mon Sep 17 00:00:00 2001
+From: Jonas Gorski <jonas.gorski@bisdn.de>
+Date: Thu, 13 Aug 2026 10:01:31 +0200
+Subject: [PATCH] net: ethernet: bgmac: drop and report undersized packets
+
+also sync dma before accessing.
+
+Signed-off-by: Jonas Gorski <jonas.gorski@bisdn.de>
+---
+ drivers/net/ethernet/broadcom/bgmac.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/net/ethernet/broadcom/bgmac.c b/drivers/net/ethernet/broadcom/bgmac.c
+index 768c0572c6ca..6297e2199fe7 100644
+--- a/drivers/net/ethernet/broadcom/bgmac.c
++++ b/drivers/net/ethernet/broadcom/bgmac.c
+@@ -443,6 +443,9 @@ static int bgmac_dma_rx_read(struct bgmac *bgmac, struct bgmac_dma_ring *ring,
+ 				break;
+ 			}
+ 
++			dma_sync_single_for_cpu(dma_dev, dma_addr, BGMAC_RX_BUF_SIZE,
++						DMA_FROM_DEVICE);
++
+ 			/* Unmap buffer to make it accessible to the CPU */
+ 			dma_unmap_single(dma_dev, dma_addr,
+ 					 BGMAC_RX_BUF_SIZE, DMA_FROM_DEVICE);
+@@ -469,6 +472,15 @@ static int bgmac_dma_rx_read(struct bgmac *bgmac, struct bgmac_dma_ring *ring,
+ 				break;
+ 			}
+ 
++			if (len < (ETH_HLEN + ETH_FCS_LEN)) {
++				netdev_err(bgmac->net_dev, "Found undersized packet (len=%i) at slot %d, DMA issue!\n",
++					   len, ring->start);
++				put_page(virt_to_head_page(buf));
++				bgmac->net_dev->stats.rx_length_errors++;
++				bgmac->net_dev->stats.rx_errors++;
++				break;
++			}
++
+ 			/* Omit CRC. */
+ 			len -= ETH_FCS_LEN;
+ 
+-- 
+2.55.0
+

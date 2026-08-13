@@ -34,6 +34,11 @@ patch 10-20-drivers-usb-phy-phy-xgs-iproc-usb-phy-mode.patch
 
 patch patches/misc/tools-use-basename-to-identify-file-in-gen-mach-type.patch
 
+# Testing
+
+patch 0001-net-ethernet-bgmac-drop-and-report-undersized-packet.patch
+
+
 include cfg/bisdn-linux.scc
 
 kconf hardware armel-iproc.cfg
