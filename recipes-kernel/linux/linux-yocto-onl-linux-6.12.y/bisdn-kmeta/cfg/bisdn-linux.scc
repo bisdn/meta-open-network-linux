@@ -16,6 +16,7 @@ include cfg/net/bridge.scc
 include cfg/net/ipsec.scc
 include cfg/net/ipsec6.scc
 include cgl/cfg/net/ip_vs.scc
+include cgl/features/audit/audit.scc
 
 # in recipes-kernel/linux/linux-yocto-onl-linux-*/bisdn-kmeta/cfg/
 include docker-extra.scc
