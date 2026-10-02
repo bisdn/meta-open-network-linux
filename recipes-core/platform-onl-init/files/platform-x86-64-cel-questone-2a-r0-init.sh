@@ -12,3 +12,9 @@ create_i2c_dev 24lc64t 0x56 1
 
 # load baseboard cpld module
 modprobe questone2a_baseboard_cpld
+
+# initialize optoe port names
+for port in {1..56}; do
+	wait_for_file "/sys/bus/i2c/devices/$((port + 1))-0050/port_name"
+	echo "port${port}" > "/sys/bus/i2c/devices/$((port + 1))-0050/port_name"
+done
