@@ -25,6 +25,8 @@ SRC_URI += " \
     file://platform-x86-64-delta-ag7648-r0-init.sh \
 "
 
+S = "${UNPACKDIR}"
+
 do_install() {
         install -d ${D}${systemd_system_unitdir}
         install -m 0644 ${UNPACKDIR}/platform-onl-init.service ${D}${systemd_system_unitdir}
