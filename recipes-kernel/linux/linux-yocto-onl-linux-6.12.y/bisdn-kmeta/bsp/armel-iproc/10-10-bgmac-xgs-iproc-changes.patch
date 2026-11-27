@@ -1,4 +1,4 @@
-From 8c9fb0c8afce922275527456647eeec72787f22d Mon Sep 17 00:00:00 2001
+From bc4b7ad64bfe57532ea339c350eca092c21e99a7 Mon Sep 17 00:00:00 2001
 From: Jonas Gorski <jonas.gorski@bisdn.de>
 Date: Thu, 7 Oct 2021 10:00:19 +0200
 Subject: [PATCH 10/19] bgmac: xgs-iproc changes
@@ -198,7 +198,7 @@ index 78f7862ca006..72ae1cfd3494 100644
  	{},
  };
 diff --git a/drivers/net/ethernet/broadcom/bgmac.c b/drivers/net/ethernet/broadcom/bgmac.c
-index 6ffdc4229407..2b3333d061aa 100644
+index 258b3b5a1cdb..fb2f3d8d9090 100644
 --- a/drivers/net/ethernet/broadcom/bgmac.c
 +++ b/drivers/net/ethernet/broadcom/bgmac.c
 @@ -18,6 +18,12 @@
@@ -222,7 +222,7 @@ index 6ffdc4229407..2b3333d061aa 100644
  	bgmac_chip_intrs_on(bgmac);
  
  	bgmac_enable(bgmac);
-@@ -1195,10 +1202,25 @@ static int bgmac_open(struct net_device *net_dev)
+@@ -1192,6 +1199,11 @@ static int bgmac_open(struct net_device *net_dev)
  	}
  	napi_enable(&bgmac->napi);
  
@@ -231,7 +231,10 @@ index 6ffdc4229407..2b3333d061aa 100644
 +		memset(&bgmac->estats, 0, sizeof(struct bgmac_ethtool_stats));
 +	}
 +
- 	phy_start(net_dev->phydev);
+ 	/* Specs say about reclaiming rings here, but we do that in DMA init */
+ 	bgmac_chip_init(bgmac);
+ 
+@@ -1199,6 +1211,16 @@ static int bgmac_open(struct net_device *net_dev)
  
  	netif_start_queue(net_dev);
  
@@ -395,10 +398,10 @@ index 6ffdc4229407..2b3333d061aa 100644
  	net_dev->hw_features = net_dev->features;
  	net_dev->vlan_features = net_dev->features;
 diff --git a/drivers/net/ethernet/broadcom/bgmac.h b/drivers/net/ethernet/broadcom/bgmac.h
-index d73ef262991d..11961324b689 100644
+index 6fee9a41839c..52dbd04e696a 100644
 --- a/drivers/net/ethernet/broadcom/bgmac.h
 +++ b/drivers/net/ethernet/broadcom/bgmac.h
-@@ -437,6 +437,78 @@ struct bgmac_rx_header {
+@@ -436,6 +436,78 @@ struct bgmac_rx_header {
  	__le16 pad[12];
  };
  
@@ -477,7 +480,7 @@ index d73ef262991d..11961324b689 100644
  struct bgmac {
  	union {
  		struct {
-@@ -483,6 +555,14 @@ struct bgmac {
+@@ -482,6 +554,14 @@ struct bgmac {
  
  	bool loopback;
  
@@ -493,5 +496,5 @@ index d73ef262991d..11961324b689 100644
  	void (*write)(struct bgmac *bgmac, u16 offset, u32 value);
  	u32 (*idm_read)(struct bgmac *bgmac, u16 offset);
 -- 
-2.47.1
+2.56.1
 
